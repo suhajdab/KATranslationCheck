@@ -119,7 +119,7 @@ class SimpleRegexRule(Rule):
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
         for hit in self.re.findall(msgstr):
             if isinstance(hit, tuple):  # Regex has groups
-                yield hit.group(0)
+                yield hit[0]
             else:
                 yield hit
 
