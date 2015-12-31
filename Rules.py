@@ -117,9 +117,11 @@ class SimpleRegexRule(Rule):
     def description(self):
         return "Matches regular expression '%s'" % self.regex_str
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
-        hit = self.re.search(msgstr)
-        if hit:
-            yield hit.group(0)
+        for hit in self.re.findall(msgstr):
+            if instanceof(hit, tuple): # Regex has groups
+                yield hit.group(0)
+            else:
+                yield hit
 
 class SimpleSubstringRule(Rule):
     """
