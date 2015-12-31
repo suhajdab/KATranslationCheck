@@ -397,9 +397,11 @@ class TextListRule(Rule):
         return "Matches one of the strings in file %s" % self.filename
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
         for regex in self.regexes:
-            hit = regex.search(msgstr)
-            if hit:
-                yield hit.group(0)
+            for hit in self.re.findall(msgstr):
+                if isinstance(hit, tuple):  # Regex has groups
+                    yield hit[0]
+                else:
+                    yield hit
 
 def findRule(rules, name):
     "Find a rule by name"
