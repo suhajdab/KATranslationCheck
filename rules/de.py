@@ -150,7 +150,7 @@ rules = [
     TranslationConstraintRule("'Accessibility' not translated to 'Barrierefreiheit'", r"Accessibility", r"Barrierefreiheit", severity=Severity.standard, flags=re.UNICODE | re.IGNORECASE),
     TranslationConstraintRule("'inverse function' not translated to 'Umkehrfunktion'", r"inverse\s+function", r"Umkehrfunktion", severity=Severity.standard, flags=re.UNICODE | re.IGNORECASE),
     IgnoreByMsgidRegexWrapper(r"TRIANGLES", # Apparently a special code for something in javascript
-        TranslationConstraintRule("'Triangle' not translated to 'Dreieck'", r"(?<!\\)triangles?", r"Dreieck", severity=Severity.info, flags=re.UNICODE | re.IGNORECASE)),
+        TranslationConstraintRule("'Triangle' not translated to 'Dreieck'", r"(?<!\\)triangles?", r"Dreiecke?", severity=Severity.info, flags=re.UNICODE | re.IGNORECASE)),
     TranslationConstraintRule("'Quadrilateral' not translated to 'Viereck'", r"Quadrilaterals?", r"Viereck", severity=Severity.info, flags=re.UNICODE | re.IGNORECASE),
     TranslationConstraintRule("'Pentagon' not translated to 'Fünfeck'", r"\bpentagons?\b", r"Fünfeck", severity=Severity.info, flags=re.UNICODE | re.IGNORECASE),
     TranslationConstraintRule("'Hexagon' not translated to 'Sechseck'", r"\bhexagons?\b", r"Sechseck", severity=Severity.info, flags=re.UNICODE | re.IGNORECASE),
