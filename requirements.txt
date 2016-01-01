@@ -9,3 +9,4 @@ compressinja
 lxml
 retry
 selenium
+git+https://github.com/ulikoehler/cffi_re2.git
