@@ -382,26 +382,31 @@ class TextListRule(Rule):
     def __init__(self, name, filename, severity=Severity.standard, flags=re.UNICODE):
         super().__init__(name, severity)
         self.filename = filename
-        self.regexes = []
+        regexes = []
+        self.valid = False
         # Check if file exists
         if os.path.isfile(filename):
             with open(filename) as infile:
                 for line in infile:
                     rgx = line.strip().replace(" ", r"\s+")
-                    #Don't match in the middle of a word
+                    # Don't match in the middle of a word
                     rgx = "\\b{0}\\b".format(rgx)
-                    self.regexes.append(re.compile(rgx, flags=flags))
+                    regexes.append(re.compile(rgx, flags=flags))
+            # Build large regex from all sub.regexes
+            self.regex = re.compile("|".join(regexes))
+            self.valid = True
         else:  # File does not exist
             print(red("Unable to find text list file %s" % filename, bold=True))
     def description(self):
         return "Matches one of the strings in file %s" % self.filename
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
-        for regex in self.regexes:
-            for hit in self.re.findall(msgstr):
-                if isinstance(hit, tuple):  # Regex has groups
-                    yield hit[0]
-                else:
-                    yield hit
+        if not self.valid:
+            return
+        for hit in self.regex.findall(msgstr):
+            if isinstance(hit, tuple):  # Regex has groups
+                yield hit[0]
+            else:
+                yield hit
 
 def findRule(rules, name):
     "Find a rule by name"
