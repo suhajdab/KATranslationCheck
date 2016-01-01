@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # coding: utf-8
 import re
+import cffi_re2
 import os
 import sys
 import fnmatch
 from collections import defaultdict
 from enum import IntEnum
 import importlib
-from ansicolor import black, red
+from ansicolor import black, red, blue
 
 class Severity(IntEnum):
     # Notice should be used for rules where a significant number of unfixable false-positives are expected
@@ -25,8 +26,32 @@ if sys.version_info[0] < 3:
     print("This script requires Python version 3.x")
     sys.exit(1)
 
-__cleanupRegex = re.compile(r'<(a|span|div|table)\s*([a-z-]+=("[^"]+"|\'[^\']+\')\s*)*>(.+?)</(a|span|div|table)>\s*', re.MULTILINE)
-__cleanupDetectRegex = re.compile(r"<(a|span|div|table)")
+class CompatibilityRegexCompiler(object):
+    """
+    Many regexes, especially those with lookahead/lookbehind constructs,
+    are not supported by re2 (and therefore also by cffi_re2).
+
+    However, cffi_re2 is expected to be significantly faster on complex regexes
+
+    This class transparently compiles regexes as either RE2 (preferred) or
+    standard re. A RE2 fail is assumed if it throws an exception.
+    Statistics are recorded while
+    """
+    def __init__(self):
+        self.numRegex = 0
+        self.numCompatRegex = 0
+    def compile(self, rgx, flags=0):
+        self.numRegex += 1
+        try:
+            return cffi_re2.compile(rgx, flags)
+        except ValueError:
+            self.numCompatRegex += 1
+            return re.compile(rgx, flags)
+
+reCompiler = CompatibilityRegexCompiler()
+
+__cleanupRegex = reCompiler.compile(r'<(a|span|div|table)\s*([a-z-]+=("[^"]+"|\'[^\']+\')\s*)*>(.+?)</(a|span|div|table)>\s*', re.MULTILINE)
+__cleanupDetectRegex = reCompiler.compile(r"<(a|span|div|table)")
 
 def cleanupTranslatedString(s):
     """
@@ -45,7 +70,7 @@ def importRulesForLanguage(lang, basedir="."):
     print(black("Found {0} rules for language {1}".format(len(langModule.rules), lang), bold=True))
     return langModule.rules
 
-_extractImgRegex = re.compile(r"(https?://ka-perseus-graphie\.s3\.amazonaws\.com/[0-9a-f]{40,40}\.(png|svg))")
+_extractImgRegex = reCompiler.compile(r"(https?://ka-perseus-graphie\.s3\.amazonaws\.com/[0-9a-f]{40,40}\.(png|svg))")
 
 class Rule(object):
     """
@@ -112,7 +137,7 @@ class SimpleRegexRule(Rule):
     """
     def __init__(self, name, regex, severity=Severity.standard, flags=re.UNICODE):
         super().__init__(name, severity)
-        self.re = re.compile(regex, flags)
+        self.re = reCompiler.compile(regex, flags)
         self.regex_str = regex
     def description(self):
         return "Matches regular expression '%s'" % self.regex_str
@@ -152,8 +177,8 @@ class TranslationConstraintRule(Rule):
     """
     def __init__(self, name, regexOrig, regexTranslated, severity=Severity.standard, flags=re.UNICODE):
         super().__init__(name, severity)
-        self.reOrig = re.compile(regexOrig, flags)
-        self.reTranslated = re.compile(regexTranslated, flags)
+        self.reOrig = reCompiler.compile(regexOrig, flags)
+        self.reTranslated = reCompiler.compile(regexTranslated, flags)
         self.regex_orig_str = regexOrig
         self.regex_translated_str = regexTranslated
     def description(self):
@@ -172,8 +197,8 @@ class NegativeTranslationConstraintRule(Rule):
     """
     def __init__(self, name, regexOrig, regexTranslated, severity=Severity.standard, flags=re.UNICODE):
         super().__init__(name, severity)
-        self.reOrig = re.compile(regexOrig, flags)
-        self.reTranslated = re.compile(regexTranslated, flags)
+        self.reOrig = reCompiler.compile(regexOrig, flags)
+        self.reTranslated = reCompiler.compile(regexTranslated, flags)
         self.regex_orig_str = regexOrig
         self.regex_translated_str = regexTranslated
     def description(self):
@@ -191,7 +216,7 @@ class DynamicTranslationIdentityRule(Rule):
     def __init__(self, name, regex, negative=False, group=None, severity=Severity.standard, flags=re.UNICODE):
         super().__init__(name, severity)
         self.regex_str = regex
-        self.regex = re.compile(regex, flags)
+        self.regex = reCompiler.compile(regex, flags)
         self.negative = negative
         self.group = group
     def description(self):
@@ -216,7 +241,7 @@ def SimpleGlobRule(name, glob):
     """Rule wrapper that translates a glob-ish rule to a regex rule"""
     return SimpleRegexRule(name, fnmatch.translate(glob))
 
-_whitespaceRegex = re.compile(r"\s+")
+_whitespaceRegex = reCompiler.compile(r"\s+")
 
 class ExactCopyRule(Rule):
     """
@@ -228,7 +253,7 @@ class ExactCopyRule(Rule):
     """
     def __init__(self, name, regex, severity=Severity.standard, aliases=defaultdict(str), ignore_whitespace=True, group=None):
         super().__init__(name, severity)
-        self.regex = re.compile(regex)
+        self.regex = reCompiler.compile(regex)
         self.regex_str = regex
         self.aliases = aliases
         self.group = group
@@ -272,7 +297,7 @@ class IgnoreByFilenameRegexWrapper(Rule):
         super().__init__(child.name)
         self.child = child
         self.invert = invert
-        self.filename_regex = re.compile(filename_regex)
+        self.filename_regex = reCompiler.compile(filename_regex)
         self.filename_regex_str = filename_regex
         self.severity = child.severity
     def description(self):
@@ -314,7 +339,7 @@ class IgnoreByMsgidRegexWrapper(Rule):
     def __init__(self, msgid_regex, child):
         super().__init__(child.name)
         self.child = child
-        self.msgid_regex = re.compile(msgid_regex)
+        self.msgid_regex = reCompiler.compile(msgid_regex)
         self.msgid_regex_str = msgid_regex
         self.severity = child.severity
     def description(self):
@@ -338,7 +363,7 @@ class IgnoreByMsgstrRegexWrapper(Rule):
     def __init__(self, msgstr_regex, child):
         super().__init__(child.name)
         self.child = child
-        self.msgstr_regex = re.compile(msgstr_regex)
+        self.msgstr_regex = reCompiler.compile(msgstr_regex)
         self.msgid_regex_str = msgstr_regex
         self.severity = child.severity
     def description(self):
@@ -361,7 +386,7 @@ class IgnoreByTcommentRegexWrapper(Rule):
     def __init__(self, tcommentRegex, child):
         super().__init__(child.name)
         self.child = child
-        self.tcommentRegex = re.compile(tcommentRegex)
+        self.tcommentRegex = reCompiler.compile(tcommentRegex)
         self.tcomment_regex_str = tcommentRegex
         self.severity = child.severity
     def description(self):
@@ -391,9 +416,9 @@ class TextListRule(Rule):
                     rgx = line.strip().replace(" ", r"\s+")
                     # Don't match in the middle of a word
                     rgx = "\\b{0}\\b".format(rgx)
-                    regexes.append(re.compile(rgx, flags=flags))
+                    regexes.append(rgx)
             # Build large regex from all sub.regexes
-            self.regex = re.compile("|".join(regexes))
+            self.regex = reCompiler.compile("|".join(regexes), flags=flags)
             self.valid = True
         else:  # File does not exist
             print(red("Unable to find text list file %s" % filename, bold=True))
