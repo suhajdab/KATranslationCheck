@@ -23,6 +23,7 @@ rules = [
     SimpleRegexRule("'.* *' needs to be '.**', could cause bad formatting", r"\.\s*\* +\*(?!\*)", severity=Severity.warning),
     IgnoreByMsgidRegexWrapper(r"CC\s+BY-NC-SA\s+\d\.\d",
         SimpleRegexRule("Decimal dot instead of comma inside number (high TPR)", r"\d+\.\d+", severity=Severity.info)),
+    SimpleRegexRule("Angle with [RL] prefix", r"\R_\{\d+\^\\circ\}", severity=Severity.warning),
     # Three cases of thin space missing in coordinate
     SimpleRegexRule("Space inserted between **", r"(?<!\*)\* \*(?!\*)", severity=Severity.info),
     SimpleRegexRule("Missing thin space ({\\,}) before or after |-separated coordinate", r"\$?\(\d+([\.,]\d+)?\s*\|\s*\d+([\.,]\d+)?\)\$?", severity=Severity.info),
