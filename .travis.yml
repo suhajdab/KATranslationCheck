@@ -5,6 +5,7 @@ dist: trusty
 before_install:
     - git clone https://github.com/google/re2.git
     - cd re2 && make && sudo make install && cd ..
+    - ldconfig
 install:
   - pip install -r requirements.txt
 # command to run tests
