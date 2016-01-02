@@ -415,7 +415,7 @@ class TextListRule(Rule):
                 for line in infile:
                     rgx = line.strip().replace(" ", r"\s+")
                     # Don't match in the middle of a word
-                    rgx = "\\b{0}\\b".format(rgx)
+                    rgx = r"\b{0}\b".format(rgx)
                     regexes.append(rgx)
             # Build large regex from all sub.regexes
             self.regex = reCompiler.compile("|".join(regexes), flags=flags)
