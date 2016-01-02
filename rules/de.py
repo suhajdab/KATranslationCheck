@@ -91,6 +91,8 @@ rules = [
     IgnoreByMsgidRegexWrapper(r"value: The value to constrain",
         SimpleRegexRule("Occurrence of untranslated 'value'", r"(?<!%\()(?<!Property:)\b[Vv]alues?\b(?!\)s)(?!=)", severity=Severity.standard)),
     SimpleRegexRule("Occurrence of untranslated 'into'", r"\b[Ii]nto\b", severity=Severity.standard),
+    SimpleRegexRule("Occurrence of untranslated 'summary'", r"\b[Ss]ummary\b", severity=Severity.standard),
+    SimpleRegexRule("Occurrence of untranslated 'conclusion'", r"\b[Cc]onclusion\b", severity=Severity.standard),
     SimpleRegexRule("Occurrence of untranslated 'numerator'", r"\b[Nn]umerator\b", severity=Severity.standard),
     SimpleRegexRule("Occurrence of untranslated 'column'", r"\b[Cc]olumn\b", severity=Severity.standard),
     SimpleRegexRule("Occurrence of untranslated 'row'", r"\b[Rr]ow\b", severity=Severity.standard),
