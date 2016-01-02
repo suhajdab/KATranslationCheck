@@ -174,7 +174,8 @@ def updateTranslation(args):
         outfile.write(timestamp)
 
 def downloadCrowdinById(session, crid):
-    response = session.get("https://crowdin.com/translation/phrase?id={0}&project_id=10880&target_language_id=11".format(crid))
+    url = "https://crowdin.com/translation/phrase?id={0}&project_id=10880&target_language_id=11".format(crid)
+    response = session.get(url)
     try:
         jsondata = response.json()["data"]
         msgid = jsondata["translation"]["text"]
@@ -182,7 +183,8 @@ def downloadCrowdinById(session, crid):
         comment = jsondata["translation"]["context"]
         filename = jsondata["translation"]["file_path"][1:]
     except:
-        return "[Retrieval error]", "[Retrieval error]", "[Retrieval error]", None
+        errstr = "[Retrieval error while fetching {0}]".format(url)
+        return errstr, errstr, errstr, None
     return msgid, msgstr, comment, filename
 
 if __name__ == "__main__":
