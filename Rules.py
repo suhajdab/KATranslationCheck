@@ -407,7 +407,7 @@ class TextListRule(Rule):
     def __init__(self, name, filename, severity=Severity.standard, flags=re.UNICODE):
         super().__init__(name, severity)
         self.filename = filename
-        regexes = []
+        regexes = set()
         self.valid = False
         # Check if file exists
         if os.path.isfile(filename):
@@ -416,7 +416,7 @@ class TextListRule(Rule):
                     rgx = line.strip().replace(" ", r"\s+")
                     # Don't match in the middle of a word
                     rgx = r"\b{0}\b".format(rgx)
-                    regexes.append(rgx)
+                    regexes.add(rgx)
             # Build large regex from all sub.regexes
             self.regex = reCompiler.compile("|".join(regexes), flags=flags)
             self.valid = True
