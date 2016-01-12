@@ -268,7 +268,7 @@ def performRender(args):
 
     if not args.only_lint:
         # Load rules
-        renderer.loadRules
+        renderer.loadRules()
         # Import
         potDir = os.path.join("cache", args.language)
         print(black("Reading files from {0} folder...".format(potDir), bold=True))
