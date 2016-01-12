@@ -205,7 +205,8 @@ class HTMLHitRenderer(object):
             writeToFile(os.path.join(self.outdir, "lint-de.html"),
                 self.lintTemplate.render(lintEntries=lintEntries))
             # Write JSON
-            writeJSONToFile(os.path.join(self.outdir, "lint-de.json"), lintEntries)
+            jsonEntries = map(dict, lintEntries)
+            writeJSONToFile(os.path.join(self.outdir, "lint-de.json"), jsonEntries)
         else:
             print("Skipping lint (%s does not exist)" % lintFilename)
     def hitsToHTML(self):
