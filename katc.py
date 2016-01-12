@@ -2,7 +2,6 @@
 from UpdateAllFiles import updateTranslations
 from check import performRender
 from IMAPLint import updateLintIMAPHandler
-from LintReport import updateLintFromGoogleGroups
 
 def updateLintHandler(args):
     updateLintFromGoogleGroups()
@@ -21,11 +20,7 @@ if __name__ == "__main__":
     updateTranslationsCmd.set_defaults(func=updateTranslations)
 
     updateLint = subparsers.add_parser('update-lint')
-    updateLint.set_defaults(func=updateLintHandler)
-
-    updateLint = subparsers.add_parser('update-lint-imap')
     updateLint.set_defaults(func=updateLintIMAPHandler)
-
 
     render = subparsers.add_parser('render')
     render.add_argument('-d', '--download', action='store_true', help='Download or update the directory')
