@@ -91,7 +91,6 @@ class HTMLHitRenderer(object):
         self.env = Environment(loader=FileSystemLoader('templates'), trim_blocks=True, lstrip_blocks=True, extensions=[HtmlCompressor])
         self.ruleTemplate = self.env.get_template("template.html")
         self.indexTemplate = self.env.get_template("index.html")
-        self.lintTemplate = self.env.get_template("lint.html")
         # Get timestamp
         self.timestamp = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")
         #Process lastdownload date (copied to the templated)
@@ -202,9 +201,6 @@ class HTMLHitRenderer(object):
         lintFilename = os.path.join("cache", "{0}-lint.csv".format(self.lang))
         if os.path.isfile(lintFilename):
             lintEntries = list(readAndMapLintEntries(lintFilename))
-            # Write HTML
-            writeToFile(os.path.join(self.outdir, "lint-de.html"),
-                self.lintTemplate.render(lintEntries=lintEntries))
             # Write JSON
             jsonEntries = list(map(operator.methodcaller("_asdict"), lintEntries))
             writeJSONToFile(os.path.join(self.outdir, "lint-de.json"), jsonEntries)
