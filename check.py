@@ -34,6 +34,11 @@ def writeToFile(filename, s):
     with open(filename, "w") as outfile:
         outfile.write(s)
 
+def writeJSONToFile(filename, obj):
+    "Utility function to write a string to a file identified by its filename"
+    with open(filename, "w") as outfile:
+        json.dump(obj, outfile)
+
 def readPOFiles(directory):
     """
     Read all PO files from a given directory and return
@@ -196,8 +201,11 @@ class HTMLHitRenderer(object):
         lintFilename = os.path.join("cache", "{0}-lint.csv".format(self.lang))
         if os.path.isfile(lintFilename):
             lintEntries = list(readAndMapLintEntries(lintFilename))
+            # Write HTML
             writeToFile(os.path.join(self.outdir, "lint-de.html"),
                 self.lintTemplate.render(lintEntries=lintEntries))
+            # Write JSON
+            writeJSONToFile(os.path.join(self.outdir, "lint-de.json"), lintEntries)
         else:
             print("Skipping lint (%s does not exist)" % lintFilename)
     def hitsToHTML(self):
