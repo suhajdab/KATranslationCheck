@@ -6,7 +6,7 @@ This script assumes that a full file tree is already present (e.g. in the "de" d
 Non-present files will NOT be updated.
 """
 import requests
-import json
+import simplejson as json
 import re
 import gc
 import os

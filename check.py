@@ -13,7 +13,7 @@ Instructions:
 import polib
 import re
 import operator
-import json
+import simplejson as json
 import itertools
 import os
 import os.path
@@ -87,6 +87,9 @@ class HTMLHitRenderer(object):
     def __init__(self, outdir, lang="de"):
         self.outdir = outdir
         self.lang = lang
+        # Load rules for language
+        rules = importRulesForLanguage(lang)
+        self.rules = sorted(rules, reverse=True)
         #Initialize template engine
         self.env = Environment(loader=FileSystemLoader('templates'), trim_blocks=True, lstrip_blocks=True, extensions=[HtmlCompressor])
         self.ruleTemplate = self.env.get_template("template.html")
@@ -107,10 +110,6 @@ class HTMLHitRenderer(object):
                 "https://crowdin.com/translate/khanacademy/{0}/enus-{1}".format(v["id"], lang)
             for v in translationFilemapCache.values()
         }
-    def loadRules(self):
-        """Import rules by language"""
-        rules = importRulesForLanguage(lang)
-        self.rules = sorted(rules, reverse=True)
     def filepath_to_url(self, filename):
         return filename.replace("/", "_")
     def computeRuleHits(self, po, filename="[unknown filename]"):
@@ -196,16 +195,6 @@ class HTMLHitRenderer(object):
         writeToFile(os.path.join(directory, "index.html"),
             self.indexTemplate.render(rules=self.rules, timestamp=self.timestamp, files=filelist, statsByFile=self.statsByFile,
                           statsByRule=ruleStats, downloadTimestamp=self.downloadTimestamp, filename=filename, translationURLs=self.translationURLs))
-    def renderLintHTML(self):
-        "Parse & render lint"
-        lintFilename = os.path.join("cache", "{0}-lint.csv".format(self.lang))
-        if os.path.isfile(lintFilename):
-            lintEntries = list(readAndMapLintEntries(lintFilename))
-            # Write JSON
-            jsonEntries = list(map(operator.methodcaller("_asdict"), lintEntries))
-            writeJSONToFile(os.path.join(self.outdir, "lint-de.json"), jsonEntries)
-        else:
-            print("Skipping lint (%s does not exist)" % lintFilename)
     def hitsToHTML(self):
         """
         Apply a rule and write a directory of output HTML files
@@ -236,6 +225,29 @@ class HTMLHitRenderer(object):
         shutil.copyfile("templates/lint.ts", os.path.join(self.outdir, "lint.ts"))
         shutil.copyfile("templates/lint.html", os.path.join(self.outdir, "lint.html"))
 
+def renderLint(outdir, lang):
+    "Parse & render lint"
+    lintFilename = os.path.join("cache", "{0}-lint.csv".format(lang))
+    if os.path.isfile(lintFilename):
+        lintEntries = list(readAndMapLintEntries(lintFilename))
+        # Write JSON
+        jsonEntries = list(map(operator.methodcaller("_asdict"), lintEntries))
+        writeJSONToFile(os.path.join(outdir, "lint-{0}.json".format(lang)), jsonEntries)
+    else:
+        print("Skipping lint (%s does not exist)" % lintFilename)
+
+def renderAllLints(outdir):
+    rgx = re.compile(r"([a-z]{2}(-[a-z]{2})?)-lint.csv")
+    for f in os.listdir("cache"):
+        m = rgx.match(f)
+        if m is None: continue
+        lang = m.group(1)
+        print(black("Rendering lint for {0}".format(lang), bold=True))
+        renderLint(outdir, lang)
+
+def performRenderLint(args):
+    renderAllLints(args.outdir)
+
 def performRender(args):
     # Download / update if requested
     if args.download:
@@ -249,42 +261,24 @@ def performRender(args):
 
     renderer = HTMLHitRenderer(args.outdir, args.language)
 
+    # Import
+    potDir = os.path.join("cache", args.language)
+    print(black("Reading files from {0} folder...".format(potDir), bold=True))
+    poFiles = readPOFiles(potDir)
+    print(black("Read {0} files".format(len(poFiles)), bold=True))
+    # Compute hits
+    print(black("Computing rules...", bold=True))
+    renderer.computeRuleHitsForFileSet(poFiles)
+    # Ensure the HUGE po stuff goes out of scope ASAP
+    poFiles = None
+
     # Generate HTML
-    if not args.no_lint:
-        print(black("Rendering lint...", bold=True))
-        success = False
-        for i in range(25):
-            try:
-                renderer.renderLintHTML()
-                success = True
-                break
-            except NoResultException:
-                print(red("Lint fetch error, retrying..."))
-        if not success:
-            print(red("Lint fetch error (retries exhausted)", bold=True))
+    print(black("Rendering HTML...", bold=True))
+    renderer.hitsToHTML()
 
-
-    if not args.only_lint:
-        # Load rules
-        renderer.loadRules()
-        # Import
-        potDir = os.path.join("cache", args.language)
-        print(black("Reading files from {0} folder...".format(potDir), bold=True))
-        poFiles = readPOFiles(potDir)
-        print(black("Read {0} files".format(len(poFiles)), bold=True))
-        # Compute hits
-        print(black("Computing rules...", bold=True))
-        renderer.computeRuleHitsForFileSet(poFiles)
-        # Ensure the HUGE po stuff goes out of scope ASAP
-        poFiles = None
-
-        # Generate HTML
-        print(black("Rendering HTML...", bold=True))
-        renderer.hitsToHTML()
-
-        # Generate filestats.json
-        print (black("Generating JSON API files...", bold=True))
-        renderer.writeStatsJSON()
+    # Generate filestats.json
+    print (black("Generating JSON API files...", bold=True))
+    renderer.writeStatsJSON()
 
     # If data is present, generate subtitle information
     videosJSONPath = os.path.join("cache", "videos.json")

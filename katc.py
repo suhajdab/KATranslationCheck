@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 from UpdateAllFiles import updateTranslations
-from check import performRender
+from check import performRender, performRenderLint
 from IMAPLint import updateLintIMAPHandler
-
-def updateLintHandler(args):
-    updateLintFromGoogleGroups()
 
 if __name__ == "__main__":
     import argparse
@@ -21,6 +18,10 @@ if __name__ == "__main__":
 
     updateLint = subparsers.add_parser('update-lint')
     updateLint.set_defaults(func=updateLintIMAPHandler)
+
+    renderLint = subparsers.add_parser('render-lint')
+    renderLint.add_argument('outdir', nargs='?', default=None, help='The output directory to use')
+    renderLint.set_defaults(func=performRenderLint)
 
     render = subparsers.add_parser('render')
     render.add_argument('-d', '--download', action='store_true', help='Download or update the directory')

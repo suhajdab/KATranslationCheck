@@ -49,7 +49,7 @@ def readAndMapLintEntries(filename):
     session = getCrowdinSession(domain="https://crowdin.com")
     cnt = 0
     h = HTMLParser()
-    for entry in readLintCSV("cache/de-lint.csv"):
+    for entry in readLintCSV(filename):
         msgid, msgstr, comment, filename = downloadCrowdinByIdCached(session, entry.crid)
         #comment = re.sub(__urlRegex, r"<a href=\"\1\">\1</a>", comment)
         msgid = msgid.replace(" ", "⸱").replace("\t", "→")

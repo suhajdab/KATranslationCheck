@@ -19,7 +19,7 @@ from toolz.itertoolz import unique
 from datetime import datetime
 from email.parser import Parser
 import os.path
-import json
+import simplejson as json
 
 KALintMail = collections.namedtuple('KALintMail', ["msgid", "subject", "date", "rfc822"])
 
