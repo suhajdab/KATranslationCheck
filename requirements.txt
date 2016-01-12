@@ -9,4 +9,5 @@ compressinja
 lxml
 retry
 selenium
+IMAPClient
 git+https://github.com/ulikoehler/cffi_re2.git
