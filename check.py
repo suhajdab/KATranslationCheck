@@ -196,7 +196,7 @@ class HTMLHitRenderer(object):
         lintFilename = os.path.join("cache", "{0}-lint.csv".format(self.lang))
         if os.path.isfile(lintFilename):
             lintEntries = list(readAndMapLintEntries(lintFilename))
-            writeToFile(os.path.join(self.outdir, "lint.html"),
+            writeToFile(os.path.join(self.outdir, "lint-de.html"),
                 self.lintTemplate.render(lintEntries=lintEntries))
         else:
             print("Skipping lint (%s does not exist)" % lintFilename)
