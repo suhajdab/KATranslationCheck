@@ -237,6 +237,8 @@ class HTMLHitRenderer(object):
         shutil.copyfile("templates/katc.css", os.path.join(self.outdir, "katc.css"))
         shutil.copyfile("templates/robots.txt", os.path.join(self.outdir, "robots.txt"))
         shutil.copyfile("templates/404.html", os.path.join(self.outdir, "404.html"))
+        shutil.copyfile("templates/lint.ts", os.path.join(self.outdir, "lint.ts"))
+        shutil.copyfile("templates/lint.html", os.path.join(self.outdir, "lint.html"))
 
 def performRender(args):
     # Download / update if requested

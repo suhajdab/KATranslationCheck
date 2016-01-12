@@ -6,6 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="/katc.css" rel="stylesheet" media="screen">
+
+    <script src="https://code.angularjs.org/2.0.0-beta.0/angular2-polyfills.js"></script>
+    <script src="https://code.angularjs.org/tools/system.js"></script>
+    <script src="https://code.angularjs.org/tools/typescript.js"></script>
+    <script src="https://code.angularjs.org/2.0.0-beta.0/Rx.js"></script>
+    <script src="https://code.angularjs.org/2.0.0-beta.0/http.js"></script>
+    <script src="https://code.angularjs.org/2.0.0-beta.0/angular2.dev.js"></script>
+    <script>
+      System.config({
+        transpiler: 'typescript', 
+        typescriptOptions: { emitDecoratorMetadata: true }, 
+        packages: {'app': {defaultExtension: 'ts'}} 
+      });
+      System.import('lints.ts')
+            .then(null, console.error.bind(console));
+    </script>
   </head>
   <body>
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -41,22 +57,7 @@
     </nav>
     <div id="maincontainer" class="container">
 
-        <div class="row">
-          <h1>Showing {{lintEntries|length}} lint errors</h1>
-        </div>
-      {% for lintEntry in lintEntries %}
-        <div class="row">
-          <h3><a target="_blank" href="{{lintEntry.url}}">Lint error at {{lintEntry.date}}</a></h3>
-          <h4>Lint message</h4>
-          <pre class="lint-entry">{{lintEntry.text|e}}</pre>
-          <h4>Original</h4>
-          <pre class="lint-entry">{{lintEntry.msgid|e}}</pre>
-          <h4>Translated</h4>
-          <pre class="lint-entry">{{lintEntry.msgstr|e}}</pre>
-          <h4>Context</h4>
-          <pre class="lint-entry">{{lintEntry.comment}}</pre>
-        </div>
-      {% endfor %}
+        <my-app>Loading...</my-app>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
