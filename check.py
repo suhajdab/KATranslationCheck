@@ -87,9 +87,6 @@ class HTMLHitRenderer(object):
     def __init__(self, outdir, lang="de"):
         self.outdir = outdir
         self.lang = lang
-        #Import rules by language
-        rules = importRulesForLanguage(lang)
-        self.rules = sorted(rules, reverse=True)
         #Initialize template engine
         self.env = Environment(loader=FileSystemLoader('templates'), trim_blocks=True, lstrip_blocks=True, extensions=[HtmlCompressor])
         self.ruleTemplate = self.env.get_template("template.html")
@@ -111,6 +108,10 @@ class HTMLHitRenderer(object):
                 "https://crowdin.com/translate/khanacademy/{0}/enus-{1}".format(v["id"], lang)
             for v in translationFilemapCache.values()
         }
+    def loadRules(self):
+        """Import rules by language"""
+        rules = importRulesForLanguage(lang)
+        self.rules = sorted(rules, reverse=True)
     def filepath_to_url(self, filename):
         return filename.replace("/", "_")
     def computeRuleHits(self, po, filename="[unknown filename]"):
@@ -266,6 +267,8 @@ def performRender(args):
 
 
     if not args.only_lint:
+        # Load rules
+        renderer.loadRules
         # Import
         potDir = os.path.join("cache", args.language)
         print(black("Reading files from {0} folder...".format(potDir), bold=True))

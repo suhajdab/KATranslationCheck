@@ -14,9 +14,23 @@ from selenium import webdriver
 from ansicolor import black
 from html.parser import HTMLParser
 from UpdateAllFiles import downloadCrowdinById, getCrowdinSession
+import shelve
+
 
 LintEntry = namedtuple("LintEntry", ["date", "url", "crid", "text",
                                      "msgid", "msgstr", "comment", "filename"])
+
+cache = None
+
+def downloadCrowdinByIdCached(session, crid):
+    global cache
+    if cache is None:
+        shelve.open("/tmp/katc-cache")
+    if crid in cache:
+        return cache[crid]
+    # TODO cache expiration
+    return downloadCrowdinById(session, crid)
+
 
 class NoResultException(Exception):
     pass
