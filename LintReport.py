@@ -25,11 +25,13 @@ cache = None
 def downloadCrowdinByIdCached(session, crid):
     global cache
     if cache is None:
-        shelve.open("/tmp/katc-cache")
+        cache = shelve.open("/tmp/katc-cache")
     if crid in cache:
         return cache[crid]
     # TODO cache expiration
-    return downloadCrowdinById(session, crid)
+    cdata = downloadCrowdinById(session, crid)
+    cache[crid] = cdata
+    return cdata
 
 
 class NoResultException(Exception):
@@ -97,7 +99,7 @@ def readAndMapLintEntries(filename):
     cnt = 0
     h = HTMLParser()
     for entry in readLintCSV("cache/de-lint.csv"):
-        msgid, msgstr, comment, filename = downloadCrowdinById(session, entry.crid)
+        msgid, msgstr, comment, filename = downloadCrowdinByIdCached(session, entry.crid)
         #comment = re.sub(__urlRegex, r"<a href=\"\1\">\1</a>", comment)
         msgid = msgid.replace(" ", "⸱").replace("\t", "→")
         msgstr = msgstr.replace(" ", "⸱").replace("\t", "→")
