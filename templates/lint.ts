@@ -24,7 +24,11 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 })
 export class LintComponent {
    constructor(public http: Http) {
-      this.http.get('lint-de.json')
+      var jsonName = 'lint-de.json';
+      if(window.location.hash) {
+        jsonName = 'lint-' + window.location.hash.slice(1) + '.json'
+      }
+      this.http.get(jsonName)
           .map(res => res.json())
           .subscribe(data => this.lintEntries = data)
    }
