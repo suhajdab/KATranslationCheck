@@ -7,7 +7,7 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
   selector: 'my-app',
   template:`
   <div class="row">
-    <h1>Showing {{lintEntries.length}} lint errors</h1>
+    <h1>Showing {{lintEntries?.length}} lint errors</h1>
   </div>
   <div *ngFor="#lintEntry of lintEntries" class="row">
     <h3><a target="_blank" href="{{lintEntry.url}}">Lint error at {{lintEntry.date}}</a></h3>
