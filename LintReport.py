@@ -42,7 +42,7 @@ def readLintCSV(filename):
                 row[2], None, None, None, None) for row in reader]
 
 
-def readAndMapLintEntries(filename):
+def readAndMapLintEntries(filename, lang="de"):
     """
     Enrich a list of lint entries with msgid and msgstr information
     """
@@ -50,7 +50,7 @@ def readAndMapLintEntries(filename):
     cnt = 0
     h = HTMLParser()
     for entry in readLintCSV(filename):
-        msgid, msgstr, comment, filename = downloadCrowdinByIdCached(session, entry.crid)
+        msgid, msgstr, comment, filename = downloadCrowdinByIdCached(session, entry.crid, lang)
         #comment = re.sub(__urlRegex, r"<a href=\"\1\">\1</a>", comment)
         msgid = msgid.replace(" ", "⸱").replace("\t", "→")
         msgstr = msgstr.replace(" ", "⸱").replace("\t", "→")

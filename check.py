@@ -229,7 +229,7 @@ def renderLint(outdir, lang):
     "Parse & render lint"
     lintFilename = os.path.join("cache", "{0}-lint.csv".format(lang))
     if os.path.isfile(lintFilename):
-        lintEntries = list(readAndMapLintEntries(lintFilename))
+        lintEntries = list(readAndMapLintEntries(lintFilename, lang))
         # Write JSON
         jsonEntries = list(map(operator.methodcaller("_asdict"), lintEntries))
         writeJSONToFile(os.path.join(outdir, "lint-{0}.json".format(lang)), jsonEntries)
