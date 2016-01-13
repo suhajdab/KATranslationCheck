@@ -19,14 +19,14 @@ LintEntry = namedtuple("LintEntry", ["date", "url", "crid", "text",
 
 cache = None
 
-def downloadCrowdinByIdCached(session, crid):
+def downloadCrowdinByIdCached(session, crid, lang):
     global cache
     if cache is None:
         cache = shelve.open("/tmp/katc-cache")
     if crid in cache:
         return cache[crid]
     # TODO cache expiration
-    cdata = downloadCrowdinById(session, crid)
+    cdata = downloadCrowdinById(session, crid, lang)
     cache[crid] = cdata
     return cdata
 

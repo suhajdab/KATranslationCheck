@@ -15,6 +15,7 @@ import errno
 import os.path
 import datetime
 import functools
+from TargetLanguages import *
 from retry import retry
 from multiprocessing import Pool
 from bs4 import BeautifulSoup
@@ -173,8 +174,9 @@ def updateTranslation(args):
     with open("lastdownload.txt", "w") as outfile:
         outfile.write(timestamp)
 
-def downloadCrowdinById(session, crid):
-    url = "https://crowdin.com/translation/phrase?id={0}&project_id=10880&target_language_id=11".format(crid)
+def downloadCrowdinById(session, crid, lang="de"):
+    langId = targetLanguages[lang]
+    url = "https://crowdin.com/translation/phrase?id={0}&project_id=10880&target_language_id={1}".format(crid, langId)
     response = session.get(url)
     try:
         jsondata = response.json()["data"]
