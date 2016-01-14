@@ -18,7 +18,6 @@ targetLanguages = {
     "fi": 18,
     "he": 21,
     "hu": 22,
-    "hu": 22,
     "ar": 23,
     "it": 24,
     "jp": 25,
