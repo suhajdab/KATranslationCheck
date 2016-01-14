@@ -35,7 +35,7 @@ export class LintComponent {
       this.http.get(jsonName)
           .map(res => res.json())
           .subscribe(data => this.lintEntries = data,
-            error => alert("Could not load lint data: " + error))
+            error => alert("Could not load lint data: " + error.status))
    }
 }
 
