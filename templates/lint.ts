@@ -7,7 +7,7 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
   selector: 'my-app',
   template:`
   <div class="row">
-    <h1>Showing {{lintEntries?.length}} lint errors</h1>
+    <h1>Showing {{lintEntries?.length}} lint errors for {{lang}}</h1>
   </div>
   <div *ngFor="#lintEntry of lintEntries" class="row">
     <h3><a target="_blank" href="{{lintEntry.url}}">Lint error at {{lintEntry.date}}</a></h3>
@@ -25,8 +25,12 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 export class LintComponent {
    constructor(public http: Http) {
       var jsonName = 'lint-de.json';
+      
       if(window.location.hash) {
+        this.lang = window.location.hash.slice(1);
         jsonName = 'lint-' + window.location.hash.slice(1) + '.json'
+      } else {
+        this.lang = "de";
       }
       this.http.get(jsonName)
           .map(res => res.json())
