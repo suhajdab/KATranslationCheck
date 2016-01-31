@@ -31,7 +31,7 @@ def fetchEMail(credentials):
     """
     Fetch all emails and delete old messages and other messages
     """
-    rgx = re.compile(r"(\d+) crowdin entries linted for ([a-z]{2}(-[a-z]{2})?)")
+    rgx = re.compile(r"(\d+) crowdin entries linted for ([a-z]{2}(-[a-zA-Z]{2})?)")
 
     server = IMAPClient(credentials["host"], use_uid=True, ssl=True)
     server.login(credentials["user"], credentials["password"])
