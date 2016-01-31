@@ -20,7 +20,7 @@ if __name__ == "__main__":
     updateLint.set_defaults(func=updateLintIMAPHandler)
 
     renderLint = subparsers.add_parser('render-lint')
-    renderLint.add_argument('outdir', nargs='?', help='The output directory to use')
+    renderLint.add_argument('outdir', help='The output directory to use')
     renderLint.set_defaults(func=performRenderLint)
 
     render = subparsers.add_parser('render')
