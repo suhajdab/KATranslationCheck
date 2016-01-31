@@ -75,10 +75,10 @@ def downloadTranslationFilemap(lang="de"):
         for k, v in projectFiles.items()
         if v["name"].endswith(".pot")}
     # Parse glossary
-    dct.update({
-        "glossary.pot": dict([("id", int(v["id"])), ("path", "glossary.pot")])
-        for k, v in projectFiles.items()
-        if v["type"] == "glossary"})
+    #dct.update({
+    #    "glossary.pot": dict([("id", int(v["id"])), ("path", "glossary.pot")])
+    #    for k, v in projectFiles.items()
+    #    if v["type"] == "glossary"})
     return dct
 
 @retry(tries=8, delay=5.0)
