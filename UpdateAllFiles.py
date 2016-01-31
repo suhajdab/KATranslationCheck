@@ -15,13 +15,15 @@ import errno
 import os.path
 import datetime
 import functools
-from TargetLanguages import *
 from retry import retry
 from multiprocessing import Pool
 from bs4 import BeautifulSoup
 from html.parser import HTMLParser
 from Languages import findAllLanguages
 from ansicolor import red, black, blue, green
+from Languages import getCachedLanguageMap
+
+languageIDs = getCachedLanguageMap()
 
 def translationFilemapCacheFilename(lang="de"):
     return os.path.join("cache", "translation-filemap-{0}.json".format(lang))
@@ -181,8 +183,8 @@ def updateTranslation(args):
         outfile.write(timestamp)
 
 def downloadCrowdinById(session, crid, lang="de"):
-    if lang in targetLanguages:
-        langId = targetLanguages[lang]
+    if lang in languageIDs:
+        langId = languageIDs[lang]
     else: # Fallback -- wont really work
         langId = 11 #de
     url = "https://crowdin.com/translation/phrase?id={0}&project_id=10880&target_language_id={1}".format(crid, langId)
