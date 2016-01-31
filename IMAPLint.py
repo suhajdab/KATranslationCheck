@@ -57,7 +57,7 @@ def fetchEMail(credentials):
             date = date[len("Date: "):]
         if date.endswith("(PST)"):
             date = date[:-len("(PST)")].strip()
-        elif date.endswith("(UTC))"):
+        elif date.endswith("(UTC)"):
             date = date[:-len("(UTC)")].strip()
         date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
         #
