@@ -96,7 +96,7 @@ def performPOTDownload(lang, argtuple):
     exportResponse = s.get(urlPrefix + "export", headers={"Accept": "application/json"})
     #print(exportResponse.text)
     if exportResponse.json()["success"] != True:
-        raise Exception("Crowdin export failed: " + response.text)
+        raise Exception("Crowdin export failed: " + exportResponse.text)
     # Trigger download
     # Store in file
     with open(filepath, "w+b") as outfile:
