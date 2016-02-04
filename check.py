@@ -88,8 +88,9 @@ class HTMLHitRenderer(object):
         self.outdir = outdir
         self.lang = lang
         # Load rules for language
-        rules = importRulesForLanguage(lang)
+        rules, rule_errors = importRulesForLanguage(lang)
         self.rules = sorted(rules, reverse=True)
+        self.rule_errors = rule_errors
         #Initialize template engine
         self.env = Environment(loader=FileSystemLoader('templates'), trim_blocks=True, lstrip_blocks=True, extensions=[HtmlCompressor])
         self.ruleTemplate = self.env.get_template("template.html")
@@ -217,6 +218,8 @@ class HTMLHitRenderer(object):
             for rule in self.rules
         }
         self._renderDirectory(overviewHits, self.totalStatsByRule, self.outdir, filename="all files", filelist=self.files)
+        # Create rule error file
+        writeJSONToFile(os.path.join(self.outdir, "ruleerrors.json"), self.rule_errors)
         # Copy static files
         shutil.copyfile("templates/katc.js", os.path.join(self.outdir, "katc.js"))
         shutil.copyfile("templates/katc.css", os.path.join(self.outdir, "katc.css"))
