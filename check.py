@@ -199,7 +199,7 @@ class HTMLHitRenderer(object):
         js = {
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
-            "stats": {rule.name: {statsByRule[rule],
+            "stats": {rule.name: {"numhits": statsByRule[rule],
                                   "color:" rule.getBootstrapColor(),
                                   "machine_name": rule.get_machine_name()}
                       for rule in self.rules if statsByRule[rule] > 0}
