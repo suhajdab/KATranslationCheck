@@ -236,7 +236,8 @@ class HTMLHitRenderer(object):
         }
         self._renderDirectory(overviewHits, self.totalStatsByRule, self.outdir, filename="all files", filelist=self.files)
         # Create rule error file
-        writeJSONToFile(os.path.join(self.outdir, "ruleerrors.json"), self.rule_errors)
+        writeJSONToFile(os.path.join(self.outdir, "ruleerrors.json"),
+            [err.name for err in self.rule_errors])
         # Copy static files
         shutil.copyfile("templates/katc.js", os.path.join(self.outdir, "katc.js"))
         shutil.copyfile("templates/katc.css", os.path.join(self.outdir, "katc.css"))
