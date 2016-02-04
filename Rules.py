@@ -9,6 +9,10 @@ from collections import defaultdict
 from enum import IntEnum
 import importlib
 from ansicolor import black, red, blue
+from ImageAliases import downloadGDocsCSV
+from io import StringIO
+import sre_constants
+import csv
 
 class Severity(IntEnum):
     # Notice should be used for rules where a significant number of unfixable false-positives are expected
@@ -434,9 +438,63 @@ class TextListRule(Rule):
             else:
                 yield hit
 
+
 def findRule(rules, name):
     "Find a rule by name"
     try:
         next(rule for rule in rules if rule.name == name)
     except StopIteration:
         return None
+
+
+def AutoUntranslatedRule(name, s, severity=Severity.standard):
+    """
+    Automatic translation constraint rule that creates a regex from a simple string.
+    Use case-insensitive first-character and matches only whole words
+    """
+    rgx = r"\b[" + s[0].upper() + s[0].lower() + r"]" + s[1:] + r"\b"
+    return SimpleRegexRule(name, rgx, severity=severity)
+
+
+def AutoTranslationConstraintRule(name, sa, sb, severity=Severity.standard, flags=re.UNICODE | re.IGNORECASE):
+    """
+    Automatic translation constraint rule that creates a regex from a plain string.
+    Use case-insensitive first-character and matches only whole words
+    """
+    rgxa = r"\b" + sa.replace(" ", r"\s+") + r"\b"
+    rgxb = r"\b" + sb.replace(" ", r"\s+") + r"\b"
+    return TranslationConstraintRule(name, rgxa, rgxb, severity=severity, flags=flags)
+
+class RuleError(object):
+    def __init__(self, msg):
+        self.msg = msg
+
+
+def readRulesFromGDocs(ssid):
+    "Read a set of rules from a Google Docs spreadsheet"
+    text = StringIO(downloadGDocsCSV(ssid))
+    reader = csv.reader(text, delimiter=',')
+    next(reader)  # Skip header
+    aliases = defaultdict(str)
+    for row in reader:
+        enabled, name, ruletype, rgx1, rgx2, severityStr = row
+        # Parse severity
+        try:
+            severity = Severity[severityStr.lower()]
+        except KeyError:
+            yield RuleError("Rule {0}: severity {1} is invalid".format(name, severityStr))
+            continue
+        # Parse enabled
+        if enabled != "Y":
+            continue
+        try:
+            if ruletype == "AutoUntranslatedRule":
+                yield AutoUntranslatedRule(name, rgx1, severity=severity)
+            elif ruletype == "AutoTranslationConstraintRule":
+                yield AutoTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
+            else:
+                yield RuleError("Rule {0}: ruletype {1} is invalid".format(name, ruletype))
+                continue
+        except Exception as e:
+            yield RuleError("Rule {0}: Error while parsing rule: {1}".format(name, e))
+            continue
