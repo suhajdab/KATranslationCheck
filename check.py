@@ -196,6 +196,21 @@ class HTMLHitRenderer(object):
         writeToFile(os.path.join(directory, "index.html"),
             self.indexTemplate.render(rules=self.rules, timestamp=self.timestamp, files=filelist, statsByFile=self.statsByFile,
                           statsByRule=ruleStats, downloadTimestamp=self.downloadTimestamp, filename=filename, translationURLs=self.translationURLs))
+        js = {
+            "pageTimestamp": self.timestamp,
+            "downloadTimestamp": self.downloadTimestamp,
+            "stats": {rule.name: {statsByRule[rule],
+                                  "color:" rule.getBootstrapColor(),
+                                  "machine_name": rule.get_machine_name()}
+                      for rule in self.rules if statsByRule[rule] > 0}
+        }
+        if filelist:
+            js["files"] = {
+                filename: statsByFile[filename]
+                for filename, filelink in filelist.items()
+                if self.statsByFile[filename]["notices"]
+            }
+        writeJSONToFile(os.path.join(directory, "index.json"), js)
     def hitsToHTML(self):
         """
         Apply a rule and write a directory of output HTML files
