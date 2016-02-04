@@ -204,7 +204,7 @@ class HTMLHitRenderer(object):
                             "color": rule.getBootstrapColor(),
                             "machine_name": rule.get_machine_name()
                         }
-                      for rule in self.rules if statsByRule[rule] > 0}
+                      for rule in self.rules if ruleStats[rule] > 0}
         }
         if filelist:
             js["files"] = {
