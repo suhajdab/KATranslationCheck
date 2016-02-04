@@ -208,7 +208,7 @@ class HTMLHitRenderer(object):
         }
         if filelist:
             js["files"] = {
-                filename: statsByFile[filename]
+                filename: self.statsByFile[filename]
                 for filename, filelink in filelist.items()
                 if self.statsByFile[filename]["notices"]
             }
