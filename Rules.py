@@ -477,7 +477,11 @@ def readRulesFromGDocs(ssid):
     next(reader)  # Skip header
     aliases = defaultdict(str)
     for row in reader:
-        enabled, name, ruletype, rgx1, rgx2, severityStr = row
+        try:
+            enabled, name, ruletype, rgx1, rgx2, severityStr = row
+        except:
+            yield RuleError("Unparseable row: " + str(row))
+            continue
         # Parse severity
         try:
             severity = Severity[severityStr.lower()]
