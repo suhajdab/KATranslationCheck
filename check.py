@@ -169,17 +169,16 @@ class HTMLHitRenderer(object):
         Write a statistics-by-filename JSON to outdir/filestats.sjon
         """
         # Write file
-        with open(os.path.join(self.outdir, "filestats.json"), "w") as outfile:
-            stats = {
-                filename: {"hits": self.countRuleHitsAboveSeverity(ruleHits, Severity.standard),
-                           "warnings": self.countRuleHitsAboveSeverity(ruleHits, Severity.warning),
-                           "errors": self.countRuleHitsAboveSeverity(ruleHits, Severity.dangerous),
-                           "infos": self.countRuleHitsAboveSeverity(ruleHits, Severity.info),
-                           "notices": self.countRuleHitsAboveSeverity(ruleHits, Severity.notice),
-                           "link": self.filepath_to_url(filename)}
-                for filename, ruleHits in self.fileRuleHits.items()
-            }
-            json.dump(stats, outfile)
+        stats = {
+            filename: {"hits": self.countRuleHitsAboveSeverity(ruleHits, Severity.standard),
+                       "warnings": self.countRuleHitsAboveSeverity(ruleHits, Severity.warning),
+                       "errors": self.countRuleHitsAboveSeverity(ruleHits, Severity.dangerous),
+                       "infos": self.countRuleHitsAboveSeverity(ruleHits, Severity.info),
+                       "notices": self.countRuleHitsAboveSeverity(ruleHits, Severity.notice),
+                       "link": self.filepath_to_url(filename)}
+            for filename, ruleHits in self.fileRuleHits.items()
+        }
+        writeJSONToFile(os.path.join(self.outdir, "filestats.json"), stats)
     def _renderDirectory(self, ruleHits, ruleStats, directory, filename, filelist={}):
         # Generate output HTML for each rule
         for rule, hits in ruleHits.items():
