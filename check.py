@@ -185,11 +185,24 @@ class HTMLHitRenderer(object):
         for rule, hits in ruleHits.items():
             # Render hits for individual rule
             outfilePath = os.path.join(directory, rule.get_machine_name() + ".html")
-            #Remove file (redirects to 404 file) if there are no hits
-            if hits: # Render hits
+            outfilePathJSON = os.path.join(directory, rule.get_machine_name() + ".json")
+            if hits:  # Render hits
                 writeToFile(outfilePath,
                     self.ruleTemplate.render(hits=hits, timestamp=self.timestamp, downloadTimestamp=self.downloadTimestamp, translationURLs=self.translationURLs, urllib=urllib, rule=rule, genCrowdinSearchString=genCrowdinSearchString))
-            else: # No hits
+                jsonAPI = {
+                    "timestamp": self.timestamp,
+                    "downloadTimestamp": self.downloadTimestamp,
+                    "hits": [{"msgstr": entry.msgstr,
+                              "msgid": entry.msgid,
+                              "tcomment": entry.tcomment,
+                              "origImages": origImages,
+                              "translatedImages": translatedImages}
+                             for entry, hit, filename, origImages, translatedImages in hits]
+                }
+                writeJSONToFile(outfilePathJSON, jsonAPI)
+            else:  # Remove file (redirects to 404 file) if there are no hitsToHTML
+                if os.path.isfile(outfilePath):
+                    os.remove(outfilePath)
                 if os.path.isfile(outfilePath):
                     os.remove(outfilePath)
         # Render file index page (no filelist)
