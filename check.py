@@ -117,6 +117,7 @@ class HTMLHitRenderer(object):
             rule: list(rule.apply_to_po(po, filename=filename))
             for rule in self.rules
         }
+        # Sort by key
         return collections.OrderedDict(sorted(unsorted.items(), key=operator.itemgetter(0)))
     def computeRuleHitsForFileSet(self, poFiles):
         """
@@ -180,15 +181,17 @@ class HTMLHitRenderer(object):
         # Generate output HTML for each rule
         for rule, hits in ruleHits.items():
             # Render hits for individual rule
-            outfilePathJSON = os.path.join(directory, rule.get_machine_name() + ".json")
+            outfilePathJSON = os.path.join(directory, rule.machine_name + ".json")
             if hits:  # Render hits
                 # Generate JSON API
                 jsonAPI = {
                     "timestamp": self.timestamp,
                     "downloadTimestamp": self.downloadTimestamp,
+                    "rule": rule.meta_dict,
                     "hits": [valfilter(bool, {"msgstr": entry.msgstr, # valfilter: remove empty values for smaller JSON
                                               "msgid": entry.msgid,
                                               "tcomment": entry.tcomment,
+                                              "hit": hit,
                                               "origImages": origImages,
                                               "translatedImages": translatedImages})
                              for entry, hit, filename, origImages, translatedImages in hits]
@@ -198,22 +201,14 @@ class HTMLHitRenderer(object):
                 if os.path.isfile(outfilePathJSON):
                     os.remove(outfilePathJSON)
         # Render file index page (no filelist)
-        ruleInfos = [{
-            "name": rule.name,
-            "severity": rule.severity,
-            "num_hits": ruleStats[rule],
-            "color": rule.getBootstrapColor(),
-            "machine_name": rule.get_machine_name()
-        } for rule in self.rules if ruleStats[rule] > 0]
+        ruleInfos = [merge(rule.meta_dict, {"num_hits": ruleStats[rule]})
+                     for rule in self.rules if ruleStats[rule] > 0]
         ruleInfos.sort(key=lambda o: -o["severity"])  # Invert sort order
         js = {
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
             "stats": ruleInfos,
-            "rules": [
-            ]
         }
-
         if filelist:
             js["files"] = [
                 merge(self.statsByFile[filename], {"filename": filename})

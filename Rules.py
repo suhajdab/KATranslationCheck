@@ -39,12 +39,15 @@ class CompatibilityRegexCompiler(object):
 
     This class transparently compiles regexes as either RE2 (preferred) or
     standard re. A RE2 fail is assumed if it throws an exception.
-    Statistics are recorded while
+    
+    Additionally, all regexes are wrapped in parentheses so for findall() there is always
+    the entire group available.
     """
     def __init__(self):
         self.numRegex = 0
         self.numCompatRegex = 0
     def compile(self, rgx, flags=0):
+        rgx = "({0})".format(rgx)
         self.numRegex += 1
         try:
             return cffi_re2.compile(rgx, flags)
@@ -89,7 +92,8 @@ class Rule(object):
         # This MUST NOT be filled by subclasses.
         self.custom_info = {}
         self.severity = severity
-    def get_machine_name(self):
+    @property
+    def machine_name(self):
         """Get a machine-readable name from a rule name"""
         name = self.name.lower().replace("'", "").replace("\"", "")
         name = name.replace("(", "").replace(")", "").replace("{", "")
@@ -109,6 +113,18 @@ class Rule(object):
         elif self.severity == Severity.warning: return "text-warning"
         elif self.severity == Severity.dangerous: return "text-danger"
         else: return "text-info"
+
+    @property
+    def meta_dict(self):
+        """Return a dictionary with meta-information about this rule"""
+        return {
+            "name": self.name,
+            "machine_name": self.machine_name,
+            "severity": self.severity,
+            "description": self.description,
+            "color": self.getBootstrapColor(),
+        }
+
     def __lt__(self, other):
         if self.severity != other.severity:
             return self.severity < other.severity
@@ -144,6 +160,7 @@ class SimpleRegexRule(Rule):
         super().__init__(name, severity)
         self.re = reCompiler.compile(regex, flags)
         self.regex_str = regex
+    @property
     def description(self):
         return "Matches regular expression '%s'" % self.regex_str
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
@@ -163,6 +180,7 @@ class SimpleSubstringRule(Rule):
         self.ci = case_insensitive
         if self.ci:
             self.substr = self.substr.lower()
+    @property
     def description(self):
         return "Matches substring '%s'" % self.substr
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
@@ -186,6 +204,7 @@ class TranslationConstraintRule(Rule):
         self.reTranslated = reCompiler.compile(regexTranslated, flags)
         self.regex_orig_str = regexOrig
         self.regex_translated_str = regexTranslated
+    @property
     def description(self):
         return "Matches '%s' if translated as '%s'" % (self.regex_orig_str, self.regex_translated_str)
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
@@ -206,6 +225,7 @@ class NegativeTranslationConstraintRule(Rule):
         self.reTranslated = reCompiler.compile(regexTranslated, flags)
         self.regex_orig_str = regexOrig
         self.regex_translated_str = regexTranslated
+    @property
     def description(self):
         return "Matches '%s' if NOT translated as '%s'" % (self.regex_orig_str, self.regex_translated_str)
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
@@ -224,6 +244,7 @@ class DynamicTranslationIdentityRule(Rule):
         self.regex = reCompiler.compile(regex, flags)
         self.negative = negative
         self.group = group
+    @property
     def description(self):
         return "Matches a match for '%s' if %spresent in the translated string" % (self.regex_str, "NOT " if self.negative else "")
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
@@ -263,6 +284,7 @@ class ExactCopyRule(Rule):
         self.aliases = aliases
         self.group = group
         self.ignore_whitespace = ignore_whitespace
+    @property
     def description(self):
         return "Matches if all instances of '%s' are the same (with %d aliases)" % (self.regex_str, len(self.aliases))
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
@@ -305,11 +327,12 @@ class IgnoreByFilenameRegexWrapper(Rule):
         self.filename_regex = reCompiler.compile(filename_regex)
         self.filename_regex_str = filename_regex
         self.severity = child.severity
+    @property
     def description(self):
         if self.invert:
-            return "%s (only applied to filenames matching '%s')" % (self.child.description(), self.filename_regex_str)
+            return "%s (only applied to filenames matching '%s')" % (self.child.description, self.filename_regex_str)
         else:
-            return "%s (ignored for filenames matching '%s')" % (self.child.description(), self.filename_regex_str)
+            return "%s (ignored for filenames matching '%s')" % (self.child.description, self.filename_regex_str)
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
         if bool(self.filename_regex.match(filename)) != self.invert:
             return None
@@ -324,8 +347,9 @@ class IgnoreByFilenameListWrapper(Rule):
         self.child = child
         self.filenames = frozenset(filenames)
         self.severity = child.severity
+    @property
     def description(self):
-        return "%s (ignored for files %s)" % (self.child.description(), str(list(self.filenames)))
+        return "%s (ignored for files %s)" % (self.child.description, str(list(self.filenames)))
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
         if filename in self.filenames:
             return None
@@ -347,8 +371,9 @@ class IgnoreByMsgidRegexWrapper(Rule):
         self.msgid_regex = reCompiler.compile(msgid_regex)
         self.msgid_regex_str = msgid_regex
         self.severity = child.severity
+    @property
     def description(self):
-        return "%s (ignored for msgids matching '%s')" % (self.child.description(), self.msgid_regex_str)
+        return "%s (ignored for msgids matching '%s')" % (self.child.description, self.msgid_regex_str)
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
         if self.msgid_regex.search(msgid):
             return None
@@ -371,8 +396,9 @@ class IgnoreByMsgstrRegexWrapper(Rule):
         self.msgstr_regex = reCompiler.compile(msgstr_regex)
         self.msgid_regex_str = msgstr_regex
         self.severity = child.severity
+    @property
     def description(self):
-        return "%s (ignored for msgids matching '%s')" % (self.child.description(), self.msgid_regex_str)
+        return "%s (ignored for msgids matching '%s')" % (self.child.description, self.msgid_regex_str)
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
         if self.msgstr_regex.search(msgstr):
             return None
@@ -394,8 +420,9 @@ class IgnoreByTcommentRegexWrapper(Rule):
         self.tcommentRegex = reCompiler.compile(tcommentRegex)
         self.tcomment_regex_str = tcommentRegex
         self.severity = child.severity
+    @property
     def description(self):
-        return "%s (ignored for tcomments matching '%s')" % (self.child.description(), self.tcomment_regex_str)
+        return "%s (ignored for tcomments matching '%s')" % (self.child.description, self.tcomment_regex_str)
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
         if self.tcommentRegex.search(tcomment):
             return None
@@ -427,6 +454,7 @@ class TextListRule(Rule):
             self.valid = True
         else:  # File does not exist
             print(red("Unable to find text list file %s" % filename, bold=True))
+    @property
     def description(self):
         return "Matches one of the strings in file %s" % self.filename
     def __call__(self, msgstr, msgid, tcomment="", filename=None):
