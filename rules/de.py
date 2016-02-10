@@ -37,13 +37,7 @@ rules = [
     SimpleRegexRule("Value with multiple or mixed commata or dots", r"(\d+(\.|\{,\})){2,}\d+", severity=Severity.dangerous), #Should be space. Comma without {} ignored.
     DynamicTranslationIdentityRule("Thousands separation via {,} (must be {\\,}) (experimental)", r"(\d+\{,\}\d+\{,\}\d+(\{,\}\d+)*)", negative=True, group=0, severity=Severity.warning), #Should be space. Comma without {} ignored.
     #Dollar not embedded as a symbol 234$ dollar
-    SimpleRegexRule("Value suffixed by dollar", r"\d+\$?\s*dollars?", severity=Severity.info),
     SimpleRegexRule("Additional spaces after * for italic word", r"(?<!\*)(?<!^)(?<!\w)\*\s+\w+\s+\*(?!\*)", severity=Severity.info), # Need to avoid hit for *kleiner* oder *größer* etc.
-    SimpleRegexRule("Missing thin space before percent (or not escaped correctly) {\\,}\\%", r"(?<!\{\\,\}\\)%\s*\$", severity=Severity.info),
-    SimpleRegexRule("Percent symbol in formula not escaped", r"(?<!\\)%\s*\$", severity=Severity.warning),
-    SimpleRegexRule("Percent symbol not escaped (high TPR)", r"(?<!\\)%(?!\()", severity=Severity.info),
-    SimpleRegexRule("Using {,} instead of {\\,} as thousands separator", r"\d+\{,\}\d\d\d\{,\}\d\d\d", severity=Severity.info),
-    SimpleRegexRule("Using {,} instead of {\\,} as thousands separator (high TPR)", r"\d+\{,\}\d\d\d", severity=Severity.notice),
     SimpleRegexRule("Space(s) before thousands separator or comma (use thin space for thousands separators!)", r"\d+(\s+\{,\}|\{,\}\s+|\s+\{,\}\s+)\d", severity=Severity.info),
     SimpleRegexRule("Space(s) before thin space thousands separator", r"\d+(\s+\{\\,\}|\{\\,\}\s+|\s+\{\\,\}\s+)\d", severity=Severity.info),
     # Translator missed english-only world
@@ -119,22 +113,9 @@ rules = [
     # E-Mail must be written exactly "E-Mail". Exceptions: {{email}}, %(error_email), %(email), %(coach_email) %(privacy_email) {{ email }}
     SimpleRegexRule("Wrong syntax of E-Mail", r"(?<!%\()(?<!%\(coach_)(?<!%\(child_)(?<!%\(error_)(?<!%\(privacy_)(?<!\{\{)(?<!\{\{)\s*(eMail|email|Email|EMail|e-Mail|e-mail)s?", severity=Severity.info),
     # Bing issues
-    SimpleRegexRule("Space inserted after image URL declaration ('![] (')", r"!\[\]\s+\(", severity=Severity.dangerous),
-    SimpleRegexRule("Space inserted before image URL declaration ('! [](')", r"!\s+\[\]\(", severity=Severity.dangerous),
-    SimpleRegexRule("Space inserted before & after image URL declaration ('! [] (')", r"!\s+\[\]\s+\(", severity=Severity.dangerous),
-    NegativeTranslationConstraintRule("False Bing translation of interactive-graphic", r"☃\s+interactive-graph", r"[Ii]nteraktive\s+Grafik", severity=Severity.dangerous),
-    SimpleRegexRule("False Bing translation of Radio", r"☃\s+Radio\b", severity=Severity.dangerous),
-    SimpleRegexRule("False Bing translation of input-number", r"[Ee]ingabe-Zahl", severity=Severity.dangerous),
-    SimpleRegexRule("False Bing translation of input-number", r"[Ee]ingabe-Nummer", severity=Severity.dangerous),
-    SimpleRegexRule("False Bing translation of numeric-input", r"[Nn]umerische[-\s]+Eingabe", severity=Severity.dangerous),
-    SimpleRegexRule("False Bing translation of numeric-input", r"[Nn]umerische[-\s]+Eingang", severity=Severity.dangerous),
-    SimpleRegexRule("False Bing translation of image", r"☃\s+Bild", severity=Severity.dangerous),
-    SimpleRegexRule("Missing translation of **How", r"\*\*[Hh]ow", severity=Severity.dangerous),
-    SimpleRegexRule("Missing translation of **What", r"\*\*[Ww]hat", severity=Severity.dangerous),
-    SimpleRegexRule("Missing translation of ones", r"\\text\{\s*ones\}\}", severity=Severity.dangerous),
     IgnoreByMsgstrRegexWrapper(r"\d+\^\{\\large\\text\{ten?\}",
         SimpleRegexRule("Missing translation of ten(s)", r"(?<!\d)\^?\{?(\\large)?\\text\{\s*tens?\}\}", severity=Severity.info)),
-    SimpleRegexRule("Missing translation of hundred(s)", r"\\text\{\s*hundreds?\}\}", severity=Severity.dangerous),
+    SimpleRegexRule("", r"", severity=Severity.dangerous),
     # Capitalization
     IgnoreByTcommentRegexWrapper(r"SEO\s+keyword",
         SimpleRegexRule("Dreieck not capitalized", r"\bdreiecke?\b", severity=Severity.info)),
@@ -174,24 +155,6 @@ rules = [
         SimpleRegexRule("Division not capitalized", r"\bdivision\b", severity=Severity.info)),
     IgnoreByTcommentRegexWrapper(r"SEO\s+keyword",
         SimpleRegexRule("Zahl not capitalized", r"\bzahl\b", severity=Severity.info)),
-    # Typos
-    SimpleRegexRule("Typo: bliden instead of bilden", r"[Bb]lide[nt]", severity=Severity.info),
-    SimpleRegexRule("Typo: bidlen instead of bilden", r"[Bb]idle[nt]", severity=Severity.info),
-    SimpleRegexRule("Typo: ähnlich Terme or Ausdrücke instead of ähnliche Terme", r"[Ää]hnlich\s+([Tt]erme?|[Aa]usdr(uck|ücke))", severity=Severity.info),
-    SimpleRegexRule("Typo: sit instead of ist", r"\b[Ss]it\b(?!-[Uu]p)", severity=Severity.info),
-    SimpleRegexRule("Typo: spielgeln instead of spiegeln", r"[Ss]pielgeln", severity=Severity.info),
-    SimpleRegexRule("Typo: zeien instead of zeigen", r"[Zz]eien", severity=Severity.info),
-    SimpleRegexRule("Typo: un instead of und", r"\b[Uu]n\b", severity=Severity.info),
-    SimpleRegexRule("Typo: dreiek instead of dreieck", r"\b[Dd]reiek\b", severity=Severity.info),
-    SimpleRegexRule("Typo: vierek instead of viereck", r"\b[Vv]ierek\b", severity=Severity.info),
-    SimpleRegexRule("Typo: fünfek instead of fünfeck", r"\b[Ff]ünfek\b", severity=Severity.info),
-    SimpleRegexRule("Typo: sechsek instead of sechseck", r"\b[Ss]echsek\b", severity=Severity.info),
-    SimpleRegexRule("Typo: Multiplikaiton instead of Multiplikation", r"\b[Mm]ultiplikaiton\b", severity=Severity.info),
-    # Untranslated stuff directly after \n (not machine translated)
-    SimpleRegexRule("Untranslated 'First' after \\n", r"\\nFirst", severity=Severity.standard),
-    SimpleRegexRule("Untranslated 'Second' after \\n", r"\\nSecond", severity=Severity.standard),
-    SimpleRegexRule("Untranslated 'This' after \\n", r"\\nThis", severity=Severity.standard),
-    SimpleRegexRule("Untranslated 'That' after \\n", r"\\nThat", severity=Severity.standard),
     # Machine-readable stuff must be identical in the translation
     ExactCopyRule("All image URLs must match in order", r"!\[\]\s*\([^\)]+\)", severity=Severity.warning, aliases=imageAliases),
     ExactCopyRule("All image URLs must match in order (with translation)", r"!\[[^\]](\]\s*\([^\)]+\))", severity=Severity.info, aliases=imageAliases, group=1),

@@ -498,6 +498,8 @@ def readRulesFromGDocs(ssid):
                 yield AutoTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
             elif ruletype == "SimpleRegexRule":
                 yield SimpleRegexRule(name, rgx1, severity=severity)
+            elif ruletype == "NegativeTranslationConstraintRule":
+                yield NegativeTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
             else:
                 yield RuleError("Rule {0}: ruletype {1} is invalid".format(name, ruletype))
                 continue
