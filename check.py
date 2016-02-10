@@ -208,15 +208,18 @@ class HTMLHitRenderer(object):
         writeToFile(os.path.join(directory, "index.html"),
             self.indexTemplate.render(rules=self.rules, timestamp=self.timestamp, files=filelist, statsByFile=self.statsByFile,
                           statsByRule=ruleStats, downloadTimestamp=self.downloadTimestamp, filename=filename, translationURLs=self.translationURLs))
+        ruleInfos = [{
+            "name": rule.name,
+            "severity": rule.severity,
+            "num_hits": ruleStats[rule],
+            "color": rule.getBootstrapColor(),
+            "machine_name": rule.get_machine_name()
+        } for rule in self.rules if ruleStats[rule] > 0]
+        ruleInfos.sort(key=operator.itemgetter("severity"))
         js = {
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
-            "stats": {rule.name: {
-                            "numhits": ruleStats[rule],
-                            "color": rule.getBootstrapColor(),
-                            "machine_name": rule.get_machine_name()
-                        }
-                      for rule in self.rules if ruleStats[rule] > 0}
+            "stats": ruleInfos
         }
         if filelist:
             js["files"] = {
