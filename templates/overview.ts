@@ -24,7 +24,7 @@ export class RuleOverviewComponent {
     selector: 'file-overview',
     template: `
     <h2>Statistics by file</h2>
-    <div *ngFor="#filename, fileinfo of filestats">
+    <div *ngFor="#fileinfo of allFiles()">
         <div class="row">
             <span>(
                 <span class="text-danger" *ngIf="fileinfo.errors">{{fileinfo.errors}} errors</span>,
@@ -45,13 +45,14 @@ export class FileOverviewComponent {
 @Component({
     selector: 'overview',
     template: `
-    <div id="timestamprow" class="row">
+    <div id="timestamprow" class="row" *ngIf="data">
           <p *ngIf="data.pageTimestamp">Page generated at {{data.pageTimestamp}}</p>
           <p *ngIf="data.downloadTimestamp">Translations downloaded at {{data.downloadTimestamp}}</p>
     </div>
     <rule-overview [rulestats]="rulestats"></rule-overview>
-    <file-overview [filestats]="filestats"></file-overview>
-    `
+    <file-overview [filestats]="filestats" *ngIf="filestats"></file-overview>
+    `,
+    directives: [FileOverviewComponent, RuleOverviewComponent]
 })
 export class OverviewComponent {
     data: any
@@ -65,9 +66,10 @@ export class OverviewComponent {
                 this.rulestats = data.stats;
                 this.filestats = data.files;
                 this.data = data;
-                console.log(this.data)},
+                console.log(this.rulestats);},
             error => alert("Could not load overview data: " + error.status))
     }
 }
+
 
 bootstrap(OverviewComponent, [HTTP_BINDINGS]);

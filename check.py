@@ -21,7 +21,7 @@ import urllib
 import shutil
 import datetime
 import collections
-from toolz.dicttoolz import valfilter
+from toolz.dicttoolz import valfilter, merge
 from multiprocessing import Pool
 from ansicolor import red, black, blue
 from jinja2 import Environment, FileSystemLoader
@@ -218,7 +218,7 @@ class HTMLHitRenderer(object):
             "color": rule.getBootstrapColor(),
             "machine_name": rule.get_machine_name()
         } for rule in self.rules if ruleStats[rule] > 0]
-        ruleInfos.sort(key=lambda o: -o["severity"]) # Invert sort order
+        ruleInfos.sort(key=lambda o: -o["severity"])  # Invert sort order
         js = {
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
@@ -226,11 +226,11 @@ class HTMLHitRenderer(object):
         }
 
         if filelist:
-            js["files"] = {
-                filename: self.statsByFile[filename]
+            js["files"] = [
+                merge(self.statsByFile[filename], {"filename": filename})
                 for filename, filelink in filelist.items()
                 if self.statsByFile[filename]["notices"]
-            }
+            ]
         writeJSONToFile(os.path.join(directory, "index.json"), js)
     def hitsToHTML(self):
         """
