@@ -21,6 +21,7 @@ import urllib
 import shutil
 import datetime
 import collections
+from toolz.dicttoolz import valfilter
 from multiprocessing import Pool
 from ansicolor import red, black, blue
 from jinja2 import Environment, FileSystemLoader
@@ -188,14 +189,15 @@ class HTMLHitRenderer(object):
             if hits:  # Render hits
                 writeToFile(outfilePath,
                     self.ruleTemplate.render(hits=hits, timestamp=self.timestamp, downloadTimestamp=self.downloadTimestamp, translationURLs=self.translationURLs, urllib=urllib, rule=rule, genCrowdinSearchString=genCrowdinSearchString))
+                # Generate JSON API
                 jsonAPI = {
                     "timestamp": self.timestamp,
                     "downloadTimestamp": self.downloadTimestamp,
-                    "hits": [{"msgstr": entry.msgstr,
-                              "msgid": entry.msgid,
-                              "tcomment": entry.tcomment,
-                              "origImages": origImages,
-                              "translatedImages": translatedImages}
+                    "hits": [valfilter(bool, {"msgstr": entry.msgstr,
+                                              "msgid": entry.msgid,
+                                              "tcomment": entry.tcomment,
+                                              "origImages": origImages,
+                                              "translatedImages": translatedImages})
                              for entry, hit, filename, origImages, translatedImages in hits]
                 }
                 writeJSONToFile(outfilePathJSON, jsonAPI)
