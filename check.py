@@ -221,9 +221,10 @@ class HTMLHitRenderer(object):
             "downloadTimestamp": self.downloadTimestamp,
             "stats": ruleInfos
         }
+
         if filelist:
             js["files"] = {
-                filename: self.statsByFile[filename]
+                filename: self.statsByFile[filename].partition("/")[2] # Remove "cache/" prefix
                 for filename, filelink in filelist.items()
                 if self.statsByFile[filename]["notices"]
             }
