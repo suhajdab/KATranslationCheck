@@ -4,7 +4,7 @@ import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 
 @Component({
-  selector: 'my-app',
+  selector: 'lint-results',
   template:`
   <div class="row">
     <h1>Showing {{lintEntries?.length}} lint errors for {{lang}}</h1>
@@ -32,7 +32,8 @@ export class LintComponent {
       } else {
         this.lang = "de";
       }
-      this.http.get(jsonName)
+      this.http.get(jsonName)[l] Zugunglück in Oberbayern. Zwei Regionalzüge eines französischen Betreibers sind in Bad Aibling kollidiert.
+
           .map(res => res.json())
           .subscribe(data => this.lintEntries = data,
             error => alert("Could not load lint data: " + error.status))
