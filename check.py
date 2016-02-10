@@ -215,7 +215,7 @@ class HTMLHitRenderer(object):
             "color": rule.getBootstrapColor(),
             "machine_name": rule.get_machine_name()
         } for rule in self.rules if ruleStats[rule] > 0]
-        ruleInfos.sort(key=operator.itemgetter("severity"))
+        ruleInfos.sort(key=lambda o: -o["severity"]) # Invert sort order
         js = {
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
