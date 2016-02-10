@@ -226,7 +226,7 @@ class HTMLHitRenderer(object):
 
         if filelist:
             js["files"] = {
-                filename: self.statsByFile[filename].partition("/")[2] # Remove "cache/" prefix
+                filename: self.statsByFile[filename],
                 for filename, filelink in filelist.items()
                 if self.statsByFile[filename]["notices"]
             }
