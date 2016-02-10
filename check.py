@@ -205,8 +205,8 @@ class HTMLHitRenderer(object):
             else:  # Remove file (redirects to 404 file) if there are no hitsToHTML
                 if os.path.isfile(outfilePath):
                     os.remove(outfilePath)
-                if os.path.isfile(outfilePath):
-                    os.remove(outfilePath)
+                if os.path.isfile(outfilePathJSON):
+                    os.remove(outfilePathJSON)
         # Render file index page (no filelist)
         writeToFile(os.path.join(directory, "index.html"),
             self.indexTemplate.render(rules=self.rules, timestamp=self.timestamp, files=filelist, statsByFile=self.statsByFile,

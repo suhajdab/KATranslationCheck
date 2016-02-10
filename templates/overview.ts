@@ -26,6 +26,7 @@ export class RuleOverviewComponent {
     <h2>Statistics by file</h2>
     <div *ngFor="#fileinfo of allFiles()">
         <div class="row">
+            <a href="{{fileinfo.filelink}}">{{fileinfo.filename}}</a>
             <span>(
                 <span class="text-danger" *ngIf="fileinfo.errors">{{fileinfo.errors}} errors</span>,
                 <span class="text-warning" *ngIf="fileinfo.warnings">{{fileinfo.warnings}} warnings</span>,
