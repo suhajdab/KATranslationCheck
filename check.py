@@ -24,7 +24,6 @@ import collections
 from toolz.dicttoolz import valfilter, merge
 from multiprocessing import Pool
 from ansicolor import red, black, blue
-from jinja2 import Environment, FileSystemLoader
 from UpdateAllFiles import getTranslationFilemapCache
 from Rules import Severity, importRulesForLanguage
 from LintReport import readAndMapLintEntries, NoResultException
@@ -92,10 +91,6 @@ class HTMLHitRenderer(object):
         rules, rule_errors = importRulesForLanguage(lang)
         self.rules = sorted(rules, reverse=True)
         self.rule_errors = rule_errors
-        #Initialize template engine
-        self.env = Environment(loader=FileSystemLoader('templates'), trim_blocks=True, lstrip_blocks=True, extensions=[HtmlCompressor])
-        self.ruleTemplate = self.env.get_template("template.html")
-        self.indexTemplate = self.env.get_template("index.html")
         # Get timestamp
         self.timestamp = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")
         #Process lastdownload date (copied to the templated)
@@ -185,11 +180,8 @@ class HTMLHitRenderer(object):
         # Generate output HTML for each rule
         for rule, hits in ruleHits.items():
             # Render hits for individual rule
-            outfilePath = os.path.join(directory, rule.get_machine_name() + ".html")
             outfilePathJSON = os.path.join(directory, rule.get_machine_name() + ".json")
             if hits:  # Render hits
-                writeToFile(outfilePath,
-                    self.ruleTemplate.render(hits=hits, timestamp=self.timestamp, downloadTimestamp=self.downloadTimestamp, translationURLs=self.translationURLs, urllib=urllib, rule=rule, genCrowdinSearchString=genCrowdinSearchString))
                 # Generate JSON API
                 jsonAPI = {
                     "timestamp": self.timestamp,
@@ -203,14 +195,9 @@ class HTMLHitRenderer(object):
                 }
                 writeJSONToFile(outfilePathJSON, jsonAPI)
             else:  # Remove file (redirects to 404 file) if there are no hitsToHTML
-                if os.path.isfile(outfilePath):
-                    os.remove(outfilePath)
                 if os.path.isfile(outfilePathJSON):
                     os.remove(outfilePathJSON)
         # Render file index page (no filelist)
-        writeToFile(os.path.join(directory, "index.html"),
-            self.indexTemplate.render(rules=self.rules, timestamp=self.timestamp, files=filelist, statsByFile=self.statsByFile,
-                          statsByRule=ruleStats, downloadTimestamp=self.downloadTimestamp, filename=filename, translationURLs=self.translationURLs))
         ruleInfos = [{
             "name": rule.name,
             "severity": rule.severity,
@@ -223,6 +210,8 @@ class HTMLHitRenderer(object):
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
             "stats": ruleInfos,
+            "rules": [
+            ]
         }
 
         if filelist:
