@@ -146,7 +146,8 @@ class HTMLHitRenderer(object):
                "errors": self.countRuleHitsAboveSeverity(ruleHits, Severity.dangerous),
                "infos": self.countRuleHitsAboveSeverity(ruleHits, Severity.info),
                "notices": self.countRuleHitsAboveSeverity(ruleHits, Severity.notice),
-               "link": self.filepath_to_url(filename)}
+               "link": self.filepath_to_url(filename),
+               "translation_url": self.translationURLs[filename]}
             for filename, ruleHits in self.fileRuleHits.items()
         }
         # Compute by-rule stats per file
@@ -193,7 +194,7 @@ class HTMLHitRenderer(object):
                 jsonAPI = {
                     "timestamp": self.timestamp,
                     "downloadTimestamp": self.downloadTimestamp,
-                    "hits": [valfilter(bool, {"msgstr": entry.msgstr,
+                    "hits": [valfilter(bool, {"msgstr": entry.msgstr, # valfilter: remove empty values for smaller JSON
                                               "msgid": entry.msgid,
                                               "tcomment": entry.tcomment,
                                               "origImages": origImages,
@@ -221,12 +222,12 @@ class HTMLHitRenderer(object):
         js = {
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
-            "stats": ruleInfos
+            "stats": ruleInfos,
         }
 
         if filelist:
             js["files"] = {
-                filename: self.statsByFile[filename],
+                filename: self.statsByFile[filename]
                 for filename, filelink in filelist.items()
                 if self.statsByFile[filename]["notices"]
             }
