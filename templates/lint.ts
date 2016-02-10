@@ -32,8 +32,7 @@ export class LintComponent {
       } else {
         this.lang = "de";
       }
-      this.http.get(jsonName)[l] Zugunglück in Oberbayern. Zwei Regionalzüge eines französischen Betreibers sind in Bad Aibling kollidiert.
-
+      this.http.get(jsonName)
           .map(res => res.json())
           .subscribe(data => this.lintEntries = data,
             error => alert("Could not load lint data: " + error.status))
