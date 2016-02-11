@@ -17,17 +17,20 @@ import simplejson as json
 import itertools
 import os
 import os.path
+import glob
 import urllib
 import shutil
 import datetime
+import functools
+import concurrent.futures
 import collections
-from toolz.dicttoolz import valfilter, merge
+from toolz.dicttoolz import valfilter, merge, merge_with, keyfilter, valmap
+from toolz.itertoolz import groupby, reduceby
 from multiprocessing import Pool
 from ansicolor import red, black, blue
 from UpdateAllFiles import getTranslationFilemapCache
 from Rules import Severity, importRulesForLanguage
 from LintReport import readAndMapLintEntries, NoResultException
-from compressinja.html import HtmlCompressor
 
 def writeToFile(filename, s):
     "Utility function to write a string to a file identified by its filename"
@@ -87,6 +90,8 @@ class HTMLHitRenderer(object):
     def __init__(self, outdir, lang="de"):
         self.outdir = outdir
         self.lang = lang
+        # Async executor
+        self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count())
         # Load rules for language
         rules, rule_errors = importRulesForLanguage(lang)
         self.rules = sorted(rules, reverse=True)
@@ -111,14 +116,14 @@ class HTMLHitRenderer(object):
         return filename.replace("/", "_")
     def computeRuleHits(self, po, filename="[unknown filename]"):
         """
-        Compute all rule hits for a single parsed PO file
+        Compute all rule hits for a single parsed PO file and return a list of futures
+        that return (filename, rule, results tuples)
         """
-        unsorted = {
-            rule: list(rule.apply_to_po(po, filename=filename))
-            for rule in self.rules
-        }
-        # Sort by key
-        return collections.OrderedDict(sorted(unsorted.items(), key=operator.itemgetter(0)))
+        def _apply_wrapper(rule, po, filename):
+            return (filename, rule, list(rule.apply_to_po(po, filename=filename)))
+        futures = [self.executor.submit(_apply_wrapper, rule, po, filename) for rule in self.rules]
+        return futures
+
     def computeRuleHitsForFileSet(self, poFiles):
         """
         For each file in the given filename -> PO object dictionary,
@@ -130,38 +135,60 @@ class HTMLHitRenderer(object):
         # Compute dict with sorted & prettified filenames
         files = {filename: self.filepath_to_url(filename) for filename in poFiles.keys()}
         self.files = collections.OrderedDict(sorted(files.items()))
-        # Apply rules
-        self.fileRuleHits = {
-            filename: self.computeRuleHits(po, filename)
-            for filename, po in poFiles.items()
-        }
+        # Add all futures to the executor
+        futures = list(itertools.chain(*(self.computeRuleHits(po, filename)
+                                         for filename, po in poFiles.items())))
+        # Process the results in first-received order. Also keep track of rule performance
+        self.fileRuleHits = collections.defaultdict(dict)
+        n_finished = 0
+        # Intermediate result storage
+        raw_results = collections.defaultdict(dict) # filename -> {rule: result}
+        for future in concurrent.futures.as_completed(futures):
+            # Extract result
+            filename, rule, result = future.result()
+            self.fileRuleHits[filename][rule] = result
+            # Track progress
+            n_finished += 1
+            if n_finished % 1000 == 0:
+                percent_finished = n_finished * 100. / len(futures)
+                print("Rule computation finished {0:.2f} %".format(percent_finished))
+
         # Compute total stats by file
+
         self.statsByFile = {
-            filename: {"hits": self.countRuleHitsAboveSeverity(ruleHits, Severity.standard),
-               "warnings": self.countRuleHitsAboveSeverity(ruleHits, Severity.warning),
-               "errors": self.countRuleHitsAboveSeverity(ruleHits, Severity.dangerous),
-               "infos": self.countRuleHitsAboveSeverity(ruleHits, Severity.info),
-               "notices": self.countRuleHitsAboveSeverity(ruleHits, Severity.notice),
-               "link": self.filepath_to_url(filename),
-               "translation_url": self.translationURLs[filename]}
+            filename: merge(self.ruleHitsToSeverityCountMap(ruleHits), {
+                            "link": self.filepath_to_url(filename),
+                            "translation_url": self.translationURLs[filename]})
             for filename, ruleHits in self.fileRuleHits.items()
         }
-        # Compute by-rule stats per file
+        # Compute map filename -> {rule: numHits for rule}
         self.statsByFileAndRule = {
-            filename: {rule: len(hits) for rule, hits in ruleHits.items()}
+            filename: valmap(len, ruleHits)
             for filename, ruleHits in self.fileRuleHits.items()
         }
-        # Compute total stats per rule
-        self.totalStatsByRule = {
-            rule: sum((stat[rule] for stat in self.statsByFileAndRule.values()))
-            for rule in self.rules
-        }
+        # Compute map rule -> numHits for rule
+        self.totalStatsByRule = merge_with(sum, *(self.statsByFileAndRule.values()))
+
+    def ruleHitsToSeverityCountMap(self, rule_hit_map):
+        """
+        In a rule -> hitlist mapping, count the total number of hits above or at a given severity
+        level and return a cumulative dictionary
+        """
+        # Create a map severity -> count
+        severity_counts = collections.defaultdict(int)
+        for rule, hits in rule_hit_map.items():
+            severity_counts[rule.severity] += len(hits)
+        # Create string severity -> count map
+        above_severity = lambda sev: sum(keyfilter(lambda k: k >= sev, severity_counts).values())
+        return {"hits": above_severity(Severity.standard),
+                "warnings": above_severity(Severity.warning),
+                "errors": above_severity(Severity.dangerous),
+                "infos": above_severity(Severity.info),
+                "notices": above_severity(Severity.notice)}
+
     def countRuleHitsAboveSeverity(self, ruleHits, severity):
-        """In a rule -> hitlist mapping, count the total number of hits above a given severity"""
         return sum((len(hits) for rule, hits in ruleHits.items() if rule.severity >= severity))
-    def countRuleHitsAtSeverity(self, ruleHits, severity):
-        """In a rule -> hitlist mapping, count the total number of hits above a given severity"""
-        return sum((len(hits) for rule, hits in ruleHits.items() if rule.severity == severity))
+
     def writeStatsJSON(self):
         """
         Write a statistics-by-filename JSON to outdir/filestats.sjon
@@ -242,12 +269,8 @@ class HTMLHitRenderer(object):
         writeJSONToFile(os.path.join(self.outdir, "ruleerrors.json"),
             [err.msg for err in self.rule_errors])
         # Copy static files
-        shutil.copyfile("templates/katc.js", os.path.join(self.outdir, "katc.js"))
-        shutil.copyfile("templates/katc.css", os.path.join(self.outdir, "katc.css"))
-        shutil.copyfile("templates/robots.txt", os.path.join(self.outdir, "robots.txt"))
-        shutil.copyfile("templates/404.html", os.path.join(self.outdir, "404.html"))
-        shutil.copyfile("templates/lint.ts", os.path.join(self.outdir, "lint.ts"))
-        shutil.copyfile("templates/lint.html", os.path.join(self.outdir, "lint.html"))
+        for filename in glob.glob("templates/*"):
+            shutil.copyfile(filename, os.path.join(self.outdir, os.path.split(filename)[-1]))
 
 def renderLint(outdir, lang):
     "Parse & render lint"
