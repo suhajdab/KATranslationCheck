@@ -209,7 +209,7 @@ class HTMLHitRenderer(object):
         for rule, hits in ruleHits.items():
             # Render hits for individual rule
             outfilePathJSON = os.path.join(directory, rule.machine_name + ".json")
-            if hits:  # Render hits
+            if len(hits) > 0:  # Render hits
                 # Generate JSON API
                 jsonAPI = {
                     "timestamp": self.timestamp,
@@ -220,7 +220,9 @@ class HTMLHitRenderer(object):
                                               "tcomment": entry.tcomment,
                                               "hit": hit,
                                               "origImages": origImages,
-                                              "translatedImages": translatedImages})
+                                              "translatedImages": translatedImages,
+                                              "crowdinLink": "{0}#q={1}".format(self.translationURLs[filename], genCrowdinSearchString(entry))
+                                              })
                              for entry, hit, filename, origImages, translatedImages in hits]
                 }
                 writeJSONToFile(outfilePathJSON, jsonAPI)
@@ -261,7 +263,7 @@ class HTMLHitRenderer(object):
         #####################
         # Compute global hits for every rule
         overviewHits = {
-            rule: itertools.chain(*(fileHits[rule] for fileHits in self.fileRuleHits.values()))
+            rule: list(itertools.chain(*(fileHits[rule] for fileHits in self.fileRuleHits.values())))
             for rule in self.rules
         }
         self._renderDirectory(overviewHits, self.totalStatsByRule, self.outdir, filename="all files", filelist=self.files)
