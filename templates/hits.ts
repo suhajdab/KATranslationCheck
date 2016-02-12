@@ -2,7 +2,7 @@ import {Component, OnInit} from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
-import { RouteParams } from 'angular2/router';
+import { RouteParams, ROUTER_DIRECTIVES, Router, CanReuse } from 'angular2/router';
 import { Injectable } from 'angular2/core';
 
 @Injectable()
@@ -76,13 +76,19 @@ export class RuleInfoComponent {
     directives: [RuleInfoComponent],
     bindings: [HitListService]
 })
-export class HitListComponent {
+export class HitListComponent implements CanReuse {
+    rule: any
+    hits: any
     constructor(public hitListService: HitListService,
                 public routeParams: RouteParams) {
-        //let mname = "additional-spaces-after-for-italic-word"
-        let mname = this.routeParams.get("routemname")
+    }
+
+    routerCanReuse() { return false;}
+
+    ngOnInit() {
+        let mname = this.routeParams.get("mname")
         console.log(`Route machine name: ${mname}`)
-        this.hitListService("de", mname)
+        this.hitListService.getHits("de", mname)
             .subscribe(data => {
                 this.rule = data.rule;
                 this.hits = data.hits;

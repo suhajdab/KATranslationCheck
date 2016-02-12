@@ -1,11 +1,22 @@
 import {bootstrap} from 'angular2/platform/browser';
-import {Component} from 'angular2/core';
+import {Component, provide} from 'angular2/core';
 import { RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS } from 'angular2/router';
+import {LocationStrategy, Location, HashLocationStrategy } from 'angular2/router'; 
 import 'rxjs/add/operator/map';
 import {OverviewComponent} from "./overview.ts";
 import {HitListComponent} from "./hits.ts";
 import {LintComponent} from "./lint.ts";
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+
+
+@Component({
+  selector: 'foobar',
+  template: `<h3><a [routerLink]="['Lint results']">Nothing will happen when clicking here</a></h3>`,
+  directives: [ROUTER_DIRECTIVES],
+  providers: [ROUTER_PROVIDERS]
+})
+export class FoobarComponent {
+}
 
 @Component({
   selector: 'katc',
@@ -40,13 +51,12 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
       <!-- /.container -->
   </nav>
   <div id="maincontainer" class="container">
+  <foobar></foobar>
     <router-outlet></router-outlet>
   </div>
   `,
-  directives: [ROUTER_DIRECTIVES],
-  providers: [
-    ROUTER_PROVIDERS
-  ]
+  directives: [ROUTER_DIRECTIVES, FoobarComponent],
+  providers: [ROUTER_PROVIDERS]
 })
 @RouteConfig([
     {
@@ -56,8 +66,8 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
       useAsDefault: true
     },
     {
-      path: '/rule/:rulemname',
-      name: 'Rule hits',
+      path: '/hits/:mname', //Machine name
+      name: 'Hitlist',
       component: HitListComponent
     },
     {
@@ -67,15 +77,11 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
     }
 ])
 export class KATCApp {
-   constructor() {
-
-   }
 }
 
-bootstrap(KATCApp, [HTTP_BINDINGS]);
+bootstrap(KATCApp, [
+  HTTP_BINDINGS,
+  ROUTER_PROVIDERS,
+  provide(LocationStrategy, { useClass: HashLocationStrategy })])
+  //
 
-/*
-Copyright 2016 Google Inc. All Rights Reserved.
-Use of this source code is governed by an MIT-style license that
-can be found in the LICENSE file at http://angular.io/license
-*/

@@ -3,6 +3,7 @@ import {Component} from 'angular2/core';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 import { Injectable } from 'angular2/core';
+import { CanReuse } from 'angular2/router';
 
 @Injectable()
 export class LintService {
@@ -35,13 +36,17 @@ export class LintService {
   `,
   bindings: [LintService]
 })
-export class LintComponent {
+export class LintComponent implements CanReuse {
     lang: string
+
+    routerCanReuse() { return true; }
+
     constructor(public lintService: LintService) {
         this.lang = "de";
         if (window.location.hash) {
             this.lang = window.location.hash.slice(1);
         }
+
 
         lintService.getLintResults(this.lang)
             .subscribe(data => this.lintEntries = data,

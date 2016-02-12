@@ -1,8 +1,9 @@
-import {Component} from 'angular2/core';
+import {Component, Injectable } from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
-import { Injectable } from 'angular2/core';
+import { Injectable, Injector } from 'angular2/core';
+import { RouterLink, ROUTER_PROVIDERS, ROUTER_DIRECTIVES, Router } from 'angular2/router';
 
 @Injectable()
 export class OverviewService {
@@ -16,22 +17,32 @@ export class OverviewService {
     }
 }
 
-
 @Component({
     selector: 'rule-overview',
     template: `
     <h2>Statistics by rule</h2>
     <div *ngFor="#rule of rulestats">
         <div class="row">
-            <a href="{{rule.machine_name}}.html" class="{{rule.color}}">
+            <a class="{{rule.color}}" (click)="viewHitlist(rule)"> <!-- , -->
                 {{rule.name}}</a> ({{rule.num_hits}} hits)
         </div>
     </div>
     `
-    inputs: ['rulestats']
+    inputs: ['rulestats'],
+    directives: [ROUTER_DIRECTIVES],
+    providers: [ROUTER_PROVIDERS]
 })
 export class RuleOverviewComponent {
     rulestats: any;
+
+    constructor(injector: Injector) {
+        this.router = injector.parent.get(Router);
+    }
+
+    viewHitlist(rule) {
+        //this._router.navigate();
+        this.router.navigate(['Hitlist', { mname: rule.machine_name }])
+    }
 }
 
 @Component({
@@ -42,11 +53,11 @@ export class RuleOverviewComponent {
         <div class="row">
             <a href="{{fileinfo.filelink}}">{{fileinfo.filename}}</a>
             <span>(
-                <span class="text-danger" *ngIf="fileinfo.errors">{{fileinfo.errors}} errors</span>,
-                <span class="text-warning" *ngIf="fileinfo.warnings">{{fileinfo.warnings}} warnings</span>,
-                <span class="text-primary" *ngIf="fileinfo.hits">{{fileinfo.hits}} hits</span>,
-                <span class="text-success" *ngIf="fileinfo.infos">{{fileinfo.infos}} infos</span>,
-                <span class="text-muted" *ngIf="fileinfo.notices">{{fileinfo.notices}} notices</span>,
+                <span class="text-danger" *ngIf="fileinfo.errors">{{fileinfo.errors}} errors,</span>
+                <span class="text-warning" *ngIf="fileinfo.warnings">{{fileinfo.warnings}} warnings,</span>
+                <span class="text-primary" *ngIf="fileinfo.hits">{{fileinfo.hits}} hits,</span>
+                <span class="text-success" *ngIf="fileinfo.infos">{{fileinfo.infos}} infos,</span>
+                <span class="text-muted" *ngIf="fileinfo.notices">{{fileinfo.notices}} notices</span>
             )</span>
             <a href="{{fileinfo.translation_url}}" target="_blank">
                 <span class="label label-success">Translate on Crowdin</span>
@@ -83,8 +94,7 @@ export class OverviewComponent {
             .subscribe(data => {
                 this.rulestats = data.stats;
                 this.filestats = data.files;
-                this.data = data;
-                console.log(this.filestats);},
+                this.data = data;},
             error => alert("Could not load overview data: " + error.status))
     }
 }
