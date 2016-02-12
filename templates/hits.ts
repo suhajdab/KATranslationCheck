@@ -1,7 +1,20 @@
-import {Component, Pipe, PipeTransform} from 'angular2/core';
+import {Component, OnInit} from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+import { RouteParams } from 'angular2/router';
+import { Injectable } from 'angular2/core';
+
+@Injectable()
+export class HitListService {
+    constructor(public http: Http) { }
+
+    getHits(language: string, rulename: string) {
+        let url = `${rulename}.json`;
+        return this.http.get(url)
+                .map(res => res.json())
+    }
+}
 
 /**
  * Display info about a rule, e.g. headline, the rule itself etc
@@ -60,23 +73,20 @@ export class RuleInfoComponent {
         ".report-button, .translate-button {float: right;}",
         ".tcomment {margin-left: 25px; color: #444;}"
     ]
-    inputs: ['hits'],
-    directives: [RuleInfoComponent]
+    directives: [RuleInfoComponent],
+    bindings: [HitListService]
 })
 export class HitListComponent {
-    hits: any
-    rule: any
-    
-    constructor(public http: Http) {
-        this.http.get("additional-spaces-after-for-italic-word.json")
-            .map(res => res.json())
+    constructor(public hitListService: HitListService,
+                public routeParams: RouteParams) {
+        //let mname = "additional-spaces-after-for-italic-word"
+        let mname = this.routeParams.get("routemname")
+        console.log(`Route machine name: ${mname}`)
+        this.hitListService("de", mname)
             .subscribe(data => {
                 this.rule = data.rule;
                 this.hits = data.hits;
             },
-            error => alert("Could not load overview data: " + error.status))
+            error => alert("Could not load hit data: " + error.status))
     }
 }
-
-   
-bootstrap(HitListComponent, [HTTP_BINDINGS]);

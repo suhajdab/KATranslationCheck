@@ -2,6 +2,18 @@ import {bootstrap} from 'angular2/platform/browser';
 import {Component} from 'angular2/core';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+import { Injectable } from 'angular2/core';
+
+@Injectable()
+export class LintService {
+  constructor(public http: Http) {}
+
+  getLintResults(language: string) {
+      var jsonName = `lint-${language}.json`;
+      return this.http.get(jsonName)
+          .map(res => res.json())
+  }
+}
 
 @Component({
   selector: 'lint-results',
@@ -20,29 +32,19 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
     <h4>Context</h4>
     <pre class="lint-entry">{{lintEntry.comment}}</pre>
   </div>
-  `
+  `,
+  bindings: [LintService]
 })
 export class LintComponent {
-   constructor(public http: Http) {
-      var jsonName = 'lint-de.json';
-      
-      if(window.location.hash) {
-        this.lang = window.location.hash.slice(1);
-        jsonName = 'lint-' + window.location.hash.slice(1) + '.json'
-      } else {
+    lang: string
+    constructor(public lintService: LintService) {
         this.lang = "de";
-      }
-      this.http.get(jsonName)
-          .map(res => res.json())
-          .subscribe(data => this.lintEntries = data,
-            error => alert("Could not load lint data: " + error.status))
-   }
+        if (window.location.hash) {
+            this.lang = window.location.hash.slice(1);
+        }
+
+        lintService.getLintResults(this.lang)
+            .subscribe(data => this.lintEntries = data,
+                       error => alert("Could not load lint data: " + error.status))
+    }
 }
-
-bootstrap(LintComponent, [HTTP_BINDINGS]);
-
-/*
-Copyright 2016 Google Inc. All Rights Reserved.
-Use of this source code is governed by an MIT-style license that
-can be found in the LICENSE file at http://angular.io/license
-*/

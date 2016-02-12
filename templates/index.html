@@ -1,93 +1,33 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <base href="/">
     <title>KATranslationCheck output</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="/katc.css" rel="stylesheet" media="screen">
+
+    <script src="https://code.angularjs.org/2.0.0-beta.6/angular2-polyfills.js"></script>
+    <script src="https://code.angularjs.org/tools/system.js"></script>
+    <script src="https://code.angularjs.org/tools/typescript.js"></script>
+    <script src="https://code.angularjs.org/2.0.0-beta.6/Rx.js"></script>
+    <script src="https://code.angularjs.org/2.0.0-beta.6/http.js"></script>
+    <script src="https://code.angularjs.org/2.0.0-beta.6/router.js"></script>
+    <script src="https://code.angularjs.org/2.0.0-beta.6/angular2.dev.js"></script>
+    <script>
+      System.config({
+        transpiler: 'typescript', 
+        typescriptOptions: { emitDecoratorMetadata: true }, 
+        packages: {'app': {defaultExtension: 'ts'}} 
+      });
+      System.import('index.ts')
+            .then(null, console.error.bind(console));
+    </script>
   </head>
   <body>
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-      <div class="container">
-          <div class="navbar-header page-scroll">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand page-scroll" href="/">KATranslationCheck Deutsch</a>
-          </div>
-          <div class="collapse navbar-collapse navbar-ex1-collapse">
-              <ul class="nav navbar-nav">
-                  <li class="hidden">
-                      <a class="page-scroll" href="#page-top"></a>
-                  </li>
-                  <li class="active">
-                      <a href="/">Home</a>
-                  </li>                    
-                  <li>
-                      <a href="/subtitles.html">Subtitles</a>
-                  </li>
-                  <li>
-                      <a href="/lint.html">Lint errors</a>
-                  </li>
-              </ul>
-          </div>
-          <!-- /.navbar-collapse -->
-      </div>
-      <!-- /.container -->
-    </nav>
-    <div id="maincontainer" class="container">
-        <div id="timestamprow" class="row">
-          Page generated at {{timestamp}}<br/>
-          {% if downloadTimestamp %}
-            Translations downloaded at {{downloadTimestamp}}<br/>
-          {% endif %}
-        </div>
-        <div class="row">
-          <h3>Overall statistics</h3>
-        </div>
-        {% for rule in rules %}
-          {% if statsByRule[rule] > 0 %}
-          <div class="row">
-            <a href="{{rule.get_machine_name()}}.html" class="{{rule.getBootstrapColor()}}">{{rule.name}}</a> ({{statsByRule[rule]}} hits)
-          </div>
-          {% endif %}
-        {% endfor %}
-        {% if files %}
-          <div class="row">
-            <h3>Files</h3>
-          </div>
-          {% for filename, filelink in files.items() %}
-            {% if statsByFile[filename]["notices"] > 0 %}
-                <div class="row">
-                  <a href="{{filelink}}">{{filename}}</a>
-                  {% if filename in statsByFile %}
-                    <span>(
-                      {% if statsByFile[filename]["errors"] > 0 %}
-                        <span class="text-danger">{{statsByFile[filename]["errors"]}} errors</span>,
-                      {% endif %}
-                      {% if statsByFile[filename]["warnings"] > 0 %}
-                        <span class="text-warning">{{statsByFile[filename]["warnings"]}} warnings</span>,
-                      {% endif %}
-                      {% if statsByFile[filename]["hits"] > 0 %}
-                        <span class="text-primary">{{statsByFile[filename]["hits"]}} hits</span>,
-                      {% endif %}
-                      {% if statsByFile[filename]["infos"] > 0 %}
-                        <span class="text-success">{{statsByFile[filename]["infos"]}} infos</span>,
-                      {% endif %}
-                      <span class="text-muted">{{statsByFile[filename]["notices"]}} notices</span>
-                      )</span>
-                  {% endif %}
-                </div>
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-      </ul>
-    </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <katc>Loading...</katc>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   </body>
 </html>

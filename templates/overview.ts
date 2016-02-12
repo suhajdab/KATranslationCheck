@@ -2,6 +2,20 @@ import {Component} from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+import { Injectable } from 'angular2/core';
+
+@Injectable()
+export class OverviewService {
+    constructor(public http: Http) { }
+
+    getHits(language: string, filename: string = null) {
+        let url = filename == null ? `index.json` :
+                    `${filename}/index.json`;
+        return this.http.get("index.json")
+                        .map(res => res.json())
+    }
+}
+
 
 @Component({
     selector: 'rule-overview',
@@ -24,7 +38,7 @@ export class RuleOverviewComponent {
     selector: 'file-overview',
     template: `
     <h2>Statistics by file</h2>
-    <div *ngFor="#fileinfo of allFiles()">
+    <div *ngFor="#fileinfo of filestats">
         <div class="row">
             <a href="{{fileinfo.filelink}}">{{fileinfo.filename}}</a>
             <span>(
@@ -34,6 +48,9 @@ export class RuleOverviewComponent {
                 <span class="text-success" *ngIf="fileinfo.infos">{{fileinfo.infos}} infos</span>,
                 <span class="text-muted" *ngIf="fileinfo.notices">{{fileinfo.notices}} notices</span>,
             )</span>
+            <a href="{{fileinfo.translation_url}}" target="_blank">
+                <span class="label label-success">Translate on Crowdin</span>
+            </a>
         </div>
     </div>
     `,
@@ -53,24 +70,21 @@ export class FileOverviewComponent {
     <rule-overview [rulestats]="rulestats"></rule-overview>
     <file-overview [filestats]="filestats" *ngIf="filestats"></file-overview>
     `,
-    directives: [FileOverviewComponent, RuleOverviewComponent]
+    directives: [FileOverviewComponent, RuleOverviewComponent],
+    bindings: [OverviewService]
 })
 export class OverviewComponent {
     data: any
     rulestats: any
     filestats: any
 
-    constructor(public http: Http) {
-        this.http.get("index.json")
-            .map(res => res.json())
+    constructor(public overviewService: OverviewService) {
+        this.overviewService.getHits("de")
             .subscribe(data => {
                 this.rulestats = data.stats;
                 this.filestats = data.files;
                 this.data = data;
-                console.log(this.rulestats);},
+                console.log(this.filestats);},
             error => alert("Could not load overview data: " + error.status))
     }
 }
-
-
-bootstrap(OverviewComponent, [HTTP_BINDINGS]);
