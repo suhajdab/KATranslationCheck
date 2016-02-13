@@ -10,12 +10,14 @@ export class HitListService {
     constructor(private _http: Http
                 private _langService: LanguageService) { }
 
-    getHits(language: string, rulename: string) {
+    getHits(rulename: string, filename: string) {
         let langObs = this._langService.getCurrentLanguage();
-        return langObs.mergeMap((language) =>
-            this._http.get(`${language}/${rulename}.json`)
+        return langObs.mergeMap((language) => {
+            let url = filename ? `${language}/${filename}/${rulename}.json`
+                : `${language}/${rulename}.json`;
+            return this._http.get(url)
                 .map(res => res.json())
-        )
+        })
     }
 }
 
@@ -90,8 +92,10 @@ export class HitListComponent implements CanReuse, OnInit {
 
     ngOnInit() {
         let mname = this._routeParams.get("mname")
+        let filename = this._routeParams.get("filename")
         console.log(`Route machine name: ${mname}`)
-        this._hitListService.getHits("de", mname)
+        console.log(`Route filename: ${filename}`)
+        this._hitListService.getHits(mname, filename)
             .subscribe(data => {
                 this.rule = data.rule;
                 this.hits = data.hits;

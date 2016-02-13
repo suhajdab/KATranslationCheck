@@ -33,9 +33,11 @@ export class FoobarComponent {
               </button>
               <div class="navbar-brand page-scroll">    
                   <a style="color: #5e5e5e;" [routerLink]="['Home']">KATranslationCheck Deutsch</a>
-                  <select [(ngModel)]="language">
-                      <option *ngFor="#langobj of languages" [value]="langobj.code">{{langobj.name}}</option>
-                  </select>
+                  <div style="padding-left: 8px; display: inline-block;">
+                      <select [(ngModel)]="language">
+                          <option *ngFor="#langobj of languages" [value]="langobj.code">{{langobj.name}}</option>
+                      </select>
+                  </div>
               </div>
           </div>
           <div class="collapse navbar-collapse navbar-ex1-collapse">
@@ -77,7 +79,7 @@ export class FoobarComponent {
       component: OverviewComponent,
     },
     {
-      path: '/hits/:mname', //Machine name
+      path: '/hits/:mname/:filename', //Machine name
       name: 'Hitlist',
       component: HitListComponent
     },

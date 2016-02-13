@@ -32,12 +32,13 @@ export class OverviewService {
         </div>
     </div>
     `
-    inputs: ['rulestats'],
+    inputs: ['rulestats', 'filename'],
     directives: [ROUTER_DIRECTIVES],
     providers: [ROUTER_PROVIDERS]
 })
 export class RuleOverviewComponent {
     rulestats: any;
+    filename: string;
 
     constructor(injector: Injector) {
         this.router = injector.parent.get(Router);
@@ -45,7 +46,8 @@ export class RuleOverviewComponent {
 
     viewHitlist(rule) {
         //this._router.navigate();
-        this.router.navigate(['Hitlist', { mname: rule.machine_name }])
+        this.router.navigate(['Hitlist', { mname: rule.machine_name,
+            filename: this.filename === null ? "" : this.filename }])
     }
 }
 
@@ -92,7 +94,7 @@ export class FileOverviewComponent {
     </div>
     <h2 *ngIf="filename === null">KATC overview</h2>
     <h2 *ngIf="filename !== null">KATC overview for <code class="hittext">{{filename}}</code></h2>
-    <rule-overview [rulestats]="rulestats"></rule-overview>
+    <rule-overview [rulestats]="rulestats" [filename]="filename"></rule-overview>
     <file-overview [filestats]="filestats" *ngIf="filestats"></file-overview>
     `,
     directives: [FileOverviewComponent, RuleOverviewComponent],
