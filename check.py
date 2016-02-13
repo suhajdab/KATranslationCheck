@@ -89,8 +89,10 @@ class HTMLHitRenderer(object):
     A state container for the code which applies rules and generates HTML.
     """
     def __init__(self, outdir, lang="de"):
-        self.outdir = outdir
         self.lang = lang
+        # Create output directory
+        self.outdir = os.path.join(outdir, lang)
+        os.makedirs(self.outdir, exist_ok=True)
         # Async executor
         self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count())
         # Load rules for language
@@ -99,7 +101,7 @@ class HTMLHitRenderer(object):
         self.rule_errors = rule_errors
         # Get timestamp
         self.timestamp = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")
-        #Process lastdownload date (copied to the templated)
+        # Process lastdownload date (copied to the templated)
         lastdownloadPath = os.path.join("cache", "lastdownload-{0}.txt".format(lang))
         if os.path.isfile(lastdownloadPath):
             with open(lastdownloadPath) as infile:
@@ -113,8 +115,6 @@ class HTMLHitRenderer(object):
                 "https://crowdin.com/translate/khanacademy/{0}/enus-{1}".format(v["id"], lang)
             for v in translationFilemapCache.values()
         }
-    def filepath_to_url(self, filename):
-        return filename.replace("/", "_")
     def computeRuleHits(self, po, filename="[unknown filename]"):
         """
         Compute all rule hits for a single parsed PO file and return a list of futures
@@ -134,8 +134,7 @@ class HTMLHitRenderer(object):
         Does not return anything
         """
         # Compute dict with sorted & prettified filenames
-        files = {filename: self.filepath_to_url(filename) for filename in poFiles.keys()}
-        self.files = collections.OrderedDict(sorted(files.items()))
+        self.files = sorted(poFiles.keys())
         # Add all futures to the executor
         futures = list(itertools.chain(*(self.computeRuleHits(po, filename)
                                          for filename, po in poFiles.items())))
@@ -157,7 +156,6 @@ class HTMLHitRenderer(object):
         # Compute total stats by file
         self.statsByFile = {
             filename: merge(self.ruleHitsToSeverityCountMap(ruleHits), {
-                            "link": self.filepath_to_url(filename),
                             "translation_url": self.translationURLs[filename]})
             for filename, ruleHits in self.fileRuleHits.items()
         }
@@ -199,12 +197,11 @@ class HTMLHitRenderer(object):
                        "warnings": self.countRuleHitsAboveSeverity(ruleHits, Severity.warning),
                        "errors": self.countRuleHitsAboveSeverity(ruleHits, Severity.dangerous),
                        "infos": self.countRuleHitsAboveSeverity(ruleHits, Severity.info),
-                       "notices": self.countRuleHitsAboveSeverity(ruleHits, Severity.notice),
-                       "link": self.filepath_to_url(filename)}
+                       "notices": self.countRuleHitsAboveSeverity(ruleHits, Severity.notice)}
             for filename, ruleHits in self.fileRuleHits.items()
         }
         writeJSONToFile(os.path.join(self.outdir, "filestats.json"), stats)
-    def _renderDirectory(self, ruleHits, ruleStats, directory, filename, filelist={}):
+    def _renderDirectory(self, ruleHits, ruleStats, directory, filename):
         # Generate output HTML for each rule
         for rule, hits in ruleHits.items():
             # Render hits for individual rule
@@ -226,7 +223,7 @@ class HTMLHitRenderer(object):
                              for entry, hit, filename, origImages, translatedImages in hits]
                 }
                 writeJSONToFile(outfilePathJSON, jsonAPI)
-            else:  # Remove file (redirects to 404 file) if there are no hitsToHTML
+            else:  # Remove file (redirects to 404 file) if there are no exportHitsAsJSON
                 if os.path.isfile(outfilePathJSON):
                     os.remove(outfilePathJSON)
         # Render file index page (no filelist)
@@ -237,39 +234,34 @@ class HTMLHitRenderer(object):
             "pageTimestamp": self.timestamp,
             "downloadTimestamp": self.downloadTimestamp,
             "stats": ruleInfos,
+            "files": [merge(self.statsByFile[filename], {"filename": filename})
+                      for filename in self.files
+                      if self.statsByFile[filename]["notices"] > 0]
         }
-        if filelist:
-            js["files"] = [
-                merge(self.statsByFile[filename], {"filename": filename})
-                for filename, filelink in filelist.items()
-                if self.statsByFile[filename]["notices"]
-            ]
         writeJSONToFile(os.path.join(directory, "index.json"), js)
-    def hitsToHTML(self):
+    def exportHitsAsJSON(self):
         """
         Apply a rule and write a directory of output HTML files
         """
         for filename, ruleHits in self.fileRuleHits.items():
-            filepath = self.filepath_to_url(filename)
-            ruleStats = self.statsByFileAndRule[filename]
+            rule_stats = self.statsByFileAndRule[filename]
             # Ensure output directory is present
-            directory = os.path.join(self.outdir, filepath)
-            if not os.path.isdir(directory):
-                os.mkdir(directory)
+            directory = os.path.join(self.outdir, filename)
+            os.makedirs(directory, exist_ok=True)
             # Perform rendering
-            self._renderDirectory(ruleHits, ruleStats, directory, filename, {})
+            self._renderDirectory(ruleHits, rule_stats, directory, filename)
         #####################
         ## Render overview ##
         #####################
         # Compute global hits for every rule
-        overviewHits = {
+        overview_hits = {
             rule: list(itertools.chain(*(fileHits[rule] for fileHits in self.fileRuleHits.values())))
             for rule in self.rules
         }
-        self._renderDirectory(overviewHits, self.totalStatsByRule, self.outdir, filename="all files", filelist=self.files)
+        self._renderDirectory(overview_hits, self.totalStatsByRule, self.outdir, filename="All files")
         # Create rule error file
         writeJSONToFile(os.path.join(self.outdir, "ruleerrors.json"),
-            [err.msg for err in self.rule_errors])
+                        [err.msg for err in self.rule_errors])
         # Copy static files
         for filename in glob.glob("templates/*"):
             shutil.copyfile(filename, os.path.join(self.outdir, os.path.split(filename)[-1]))
@@ -281,9 +273,9 @@ def renderLint(outdir, lang):
         lintEntries = list(readAndMapLintEntries(lintFilename, lang))
         # Write JSON
         jsonEntries = list(map(operator.methodcaller("_asdict"), lintEntries))
-        writeJSONToFile(os.path.join(outdir, "lint-{0}.json".format(lang)), jsonEntries)
+        writeJSONToFile(os.path.join(outdir, lang, "lint.json"), jsonEntries)
     else:
-        print("Skipping lint (%s does not exist)" % lintFilename)
+        print("Skipping lint ({0} does not exist)".format(lintFilename))
 
 def renderAllLints(outdir):
     rgx = re.compile(r"([a-z]{2}(-[a-z]{2})?)-lint.csv")
@@ -304,9 +296,8 @@ def performRender(args):
 
     # Create directory
     if not args.outdir:
-        args.outdir = "output-{0}".format(args.language)
-    if not os.path.isdir(args.outdir):
-        os.mkdir(args.outdir)
+        args.outdir = "output"
+    os.makedirs(args.outdir, exist_ok=True)
 
     renderer = HTMLHitRenderer(args.outdir, args.language)
 
@@ -319,11 +310,11 @@ def performRender(args):
     print(black("Computing rules...", bold=True))
     renderer.computeRuleHitsForFileSet(poFiles)
     # Ensure the HUGE po stuff goes out of scope ASAP
-    poFiles = None
+    del poFiles
 
     # Generate HTML
     print(black("Rendering HTML...", bold=True))
-    renderer.hitsToHTML()
+    renderer.exportHitsAsJSON()
 
     # Generate filestats.json
     print (black("Generating JSON API files...", bold=True))

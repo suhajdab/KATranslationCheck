@@ -9,9 +9,7 @@ export class OverviewService {
     constructor(public http: Http) { }
 
     getHits(language: string, filename: string = null) {
-        let url = filename == null ? `index.json` :
-                    `${filename}/index.json`;
-        console.log(url);
+        let url = filename == null ? `index.json` : `${filename}/index.json`;
         return this.http.get(url)
                         .map(res => res.json())
     }
