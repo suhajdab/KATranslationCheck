@@ -271,6 +271,7 @@ def renderLint(outdir, kalangcode):
     # Map from KA code to crowdin code
     langMap = {"pt": "pt-BR"}
     lang = langMap[kalangcode] if kalangcode in langMap else kalangcode
+    print(black("Rendering lint for {0} ({1}}".format(lang, kalangcode), bold=True))
     # Generate lint report
     lintFilename = os.path.join("cache", "{0}-lint.csv".format(kalangcode))
     if os.path.isfile(lintFilename):
@@ -288,7 +289,6 @@ def renderAllLints(outdir):
         m = rgx.match(f)
         if m is None: continue
         lang = m.group(1)
-        print(black("Rendering lint for {0}".format(lang), bold=True))
         renderLint(outdir, lang)
 
 def performRenderLint(args):
