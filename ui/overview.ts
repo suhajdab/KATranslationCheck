@@ -1,24 +1,30 @@
 import {Component, Injectable, Injector } from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/mergeMap';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+import {LanguageService} from './utils.ts';
 import { RouterLink, ROUTER_PROVIDERS, ROUTER_DIRECTIVES, Router, CanReuse, RouteParams } from 'angular2/router';
 
 @Injectable()
 export class OverviewService {
-    constructor(public http: Http) { }
+    constructor(private _http: Http,
+                private _langService : LanguageService) {}
 
-    getHits(language: string, filename: string = null) {
-        let url = filename == null ? `index.json` : `${filename}/index.json`;
-        return this.http.get(url)
-                        .map(res => res.json())
+    getOverviewData(filename: string = null) {
+        let urlProto = filename == null ? `index.json` : `${filename}/index.json`;
+        let langObs = this._langService.getCurrentLanguage();
+        return langObs.mergeMap((language) =>
+            this._http.get(`${language}/${urlProto}`)
+                    .map(res => res.json())
+        )
     }
 }
 
 @Component({
     selector: 'rule-overview',
     template: `
-    <h2>Statistics by rule</h2>
+    <h3>Statistics by rule</h3>
     <div *ngFor="#rule of rulestats">
         <div class="row">
             <a class="{{rule.color}}" (click)="viewHitlist(rule)"> <!-- , -->
@@ -46,7 +52,7 @@ export class RuleOverviewComponent {
 @Component({
     selector: 'file-overview',
     template: `
-    <h2>Statistics by file</h2>
+    <h3>Statistics by file</h3>
     <div *ngFor="#fileinfo of filestats">
         <div class="row">
             <a (click)="viewFile(fileinfo.filename)">{{fileinfo.filename}}</a>
@@ -84,6 +90,8 @@ export class FileOverviewComponent {
           <p *ngIf="data.pageTimestamp">Page generated at {{data.pageTimestamp}}</p>
           <p *ngIf="data.downloadTimestamp">Translations downloaded at {{data.downloadTimestamp}}</p>
     </div>
+    <h2 *ngIf="filename === null">KATC overview</h2>
+    <h2 *ngIf="filename !== null">KATC overview for <code class="hittext">{{filename}}</code></h2>
     <rule-overview [rulestats]="rulestats"></rule-overview>
     <file-overview [filestats]="filestats" *ngIf="filestats"></file-overview>
     `,
@@ -94,12 +102,14 @@ export class OverviewComponent implements CanReuse {
     data: any
     rulestats: any
     filestats: any
+    filename: string = null
 
     constructor(public overviewService: OverviewService, injector: Injector) {
         let routeParams = injector.parent.get(RouteParams);
-        let filename = routeParams.get("filename"); //Might be null for total overview
-        this.overviewService.getHits("de", filename)
-            .subscribe(data => {
+        //filename Might be null for total overview
+        this.filename = routeParams.get("filename")
+        this.overviewService.getOverviewData(this.filename)
+            .subscribe((data) => {
                 this.rulestats = data.stats;
                 this.filestats = data.files;
                 this.data = data;},

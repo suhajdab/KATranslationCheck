@@ -2,10 +2,10 @@ import {bootstrap} from 'angular2/platform/browser';
 import {Component, provide} from 'angular2/core';
 import { RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS } from 'angular2/router';
 import {LocationStrategy, Location, HashLocationStrategy } from 'angular2/router'; 
-import 'rxjs/add/operator/map';
 import {OverviewComponent} from "./overview.ts";
 import {HitListComponent} from "./hits.ts";
 import {LintComponent} from "./lint.ts";
+import {LanguageService} from "./utils.ts";
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 
 
@@ -31,7 +31,12 @@ export class FoobarComponent {
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand page-scroll" href="/">KATranslationCheck Deutsch</a>
+              <div class="navbar-brand page-scroll">    
+                  <a style="color: #5e5e5e;" [routerLink]="['Home']">KATranslationCheck Deutsch</a>
+                  <select [(ngModel)]="language">
+                      <option *ngFor="#langobj of languages" [value]="langobj.code">{{langobj.name}}</option>
+                  </select>
+              </div>
           </div>
           <div class="collapse navbar-collapse navbar-ex1-collapse">
               <ul class="nav navbar-nav">
@@ -56,7 +61,8 @@ export class FoobarComponent {
   </div>
   `,
   directives: [ROUTER_DIRECTIVES, FoobarComponent],
-  providers: [ROUTER_PROVIDERS]
+  providers: [ROUTER_PROVIDERS],
+  bindings: [LanguageService]
 })
     @RouteConfig([
     {
@@ -80,8 +86,19 @@ export class FoobarComponent {
       name: 'Lint results',
       component: LintComponent
     }
+    {
+        path: '/**',
+        name: 'Catchall',
+        redirectTo: ['Home']
+    }
 ])
 export class KATCApp {
+    language: string = "de";
+    languages: any;
+
+    constructor(private _langService: LanguageService) {
+        this.languages = _langService.allLanguages();
+    }
 }
 
 bootstrap(KATCApp, [

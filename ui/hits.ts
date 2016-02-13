@@ -1,18 +1,21 @@
-import {Component, OnInit} from 'angular2/core';
+import {Component, OnInit, Injectable} from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+import { LanguageService } from './utils.ts';
 import { RouteParams, ROUTER_DIRECTIVES, Router, CanReuse } from 'angular2/router';
-import { Injectable } from 'angular2/core';
 
 @Injectable()
 export class HitListService {
-    constructor(public http: Http) { }
+    constructor(private _http: Http
+                private _langService: LanguageService) { }
 
     getHits(language: string, rulename: string) {
-        let url = `${rulename}.json`;
-        return this.http.get(url)
+        let langObs = this._langService.getCurrentLanguage();
+        return langObs.mergeMap((language) =>
+            this._http.get(`${language}/${rulename}.json`)
                 .map(res => res.json())
+        )
     }
 }
 
@@ -76,19 +79,19 @@ export class RuleInfoComponent {
     directives: [RuleInfoComponent],
     bindings: [HitListService]
 })
-export class HitListComponent implements CanReuse {
+export class HitListComponent implements CanReuse, OnInit {
     rule: any
     hits: any
-    constructor(public hitListService: HitListService,
-                public routeParams: RouteParams) {
+    constructor(private _hitListService: HitListService,
+                private _routeParams: RouteParams) {
     }
 
     routerCanReuse() { return false;}
 
     ngOnInit() {
-        let mname = this.routeParams.get("mname")
+        let mname = this._routeParams.get("mname")
         console.log(`Route machine name: ${mname}`)
-        this.hitListService.getHits("de", mname)
+        this._hitListService.getHits("de", mname)
             .subscribe(data => {
                 this.rule = data.rule;
                 this.hits = data.hits;
