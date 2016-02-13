@@ -7,7 +7,7 @@ import { RouteParams, ROUTER_DIRECTIVES, Router, CanReuse } from 'angular2/route
 
 @Injectable()
 export class HitListService {
-    constructor(private _http: Http
+    constructor(private _http: Http,
                 private _langService: LanguageService) { }
 
     getHits(rulename: string, filename: string) {

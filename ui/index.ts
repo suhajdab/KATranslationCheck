@@ -1,7 +1,7 @@
 import {bootstrap} from 'angular2/platform/browser';
-import {Component, provide} from 'angular2/core';
+import {Component, provide, OnChanges, SimpleChange} from 'angular2/core';
 import { RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS } from 'angular2/router';
-import {LocationStrategy, Location, HashLocationStrategy } from 'angular2/router'; 
+import {LocationStrategy, Location, HashLocationStrategy, Router } from 'angular2/router'; 
 import {OverviewComponent} from "./overview.ts";
 import {HitListComponent} from "./hits.ts";
 import {LintComponent} from "./lint.ts";
@@ -34,7 +34,7 @@ export class FoobarComponent {
               <div class="navbar-brand page-scroll">    
                   <a style="color: #5e5e5e;" [routerLink]="['Home']">KATranslationCheck Deutsch</a>
                   <div style="padding-left: 8px; display: inline-block;">
-                      <select [(ngModel)]="language">
+                      <select [(ngModel)]="language" (change)="onLanguageChange($event)">>
                           <option *ngFor="#langobj of languages" [value]="langobj.code">{{langobj.name}}</option>
                       </select>
                   </div>
@@ -66,7 +66,7 @@ export class FoobarComponent {
   providers: [ROUTER_PROVIDERS],
   bindings: [LanguageService]
 })
-    @RouteConfig([
+@RouteConfig([
     {
         path: '/',
         name: 'Home',
@@ -94,11 +94,24 @@ export class FoobarComponent {
         redirectTo: ['Home']
     }
 ])
-export class KATCApp {
+export class KATCApp implements OnChanges {
     language: string = "de";
     languages: any;
 
-    constructor(private _langService: LanguageService) {
+    onLanguageChange(evt) {
+        console.log(evt.target.value);
+        this.language = evt.target.value;
+        this._router.renavigate();
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        console.log(changes)
+        if("language" in changes) {
+            console.log("New language: " + changes["language"])
+        }
+    }
+
+    constructor(private _langService: LanguageService, private _router : Router) {
         this.languages = _langService.allLanguages();
     }
 }

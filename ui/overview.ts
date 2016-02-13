@@ -106,6 +106,8 @@ export class OverviewComponent implements CanReuse {
     filestats: any
     filename: string = null
 
+    routerCanReuse() { return false; }
+
     constructor(public overviewService: OverviewService, injector: Injector) {
         let routeParams = injector.parent.get(RouteParams);
         //filename Might be null for total overview

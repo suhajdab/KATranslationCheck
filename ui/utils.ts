@@ -9,7 +9,7 @@ export class LanguageService {
 
     allLanguages(): Map<string, string> {
         return [{ name: "Deutsch", code: "de" },
-                { name: "Português (BR)", code: "pt" }]
+                { name: "Português (BR)", code: "pt-BR" }]
     }
 
     getCurrentLanguage(language: string, rulename: string) {

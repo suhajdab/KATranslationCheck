@@ -4,15 +4,19 @@ import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 import { Injectable } from 'angular2/core';
 import { CanReuse } from 'angular2/router';
+import { LanguageService } from './utils.ts';
 
 @Injectable()
 export class LintService {
-  constructor(public http: Http) {}
+    constructor(private _http: Http,
+                private _langService: LanguageService) { }
 
   getLintResults(language: string) {
-      var jsonName = `lint-${language}.json`;
-      return this.http.get(jsonName)
-          .map(res => res.json())
+      let langObs = this._langService.getCurrentLanguage();
+      return langObs.mergeMap((language) =>
+           this._http.get(`${language}/lint.json`)
+               .map(res => res.json())
+      )
   }
 }
 
@@ -46,7 +50,6 @@ export class LintComponent implements CanReuse {
         if (window.location.hash) {
             this.lang = window.location.hash.slice(1);
         }
-
 
         lintService.getLintResults(this.lang)
             .subscribe(data => this.lintEntries = data,

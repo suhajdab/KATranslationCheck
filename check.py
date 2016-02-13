@@ -266,9 +266,13 @@ class HTMLHitRenderer(object):
         for filename in glob.glob("templates/*"):
             shutil.copyfile(filename, os.path.join(self.outdir, os.path.split(filename)[-1]))
 
-def renderLint(outdir, lang):
+def renderLint(outdir, kalangcode):
     "Parse & render lint"
-    lintFilename = os.path.join("cache", "{0}-lint.csv".format(lang))
+    # Map from KA code to crowdin code
+    langMap = {"pt": "pt-BR"}
+    lang = langMap[kalangcode] if kalangcode in langMap else kalangcode
+    # Generate lint report
+    lintFilename = os.path.join("cache", "{0}-lint.csv".format(kalangcode))
     if os.path.isfile(lintFilename):
         lintEntries = list(readAndMapLintEntries(lintFilename, lang))
         # Write JSON
