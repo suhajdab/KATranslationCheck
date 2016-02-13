@@ -273,7 +273,7 @@ def renderLint(outdir, lang):
         lintEntries = list(readAndMapLintEntries(lintFilename, lang))
         # Write JSON
         jsonEntries = list(map(operator.methodcaller("_asdict"), lintEntries))
-        os.makedirs(os.path.join(outdir, lang, exist_ok=True)
+        os.makedirs(os.path.join(outdir, lang, exist_ok=True))
         writeJSONToFile(os.path.join(outdir, lang, "lint.json"), jsonEntries)
     else:
         print("Skipping lint ({0} does not exist)".format(lintFilename))
