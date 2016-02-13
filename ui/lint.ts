@@ -11,7 +11,7 @@ export class LintService {
     constructor(private _http: Http,
                 private _langService: LanguageService) { }
 
-  getLintResults(language: string) {
+  getLintResults() {
       let langObs = this._langService.getCurrentLanguage();
       return langObs.mergeMap((language) =>
            this._http.get(`${language}/lint.json`)
@@ -43,15 +43,14 @@ export class LintService {
 export class LintComponent implements CanReuse {
     lang: string
 
-    routerCanReuse() { return true; }
+    routerCanReuse() { return false; }
 
-    constructor(public lintService: LintService) {
-        this.lang = "de";
-        if (window.location.hash) {
-            this.lang = window.location.hash.slice(1);
-        }
+    constructor(private _lintService: LintService,
+                private _langService: LanguageService) {
+        this._langService.getCurrentLanguage().subscribe(
+            (lang) => this.lang = lang)
 
-        lintService.getLintResults(this.lang)
+        this._lintService.getLintResults(this.lang)
             .subscribe(data => this.lintEntries = data,
                        error => alert("Could not load lint data: " + error.status))
     }

@@ -8,8 +8,9 @@ export class LanguageService {
     constructor(private _injector: Injector) { }
 
     allLanguages(): Map<string, string> {
-        return [{ name: "Deutsch", code: "de" },
-                { name: "Português (BR)", code: "pt-BR" }]
+        return [{ name: "Deutsch (DE)", code: "de" },
+                { name: "Português (BR)", code: "pt-BR" },
+                { name: "български (BG)", code: "bg" }]
     }
 
     getCurrentLanguage(language: string, rulename: string) {
