@@ -186,6 +186,7 @@ def downloadCrowdinById(session, crid, lang="de"):
     if lang in languageIDs:
         langId = languageIDs[lang]
     else: # Fallback -- wont really work
+        print(red("Error: Language unknown: {0}".format(lang), bold=True))
         langId = 11 #de
     url = "https://crowdin.com/translation/phrase?id={0}&project_id=10880&target_language_id={1}".format(crid, langId)
     response = session.get(url)
