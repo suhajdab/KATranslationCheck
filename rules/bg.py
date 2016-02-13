@@ -73,5 +73,7 @@ rules = [
     TranslationConstraintRule("'polynomial expression' not translated to 'Polynom'", r"polynomial expression", r"Polynom", severity=Severity.notice, flags=re.UNICODE | re.IGNORECASE),
 ]
 
+rule_errors = []
+
 if __name__ == "__main__":
     print("Counting %d rules" % len(rules))
