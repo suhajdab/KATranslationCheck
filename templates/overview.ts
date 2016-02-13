@@ -1,9 +1,8 @@
-import {Component, Injectable } from 'angular2/core';
+import {Component, Injectable, Injector } from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
-import { Injectable, Injector } from 'angular2/core';
-import { RouterLink, ROUTER_PROVIDERS, ROUTER_DIRECTIVES, Router } from 'angular2/router';
+import { RouterLink, ROUTER_PROVIDERS, ROUTER_DIRECTIVES, Router, CanReuse, RouteParams } from 'angular2/router';
 
 @Injectable()
 export class OverviewService {
@@ -12,7 +11,8 @@ export class OverviewService {
     getHits(language: string, filename: string = null) {
         let url = filename == null ? `index.json` :
                     `${filename}/index.json`;
-        return this.http.get("index.json")
+        console.log(url);
+        return this.http.get(url)
                         .map(res => res.json())
     }
 }
@@ -51,7 +51,7 @@ export class RuleOverviewComponent {
     <h2>Statistics by file</h2>
     <div *ngFor="#fileinfo of filestats">
         <div class="row">
-            <a href="{{fileinfo.filelink}}">{{fileinfo.filename}}</a>
+            <a (click)="viewFile(fileinfo.filename)">{{fileinfo.filename}}</a>
             <span>(
                 <span class="text-danger" *ngIf="fileinfo.errors">{{fileinfo.errors}} errors,</span>
                 <span class="text-warning" *ngIf="fileinfo.warnings">{{fileinfo.warnings}} warnings,</span>
@@ -69,6 +69,14 @@ export class RuleOverviewComponent {
 })
 export class FileOverviewComponent {
     filestats: any
+
+    constructor(injector: Injector) {
+        this.router = injector.parent.get(Router);
+    }
+
+    viewFile(filename) {
+        this.router.navigate(['Overview', {filename: filename}])
+    }
 }
 
 @Component({
@@ -84,13 +92,15 @@ export class FileOverviewComponent {
     directives: [FileOverviewComponent, RuleOverviewComponent],
     bindings: [OverviewService]
 })
-export class OverviewComponent {
+export class OverviewComponent implements CanReuse {
     data: any
     rulestats: any
     filestats: any
 
-    constructor(public overviewService: OverviewService) {
-        this.overviewService.getHits("de")
+    constructor(public overviewService: OverviewService, injector: Injector) {
+        let routeParams = injector.parent.get(RouteParams);
+        let filename = routeParams.get("filename"); //Might be null for total overview
+        this.overviewService.getHits("de", filename)
             .subscribe(data => {
                 this.rulestats = data.stats;
                 this.filestats = data.files;

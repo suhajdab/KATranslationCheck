@@ -39,7 +39,7 @@ export class FoobarComponent {
                       <a class="page-scroll" href="#page-top"></a>
                   </li>
                   <li>
-                      <a [routerLink]="['Overview']">Rules</a>
+                      <a [routerLink]="['Home']">Rules</a>
                   </li>
                   <li>
                       <a [routerLink]="['Lint results']">Lint</a>
@@ -58,12 +58,17 @@ export class FoobarComponent {
   directives: [ROUTER_DIRECTIVES, FoobarComponent],
   providers: [ROUTER_PROVIDERS]
 })
-@RouteConfig([
+    @RouteConfig([
     {
-      path: '/overview',
+        path: '/',
+        name: 'Home',
+        component: OverviewComponent,
+        useAsDefault: true
+    },
+    {
+      path: '/overview/:filename',
       name: 'Overview',
       component: OverviewComponent,
-      useAsDefault: true
     },
     {
       path: '/hits/:mname', //Machine name

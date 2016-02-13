@@ -49,6 +49,7 @@ def readPOFiles(directory):
 
     Also supports using a single file as argument.
     """
+
     if os.path.isfile(directory): #Single file>=
         poFilenames = [directory]
     else:
@@ -66,11 +67,11 @@ def readPOFiles(directory):
     if len(poFilenames) > 10:
         pool = Pool(None) #As many as CPUs
         parsedFiles = pool.map(polib.pofile, poFilenames)
-        return {path: parsedFile
-                   for path, parsedFile
-                   in zip(poFilenames, parsedFiles)}
+        return {os.path.relpath(path, directory): parsedFile
+                for path, parsedFile
+                in zip(poFilenames, parsedFiles)}
     else: #Only a small number of files, process directly
-        return {path: polib.pofile(path) for path in poFilenames}
+        return {os.path.relpath(path, directory): polib.pofile(path) for path in poFilenames}
 
 _multiSpace = re.compile(r"\s+")
 
@@ -108,7 +109,7 @@ class HTMLHitRenderer(object):
         # Initialize translation ID/URL map
         translationFilemapCache = getTranslationFilemapCache()
         self.translationURLs = {
-            "cache/{0}/{1}".format(lang, v["path"]):
+            v["path"]:
                 "https://crowdin.com/translate/khanacademy/{0}/enus-{1}".format(v["id"], lang)
             for v in translationFilemapCache.values()
         }
@@ -154,7 +155,6 @@ class HTMLHitRenderer(object):
                 print("Rule computation finished {0:.2f} %".format(percent_finished))
 
         # Compute total stats by file
-
         self.statsByFile = {
             filename: merge(self.ruleHitsToSeverityCountMap(ruleHits), {
                             "link": self.filepath_to_url(filename),
