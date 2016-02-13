@@ -8,7 +8,6 @@ import {LintComponent} from "./lint.ts";
 import {LanguageService} from "./utils.ts";
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 
-
 @Component({
   selector: 'foobar',
   template: `<h3><a [routerLink]="['Lint results']">Nothing will happen when clicking here</a></h3>`,
@@ -94,25 +93,21 @@ export class FoobarComponent {
         redirectTo: ['Home']
     }
 ])
-export class KATCApp implements OnChanges {
-    language: string = "de";
+export class KATCApp {
+    language: string;
     languages: any;
 
     onLanguageChange(evt) {
         console.log(evt.target.value);
         this.language = evt.target.value;
+        this._langService.storeLanguage(this.language);
         this._router.renavigate();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        console.log(changes)
-        if("language" in changes) {
-            console.log("New language: " + changes["language"])
-        }
-    }
-
-    constructor(private _langService: LanguageService, private _router : Router) {
+    constructor(private _langService: LanguageService,
+                private _router : Router) {
         this.languages = _langService.allLanguages();
+        this.language = this._langService.getStoredLanguage();
     }
 }
 
