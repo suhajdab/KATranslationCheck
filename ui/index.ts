@@ -54,6 +54,7 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
     <router-outlet></router-outlet>
   </div>
   `,
+  styles: ["#maincontainer {margin-top: 80px}"],
   directives: [ROUTER_DIRECTIVES],
   providers: [ROUTER_PROVIDERS],
   bindings: [LanguageService]
