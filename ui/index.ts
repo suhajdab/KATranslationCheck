@@ -51,11 +51,10 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
       <!-- /.container -->
   </nav>
   <div id="maincontainer" class="container">
-  <foobar></foobar>
     <router-outlet></router-outlet>
   </div>
   `,
-  directives: [ROUTER_DIRECTIVES, FoobarComponent],
+  directives: [ROUTER_DIRECTIVES],
   providers: [ROUTER_PROVIDERS],
   bindings: [LanguageService]
 })
