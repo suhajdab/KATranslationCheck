@@ -137,7 +137,7 @@ export class RuleErrorsComponent {
     rule_errors: Array<string>;
 
     constructor(private _ruleErrorService : RuleErrorService) {
-        this._ruleErrorService.subscribe(data => {
+        this._ruleErrorService.getRuleErrors().subscribe(data => {
             this.rule_errors = data;
         },
         error => alert("Could not load hit data: " + error.status))
