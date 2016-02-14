@@ -13,6 +13,7 @@ from ImageAliases import downloadGDocsCSV
 from io import StringIO
 import sre_constants
 import csv
+from Perseus import *
 
 class Severity(IntEnum):
     # Notice should be used for rules where a significant number of unfixable false-positives are expected
@@ -510,6 +511,22 @@ class RuleError(object):
     def __init__(self, msg):
         self.msg = msg
 
+class IgnorePerseusCommandsRuleWrapper(Rule):
+    """
+    Ignore perseus commands in the msgstr
+    """
+    def __init__(self, child):
+        super().__init__(child.name)
+        self.child = child
+        self.perseusList = getCachedKAPerseusCommands()
+    @property
+    def description(self):
+        return "%s (ignored for Perseus commands)" % (self.child.description)
+    def __call__(self, msgstr, msgid, tcomment="", filename=None):
+        for cmd in self.perseusList:
+            msgstr = msgstr.replace("\\{0}".format(cmd), "")
+        yield from self.child(msgstr, msgid, tcomment, filename)
+
 def readRulesFromGDocs(ssid):
     "Read a set of rules from a Google Docs spreadsheet"
     text = StringIO(downloadGDocsCSV(ssid))
@@ -518,7 +535,7 @@ def readRulesFromGDocs(ssid):
     aliases = defaultdict(str)
     for row in reader:
         try:
-            enabled, name, ruletype, rgx1, rgx2, severityStr = row
+            enabled, name, ruletype, rgx1, rgx2, severityStr, ignorePerseus = row
         except:
             yield RuleError("Unparseable row: " + str(row))
             continue
@@ -532,19 +549,24 @@ def readRulesFromGDocs(ssid):
         if enabled != "Y":
             continue
         try:
+            rule = None
             if ruletype == "AutoUntranslatedRule":
-                yield AutoUntranslatedRule(name, rgx1, severity=severity)
+                rule = AutoUntranslatedRule(name, rgx1, severity=severity)
             elif ruletype == "AutoTranslationConstraintRule":
-                yield AutoTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
+                rule = AutoTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
             elif ruletype == "SimpleRegexRule":
-                yield SimpleRegexRule(name, rgx1, severity=severity)
+                rule = SimpleRegexRule(name, rgx1, severity=severity)
             elif ruletype == "NegativeTranslationConstraintRule":
-                yield NegativeTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
+                rule = NegativeTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
             elif ruletype == "TranslationConstraintRule":
-                yield TranslationConstraintRule(name, rgx1, rgx2, severity=severity)
+                rule = TranslationConstraintRule(name, rgx1, rgx2, severity=severity)
             else:
                 yield RuleError("Rule {0}: ruletype {1} is invalid".format(name, ruletype))
                 continue
+            # Wrap rule
+            if ignorePerseus == "Y":
+                rule = IgnorePerseusCommandsRuleWrapper(rule)
+            yield rule
         except Exception as e:
             yield RuleError("Rule {0}: Error while parsing rule: {1}".format(name, e))
             continue
