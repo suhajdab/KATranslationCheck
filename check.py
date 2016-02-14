@@ -84,7 +84,7 @@ def genCrowdinSearchString(entry):
     s = _multiSpace.sub(" ", s)
     return urllib.parse.quote(s.replace('☃', ' ').replace("|", " "))
 
-class HTMLHitRenderer(object):
+class JSONHitRenderer(object):
     """
     A state container for the code which applies rules and generates HTML.
     """
@@ -304,7 +304,7 @@ def performRender(args):
         args.outdir = "output"
     os.makedirs(args.outdir, exist_ok=True)
 
-    renderer = HTMLHitRenderer(args.outdir, args.language)
+    renderer = JSONHitRenderer(args.outdir, args.language)
 
     # Import
     potDir = os.path.join("cache", args.language)
