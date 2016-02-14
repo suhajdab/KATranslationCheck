@@ -124,13 +124,13 @@ export class RuleErrorService {
 @Component({
     selector: 'rule-details',
     template: `
-    <div class="row" *ngIf="ruleErrors !== null && ruleErrors.length > 0" *ngFor="#error of rule_errors">
+    <div class="row" *ngIf="rule_errors !== null && rule_errors.length > 0" *ngFor="#error of rule_errors">
         {{error}}
     </div>
-    <div class="row" *ngIf="ruleErrors !== null && ruleErrors.length == 0">
+    <div class="row" *ngIf="rule_errors !== null && rule_errors.length == 0">
         <h3 style="color: green">No rule errors</h3>
     </div>
-    <div class="row" *ngIf="ruleErrors === null">
+    <div class="row" *ngIf="rule_errors === null">
         <h3>Loading...</h3>
     </div>
     `,
