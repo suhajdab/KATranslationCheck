@@ -269,7 +269,7 @@ class HTMLHitRenderer(object):
 def renderLint(outdir, kalangcode):
     "Parse & render lint"
     # Map from KA code to crowdin code
-    langMap = {"pt": "pt-BR", "pt-pt": "pt-PT"}
+    langMap = {"pt": "pt-BR", "pt-pt": "pt-PT", "ur": "ur-PK"}
     lang = langMap[kalangcode] if kalangcode in langMap else kalangcode
     print(black("Rendering lint for {0} ({1})".format(lang, kalangcode), bold=True))
     # Generate lint report
