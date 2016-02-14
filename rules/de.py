@@ -118,14 +118,7 @@ rules = [
     DynamicTranslationIdentityRule("Non-identical whitespace before image (auto-translate) (experimental)", r"(\\n(\\n|\s|\*)*!\[)", group=0, severity=Severity.notice),
 ]
 
-rule_errors = []
-
-for rule in readRulesFromGDocs("1_I8vBZm9-1NybpIoEEdvAT5m1ehhXXRcILrIljfsUGg"):
-    if isinstance(rule, RuleError):
-        rule_errors.append(rule)
-        print(red(rule.msg, bold=True))
-    else:
-        rules.append(rule)
+rules, rule_errors = readRulesFromGoogleDocs("1_I8vBZm9-1NybpIoEEdvAT5m1ehhXXRcILrIljfsUGg", rules)
 
 if __name__ == "__main__":
     print("Counting %d rules" % len(rules))

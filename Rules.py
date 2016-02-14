@@ -495,10 +495,20 @@ def AutoTranslationConstraintRule(name, sa, sb, severity=Severity.standard, flag
     rgxb = r"\b" + sb.replace(" ", r"\s+") + r"\b"
     return TranslationConstraintRule(name, rgxa, rgxb, severity=severity, flags=flags)
 
+
+def readRulesFromGoogleDocs(gdid, rules=[]):
+    rule_errors = []
+    for rule in readRulesFromGDocs(gdid):
+        if isinstance(rule, RuleError):
+            rule_errors.append(rule)
+            print(red(rule.msg))
+        else:
+            rules.append(rule)
+    return rules, rule_errors
+
 class RuleError(object):
     def __init__(self, msg):
         self.msg = msg
-
 
 def readRulesFromGDocs(ssid):
     "Read a set of rules from a Google Docs spreadsheet"

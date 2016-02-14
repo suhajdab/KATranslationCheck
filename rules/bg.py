@@ -3,11 +3,8 @@
 from Rules import *
 from ImageAliases import readImageAliases
 
-for rule in readRulesFromGDocs("1Jmt2Uyo_rTLaiCO5C253nVQom9LuJr3rPYtZYDwe2c0"):
-    if isinstance(rule, RuleError):
-        rule_errors.append(rule)
-    else:
-        rules.append(rule)
+
+rules, rule_errors = readRulesFromGoogleDocs("1Jmt2Uyo_rTLaiCO5C253nVQom9LuJr3rPYtZYDwe2c0")
 
 rule_errors = []
 

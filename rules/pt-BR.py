@@ -3,19 +3,7 @@
 from Rules import *
 from ImageAliases import readImageAliases
 
-########################
-### Initialize rules ###
-########################
-# Currently hardcoded for DE language
-rules = []
-rule_errors = []
-
-
-for rule in readRulesFromGDocs("1EF8dFohJFWMhyncngqqeX29xcnGQdySAZaa6Ou0QuHY"):
-    if isinstance(rule, RuleError):
-        rule_errors.append(rule)
-    else:
-        rules.append(rule)
+rules, rule_errors = readRulesFromGoogleDocs("1EF8dFohJFWMhyncngqqeX29xcnGQdySAZaa6Ou0QuHY")
 
 if __name__ == "__main__":
     print("Counting %d rules" % len(rules))
