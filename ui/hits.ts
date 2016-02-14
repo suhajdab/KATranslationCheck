@@ -103,3 +103,43 @@ export class HitListComponent implements CanReuse, OnInit {
             error => alert("Could not load hit data: " + error.status))
     }
 }
+
+@Injectable()
+export class RuleErrorService {
+    constructor(private _http: Http,
+        private _langService: LanguageService) { }
+
+    getRuleErrors() {
+        let langObs = this._langService.getCurrentLanguage();
+        return langObs.mergeMap((language) => {
+            return this._http.get(`${language}/ruleerrors.json`)
+                .map(res => res.json())
+        })
+    }
+}
+
+/**
+ * Show rule parsing errors
+ */
+@Component({
+    selector: 'rule-details',
+    template: `
+    <div class="row" *ngIf="ruleErrors.length > 0" *ngFor="#error of rule_errors">
+        {{error}}
+    </div>
+    <div class="row" *ngIf="ruleErrors.length == 0">
+        <h3 style="color: green">No rule errors</h3>
+    </div>
+    `,
+    bindings: [RuleErrorService]
+})
+export class RuleErrorsComponent {
+    rule_errors: Array<string>;
+
+    constructor(private _ruleErrorService : RuleErrorService) {
+        this._ruleErrorService.subscribe(data => {
+            this.rule_errors = data;
+        },
+        error => alert("Could not load hit data: " + error.status))
+    }
+}

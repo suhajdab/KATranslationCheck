@@ -3,19 +3,10 @@ import {Component, provide, OnChanges, SimpleChange} from 'angular2/core';
 import { RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS } from 'angular2/router';
 import {LocationStrategy, Location, HashLocationStrategy, Router } from 'angular2/router'; 
 import {OverviewComponent} from "./overview.ts";
-import {HitListComponent} from "./hits.ts";
+import {HitListComponent, RuleErrorsComponent} from "./hits.ts";
 import {LintComponent} from "./lint.ts";
 import {LanguageService} from "./utils.ts";
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
-
-@Component({
-  selector: 'foobar',
-  template: `<h3><a [routerLink]="['Lint results']">Nothing will happen when clicking here</a></h3>`,
-  directives: [ROUTER_DIRECTIVES],
-  providers: [ROUTER_PROVIDERS]
-})
-export class FoobarComponent {
-}
 
 @Component({
   selector: 'katc',
@@ -49,6 +40,9 @@ export class FoobarComponent {
                   </li>
                   <li>
                       <a [routerLink]="['Lint results']">Lint</a>
+                  </li>
+                  <li>
+                      <a [routerLink]="['Rule errors']">Rule errors</a>
                   </li>
               </ul>
           </div>
@@ -86,6 +80,11 @@ export class FoobarComponent {
       path: '/lint',
       name: 'Lint results',
       component: LintComponent
+    }
+    {
+      path: '/ruleerrors',
+      name: 'Rule errors',
+      component: RuleErrorsComponent
     }
     {
         path: '/**',
