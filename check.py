@@ -109,7 +109,7 @@ class JSONHitRenderer(object):
         else:
             self.downloadTimestamp = None
         # Initialize translation ID/URL map
-        translationFilemapCache = getTranslationFilemapCache()
+        translationFilemapCache = getTranslationFilemapCache(lang)
         self.translationURLs = {
             v["path"]:
                 "https://crowdin.com/translate/khanacademy/{0}/enus-{1}".format(v["id"], lang)
