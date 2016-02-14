@@ -122,7 +122,7 @@ export class RuleErrorService {
  * Show rule parsing errors
  */
 @Component({
-    selector: 'rule-details',
+    selector: 'rule-errors',
     template: `
     <div class="row" *ngIf="rule_errors !== null && rule_errors.length > 0" *ngFor="#error of rule_errors">
         {{error}}
@@ -143,6 +143,6 @@ export class RuleErrorsComponent {
         this._ruleErrorService.getRuleErrors().subscribe(data => {
             this.rule_errors = data;
         },
-        error => alert("Could not load hit data: " + error.status))
+        error => alert("Could not load rule errors data: " + error.status))
     }
 }
