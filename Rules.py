@@ -481,7 +481,7 @@ def AutoUntranslatedRule(name, s, severity=Severity.standard):
     Automatic translation constraint rule that creates a regex from a simple string.
     Use case-insensitive first-character and matches only whole words
     """
-    buildRGX = lambda s: r"[{0}{1}]{2}".format(s[0].upper(), s[0].lower(), s[1:]) if s[0].isalpha() else s[1:]
+    buildRGX = lambda s: r"[{0}{1}]{2}".format(s[0].upper(), s[0].lower(), s[1:]) if s[0].isalpha() else s
     rgxParts = [buildRGX(p.strip()) for p in s.split(",")]
     rgx = r"\b({0})\b".format("|".join(rgxParts))
     return SimpleRegexRule(name, rgx, severity=severity)
