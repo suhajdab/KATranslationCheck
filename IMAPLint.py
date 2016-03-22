@@ -57,12 +57,10 @@ def fetchEMail(credentials):
             date = date[len("Date: "):]
         if date.endswith("(PST)"):
             date = date[:-len("(PST)")].strip()
-        if date.endswith(" (PST)"):
-            date = date[:-len(" (PST)")].strip()
+        if date.endswith("(PDT)"):
+            date = date[:-len("(PDT)")].strip()
         if date.endswith("(UTC)"):
             date = date[:-len("(UTC)")].strip()
-        if date.endswith(" (UTC)"):
-            date = date[:-len(" (UTC)")].strip()
         date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
         #
         match = rgx.match(subject)
