@@ -67,9 +67,6 @@ rules = [
     #TranslationConstraintRule("'&lt;/div&gt;' not translated to '&lt;/div&gt;'", r"</div", r"</div", severity=Severity.warning, flags=re.UNICODE),
     #TranslationConstraintRule("'&lt;span&gt;' not translated to '&lt;span&gt;'", r"<span", r"<span", severity=Severity.warning, flags=re.UNICODE),
     #TranslationConstraintRule("'&lt;/span&gt;' not translated to '&lt;/span&gt;'", r"</span", r"</span", severity=Severity.warning, flags=re.UNICODE),
-    # Bing issues
-    IgnoreByMsgstrRegexWrapper(r"\d+\^\{\\large\\text\{ten?\}",
-        SimpleRegexRule("Missing translation of ten(s)", r"(?<!\d)\^?\{?(\\large)?\\text\{\s*tens?\}\}", severity=Severity.info)),
     # Capitalization
     IgnoreByTcommentRegexWrapper(r"SEO\s+keyword",
         SimpleRegexRule("Dreieck not capitalized", r"\bdreiecke?\b", severity=Severity.info)),
