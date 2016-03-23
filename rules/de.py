@@ -26,26 +26,26 @@ rules = [
             SimpleRegexRule("Occurrence of untranslated 'school'", r"(?<!Old-)(?<!Ivy-League[- ])(?<!High[- ])(?<!Marlborough[- ])(?<!World[- ])\b[S]chool\b", severity=Severity.standard)),
     SimpleRegexRule("Occurrence of untranslated 'not'", r"(?<!\\)(?<!in)\s*\bnot\b", severity=Severity.standard),
     IgnoreByMsgidRegexWrapper(r"What Does the Fox Hear",
-        SimpleRegexRule("Occurrence of untranslated 'does", r"(?<!\\)(?<!-)\b[Dd]oesn?\b", severity=Severity.standard)),
+        SimpleRegexRule("Occurrence of untranslated does", r"(?<!\\)(?<!-)\b[Dd]oesn?\b", severity=Severity.standard)),
     IgnoreByMsgidRegexWrapper(r"What Does the Fox Hear",
-        SimpleRegexRule("Occurrence of untranslated 'what", r"\b[WW]hat\b", severity=Severity.standard)),
+        SimpleRegexRule("Occurrence of untranslated what", r"\b[WW]hat\b", severity=Severity.standard)),
     SimpleRegexRule("Occurrence of untranslated 'since'", r"\b[Ss]ince\b", severity=Severity.standard),
     IgnoreByMsgidRegexWrapper(r"value: The value to constrain",
-        SimpleRegexRule("Occurrence of untranslated 'value'", r"(?<!%\()(?<!Property:)\b[Vv]alues?\b(?!\)s)(?!=)", severity=Severity.standard)),
+        SimpleRegexRule("Occurrence of untranslated value", r"(?<!%\()(?<!Property:)\b[Vv]alues?\b(?!\)s)(?!=)", severity=Severity.standard)),
     IgnoreByFilenameRegexWrapper(r"^de/1_high_priority_platform/_other_.pot$",
-        SimpleRegexRule("Occurrence of untranslated 'low(er)'", r"\b[Ll]ow(er)?\b", severity=Severity.standard)),
+        SimpleRegexRule("Occurrence of untranslated low(er)", r"\b[Ll]ow(er)?\b", severity=Severity.standard)),
     IgnoreByMsgidRegexWrapper(r"(Ridgemont|Junior|Senior|Riverside)\s+High\b",
-        SimpleRegexRule("Occurrence of untranslated 'high(er)'", r"\b[Hh]igh(er)?\b(?!-[Ss]chool)(?! [Ss]chool)(?! Tides)", severity=Severity.info)),
-    SimpleRegexRule("Occurrence of untranslated '(counter)clockwise", r"\b([Cc]ounter)?-?[Cc]clockwise\b", severity=Severity.standard),
+        SimpleRegexRule("Occurrence of untranslated high(er)", r"\b[Hh]igh(er)?\b(?!-[Ss]chool)(?! [Ss]chool)(?! Tides)", severity=Severity.info)),
+    SimpleRegexRule("Occurrence of untranslated (counter)clockwise", r"\b([Cc]ounter)?-?[Cc]clockwise\b", severity=Severity.standard),
     IgnoreByMsgidRegexWrapper(r"Attack of the Soft Purple Bunnies",
-        SimpleRegexRule("Occurrence of untranslated 'purple' (not as color specifier)", r"(?<!\\)\b[Pp]urple\b(?! Pi)", severity=Severity.standard)),
+        SimpleRegexRule("Occurrence of untranslated purple (not as color specifier)", r"(?<!\\)\b[Pp]urple\b(?! Pi)", severity=Severity.standard)),
     IgnoreByMsgidRegexWrapper(r"Lygia\s+Pape", # red bottles = artwork
-        SimpleRegexRule("Occurrence of untranslated 'red' (not as color specifier)", r"(?<!\\)(?<!\\color\{)\b[Rr]ed\b(?! Delicious)(?! Robins)(?! Robbins)", severity=Severity.standard)),
+        SimpleRegexRule("Occurrence of untranslated red (not as color specifier)", r"(?<!\\)(?<!\\color\{)\b[Rr]ed\b(?! Delicious)(?! Robins)(?! Robbins)", severity=Severity.standard)),
     IgnoreByMsgidRegexWrapper(r"(Summer|Tree|Hour|Art|Lots|System|Museum|Institute|University)\s+of\s+(Drawing|Code|Script(ing)?|Life|Webpage|Databases|Problem|Fun|Higher\s+Education|Art|Technology)",
         IgnoreByMsgidRegexWrapper(r"(University\s+of\s+\w+|Nature of Code|cost of goods sold)", # Any "University of Maryland" etc
-            SimpleRegexRule("Occurrence of untranslated 'of'", r"\b[Oo]f\b(?!-)", severity=Severity.info))), #Also allow of inside links etc.
+            SimpleRegexRule("Occurrence of untranslated of", r"\b[Oo]f\b(?!-)", severity=Severity.info))), #Also allow of inside links etc.
     IgnoreByMsgidRegexWrapper(r"([Gg]reen'?s.+[Tt]heorem|Green Elementary)",
-        SimpleRegexRule("Occurrence of untranslated 'green' (not as color specifier)", r"(?<!\\)(?<!Hank )\b[Gg]reen\b", severity=Severity.standard)),
+        SimpleRegexRule("Occurrence of untranslated green (not as color specifier)", r"(?<!\\)(?<!Hank )\b[Gg]reen\b", severity=Severity.standard)),
     IgnoreByTcommentRegexWrapper("/measuring-and-converting-money-word-problems", # Ignore for conversion exercises 
         SimpleRegexRule("Occurrence of dollar as string", r"(?<!US-)[Dd]ollars?(?!ville)(?!-Schein)", severity=Severity.notice)), #US-Dollars? & Dollarville allowed
     IgnoreByFilenameRegexWrapper(r"^de/1_high_priority_platform", SimpleRegexRule("'Sie' instead of 'Du'", r"\bSie\b", severity=Severity.notice), invert=True),
