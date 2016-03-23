@@ -109,7 +109,7 @@ rules = [
     # Machine-readable stuff must be identical in the translation
     ExactCopyRule("All image URLs must match in order", r"!\[\]\s*\([^\)]+\)", severity=Severity.dangerous, aliases=imageAliases),
     ExactCopyRule("All image URLs must match in order (with translation)", r"!\[[^\]](\]\s*\([^\)]+\))", severity=Severity.info, aliases=imageAliases, group=1),
-    ExactCopyRule("All numeric digits must match in order", r"\d+(?!-step)", severity=Severity.warning, aliases=imageAliases), # Avoid image URLs matching
+    ExactCopyRule("All numeric digits must match in order", r"\d+(?!-step)(?!-digit)", severity=Severity.warning, aliases=imageAliases), # Avoid image URLs matching
     ExactCopyRule("All GUI elements must match in order", r"\[\[☃\s+[a-z-]+\s*\d*\]\]", severity=Severity.warning),
     DynamicTranslationIdentityRule("Non-identical whitespace before image (auto-translate) (experimental)", r"(\\n(\\n|\s|\*)*!\[)", group=0, severity=Severity.notice),
 ]
