@@ -535,7 +535,7 @@ def readRulesFromGDocs(ssid):
     aliases = defaultdict(str)
     for row in reader:
         try:
-            enabled, name, ruletype, rgx1, rgx2, severityStr, ignorePerseus = row
+            enabled, name, ruletype, rgx1, rgx2, severityStr, ignorePerseus, group = row
         except:
             yield RuleError("Unparseable row: " + str(row))
             continue
@@ -560,6 +560,8 @@ def readRulesFromGDocs(ssid):
                 rule = NegativeTranslationConstraintRule(name, rgx1, rgx2, severity=severity)
             elif ruletype == "TranslationConstraintRule":
                 rule = TranslationConstraintRule(name, rgx1, rgx2, severity=severity)
+            elif ruletype == "ExactCopyRule":
+                rule = ExactCopyRule(name, rgx1, severity=severity, group=group or 0)
             else:
                 yield RuleError("Rule {0}: ruletype {1} is invalid".format(name, ruletype))
                 continue
