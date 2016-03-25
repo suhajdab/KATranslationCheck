@@ -295,6 +295,13 @@ class ExactCopyRule(Rule):
         # Apply aliases
         origMatches = [self.aliases[x] or x for x in origMatches]
         translatedMatches = [self.aliases[x] or x for x in translatedMatches]
+        # Check length
+        if len(origMatches) > len(translatedMatches):
+            yield "{0} english matches but only {1} translated matches".format(
+                len(origMatches), len(translatedMatches))
+        if len(translatedMatches) > len(origMatches):
+            yield "{0} translated matches but only {1} english matches".format(
+                len(translatedMatches), len(origMatches))
         # Apply group if
         if self.group is not None:  # None - Use entire string. No groups must be present in regex
             origMatches = [m[self.group] for m in origMatches]
