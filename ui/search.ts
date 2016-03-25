@@ -47,7 +47,6 @@ export class ExerciseSearchComponent {
 
     constructor(injector: Injector, private _http: Http, private _langService: LanguageService) {
         this.router = injector.parent.get(Router);
-        console.log("Init");
     }
 
     /**
@@ -76,7 +75,7 @@ export class ExerciseSearchComponent {
         this.router.navigate(['Hitlist', {
             mname: rule.machine_name,
             filename: this.filename === null ? "" : this.filename,
-            tcommentFilter: this.term
+            commentFilter: this.term
         }])
     }
 

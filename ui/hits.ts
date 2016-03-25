@@ -1,4 +1,4 @@
-import {Component, OnInit, Injectable} from 'angular2/core';
+import {Component, OnInit, Injectable, Pipe, PipeTransform} from 'angular2/core';
 import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
@@ -45,11 +45,28 @@ export class RuleInfoComponent {
     rule: any
 }
 
+@Pipe({name: 'commentfilter', pure: false})
+@Injectable()
+export class CommentFilterPipe implements PipeTransform {
+    transform(items: any[], args: any[]): any {
+        if(items === undefined) {
+            return items;
+        }
+        //Process filter arg
+        let commentFilter = args[0];
+        if(commentFilter == null) {
+            return items;
+        }
+        //Perform filtering
+        return items.filter(item => item.hasOwnProperty("tcomment") && item.tcomment.includes(commentFilter));
+    }
+}
+
 @Component({
     selector: 'hits',
     template: `
     <rule-details [rule]="rule"></rule-details>
-    <div class="row hit" *ngFor="#hit of hits; #idx = index">
+    <div class="row hit" *ngFor="#hit of hits | commentfilter:commentFilterArg; #idx = index" *>
         <button class="btn-danger btn report-button">Report error</button>
         <a target="_blank" href="{{hit.crowdinLink}}" class="btn-success btn translate-button">Translate on Crowdin</a>
         <h3><span class="hitno">Hit #{{idx + 1}}:</span> <code class="hittext">{{hit.hit}}</code></h3>
@@ -79,11 +96,14 @@ export class RuleInfoComponent {
         ".tcomment {margin-left: 25px; color: #444;}"
     ]
     directives: [RuleInfoComponent],
-    bindings: [HitListService]
+    bindings: [HitListService],
+    pipes: [CommentFilterPipe]
 })
 export class HitListComponent implements CanReuse, OnInit {
     rule: any
     hits: any
+    commentFilterArg: string = null;
+
     constructor(private _hitListService: HitListService,
                 private _routeParams: RouteParams) {
     }
@@ -93,8 +113,10 @@ export class HitListComponent implements CanReuse, OnInit {
     ngOnInit() {
         let mname = this._routeParams.get("mname")
         let filename = this._routeParams.get("filename")
+        this.commentFilterArg = this._routeParams.get("commentFilter")
         console.log(`Route machine name: ${mname}`)
         console.log(`Route filename: ${filename}`)
+        console.log(`Comment filter: ${this.commentFilterArg}`)
         this._hitListService.getHits(mname, filename)
             .subscribe(data => {
                 this.rule = data.rule;
