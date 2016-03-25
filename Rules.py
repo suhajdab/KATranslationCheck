@@ -279,7 +279,7 @@ class ExactCopyRule(Rule):
     This can be used, for example, to ensure GUI elements, numbers or URLs are the same in
     both the translated text and the original.
     """
-    def __init__(self, name, regex, severity=Severity.standard, aliases=defaultdict(str), ignore_whitespace=True, group=None):
+    def __init__(self, name, regex, severity=Severity.standard, aliases=defaultdict(str), ignore_whitespace=False, group=None):
         super().__init__(name, severity)
         self.regex = reCompiler.compile(regex)
         self.regex_str = regex
