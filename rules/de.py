@@ -50,8 +50,6 @@ rules = [
         NegativeTranslationConstraintRule("'mile(s)' translated to 'Meile(n)' instead of 'Kilometer'", r"miles?", r"(?<!\")meilen?", severity=Severity.info, flags=re.UNICODE | re.IGNORECASE)),
     IgnoreByMsgstrRegexWrapper(r"Term", #Ignore false positives if term has any hits
         NegativeTranslationConstraintRule("'term' translated to 'Begriff' instead of 'Term'", r"\bterms?\b", r"\bBegriffe?\b", severity=Severity.standard, flags=re.UNICODE | re.IGNORECASE)),
-    IgnoreByMsgidRegexWrapper(r"[Pp]ost\s*(office|card|alCode|man|-Money)",
-        NegativeTranslationConstraintRule("'Post' translated to 'Post' instead of 'Beitrag'", r"\bpost", r"\bpost\b(?!-)", severity=Severity.info, flags=re.UNICODE | re.IGNORECASE)),
     # HTML tags must not be removed. Rules disabled because they don't work.
     #TranslationConstraintRule("'&lt;table&gt;' not translated to '&lt;table&gt;'", r"<table", r"<table", severity=Severity.warning, flags=re.UNICODE),
     #TranslationConstraintRule("'&lt;/table&gt;' not translated to '&lt;/table&gt;'", r"</table", r"</table", severity=Severity.warning, flags=re.UNICODE),
