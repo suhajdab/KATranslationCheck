@@ -28,8 +28,6 @@ rules = [
         SimpleRegexRule("Occurrence of untranslated value", r"(?<!%\()(?<!Property:)\b[Vv]alues?\b(?!\)s)(?!=)", severity=Severity.standard)),
     IgnoreByFilenameRegexWrapper(r"^de/1_high_priority_platform/_other_.pot$",
         SimpleRegexRule("Occurrence of untranslated low(er)", r"\b[Ll]ow(er)?\b", severity=Severity.standard)),
-    IgnoreByMsgidRegexWrapper(r"(Ridgemont|Junior|Senior|Riverside)\s+High\b",
-        SimpleRegexRule("Occurrence of untranslated high(er)", r"\b[Hh]igh(er)?\b(?!-[Ss]chool)(?! [Ss]chool)(?! Tides)", severity=Severity.info)),
     SimpleRegexRule("Occurrence of untranslated (counter)clockwise", r"\b([Cc]ounter)?-?[Cc]clockwise\b", severity=Severity.standard),
     IgnoreByMsgidRegexWrapper(r"Attack of the Soft Purple Bunnies",
         SimpleRegexRule("Occurrence of untranslated purple (not as color specifier)", r"(?<!\\)\b[Pp]urple\b(?! Pi)", severity=Severity.standard)),
