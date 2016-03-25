@@ -1,9 +1,9 @@
 import {Component, Injectable, Injector } from 'angular2/core';
-import {bootstrap} from 'angular2/platform/browser';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
 import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 import {LanguageService} from './utils.ts';
+import {ExerciseSearchComponent} from './search.ts';
 import { RouterLink, ROUTER_PROVIDERS, ROUTER_DIRECTIVES, Router, CanReuse, RouteParams } from 'angular2/router';
 
 @Injectable()
@@ -96,8 +96,9 @@ export class FileOverviewComponent {
     <h2 *ngIf="filename !== null">KATC overview for <code class="hittext">{{filename}}</code></h2>
     <rule-overview [rulestats]="rulestats" [filename]="filename"></rule-overview>
     <file-overview [filestats]="filestats" *ngIf="filestats"></file-overview>
+    <search-tcomment></search-tcomment>    
     `,
-    directives: [FileOverviewComponent, RuleOverviewComponent],
+    directives: [FileOverviewComponent, RuleOverviewComponent, ExerciseSearchComponent],
     bindings: [OverviewService]
 })
 export class OverviewComponent implements CanReuse {
@@ -107,6 +108,14 @@ export class OverviewComponent implements CanReuse {
     filename: string = null
 
     routerCanReuse() { return false; }
+
+    viewHitlist(rule) {
+        //this._router.navigate();
+        this.router.navigate(['Hitlist', {
+            mname: rule.machine_name,
+            filename: this.filename === null ? "" : this.filename
+        }])
+    }
 
     constructor(public overviewService: OverviewService, injector: Injector) {
         let routeParams = injector.parent.get(RouteParams);
