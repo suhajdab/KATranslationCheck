@@ -535,18 +535,18 @@ def readRulesFromGDocs(ssid):
     aliases = defaultdict(str)
     for row in reader:
         try:
-            enabled, name, ruletype, rgx1, rgx2, severityStr, ignorePerseus, group = row
+            enabled, name, ruletype, rgx1, rgx2, severityStr, ignorePerseus, group, tcommentIgnore = row
         except:
             yield RuleError("Unparseable row: " + str(row))
+            continue
+        # Parse enabled field
+        if enabled != "Y":
             continue
         # Parse severity
         try:
             severity = Severity[severityStr.lower()]
         except KeyError:
             yield RuleError("Rule {0}: severity {1} is invalid".format(name, severityStr))
-            continue
-        # Parse enabled
-        if enabled != "Y":
             continue
         try:
             rule = None
@@ -568,6 +568,8 @@ def readRulesFromGDocs(ssid):
             # Wrap rule
             if ignorePerseus == "Y":
                 rule = IgnorePerseusCommandsRuleWrapper(rule)
+            if tcommentIgnore:
+                rule = IgnoreByMsgstrRegexWrapper(tcommentIgnore, rule)
             yield rule
         except Exception as e:
             yield RuleError("Rule {0}: Error while parsing rule: {1}".format(name, e))
