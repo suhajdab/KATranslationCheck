@@ -53,7 +53,8 @@ class CompatibilityRegexCompiler(object):
         try:
             return cffi_re2.compile(rgx, flags)
         except ValueError:
-            print("Regex in compatibility mode: {0}".format(rgx))
+            # Enable this for debugging
+            # print("Regex in compatibility mode: {0}".format(rgx))
             self.numCompatRegex += 1
             return re.compile(rgx, flags)
 
