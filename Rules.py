@@ -310,8 +310,8 @@ class ExactCopyRule(Rule):
             #Yield meaningful hit msg
             engl = origMatches[idx][0] if isinstance(origMatches[idx], tuple) else origMatches[idx]
             trans = translatedMatches[idx][0] if isinstance(translatedMatches[idx], tuple) else translatedMatches[idx]
-            engl = engl.replace(" ", "⸱").replace("\t", "→")
-            trans = trans.replace(" ", "⸱").replace("\t", "→")
+            engl = engl.replace(" ", "⸱").replace("\t", "→").replace("\n", "\\n")
+            trans = trans.replace(" ", "⸱").replace("\t", "→").replace("\n", "\\n")
             yield "#{0}: '{1}' (engl) vs '{2}' (translated)".format(idx + 1, engl, trans)
         except StopIteration:  # No mismatch
             pass
