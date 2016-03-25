@@ -307,7 +307,10 @@ class ExactCopyRule(Rule):
         try:
             idx = next(idx for idx, (x, y) in
                        enumerate(zip(origMatches, translatedMatches)) if x != y)
-            yield "#{0}: '{1}' (engl) vs '{2}' (translated)".format(idx + 1, origMatches[idx], translatedMatches[idx])
+            #Yield meaningful hit msg
+            engl = origMatches[idx][0] if isinstance(origMatches[idx], tuple) else origMatches[idx]
+            trans = translatedMatches[idx][0] if isinstance(translatedMatches[idx], tuple) else translatedMatches[idx]
+            yield "#{0}: '{1}' (engl) vs '{2}' (translated)".format(idx + 1, engl, trans)
         except StopIteration:  # No mismatch
             pass
 
