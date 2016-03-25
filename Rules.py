@@ -306,7 +306,7 @@ class ExactCopyRule(Rule):
         try:
             idx = next(idx for idx, (x, y) in
                        enumerate(zip(origMatches, translatedMatches)) if x != y)
-            yield "#{0}: '{1}' (engl) vs '{2}' (translated)" % (idx + 1, origMatches[idx], translatedMatches[idx])
+            yield "#{0}: '{1}' (engl) vs '{2}' (translated)".format(idx + 1, origMatches[idx], translatedMatches[idx])
         except StopIteration:  # No mismatch
             pass
 
