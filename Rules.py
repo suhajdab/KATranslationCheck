@@ -561,7 +561,7 @@ def readRulesFromGDocs(ssid):
             elif ruletype == "TranslationConstraintRule":
                 rule = TranslationConstraintRule(name, rgx1, rgx2, severity=severity)
             elif ruletype == "ExactCopyRule":
-                rule = ExactCopyRule(name, rgx1, severity=severity, group=group or 0)
+                rule = ExactCopyRule(name, rgx1, severity=severity, group=group or None)
             else:
                 yield RuleError("Rule {0}: ruletype {1} is invalid".format(name, ruletype))
                 continue
