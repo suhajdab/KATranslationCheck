@@ -23,7 +23,7 @@ rules = [
     #Errors in thousands separation
     DynamicTranslationIdentityRule("Thousands separation via {,} (must be {\\,}) (experimental)", r"(\d+\{,\}\d+\{,\}\d+(\{,\}\d+)*)", negative=True, group=0, severity=Severity.warning), #Should be space. Comma without {} ignored.
     IgnoreByFilenameListWrapper(["de/4_low_priority/about.team.pot"],
-            SimpleRegexRule("Occurrence of untranslated 'school'", r"(?<!Old-)(?<!Ivy-League[- ])(?<!High[- ])(?<!Marlborough[- ])(?<!World[- ])\b[S]chool\b", severity=Severity.standard)),
+            SimpleRegexRule("Occurrence of untranslated 'school'", r"(?<!Old-)(?<!Stanford )(?<!Ivy-League[- ])(?<!High[- ])(?<!Marlborough[- ])(?<!World[- ])\b[S]chool\b", severity=Severity.standard)),
     IgnoreByMsgidRegexWrapper(r"value: The value to constrain",
         SimpleRegexRule("Occurrence of untranslated value", r"(?<!%\()(?<!Property:)\b[Vv]alues?\b(?!\)s)(?!=)", severity=Severity.standard)),
     IgnoreByFilenameRegexWrapper(r"^de/1_high_priority_platform/_other_.pot$",
