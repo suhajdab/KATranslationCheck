@@ -45,6 +45,8 @@ export class LanguageService {
     allLanguages(): Map<string, string> {
         return [{ name: "Deutsch (DE)", code: "de" },
                 { name: "Português (BR)", code: "pt-BR" },
+                { name: "Polski (PL)", code: "pl" },
+                { name: "Nederlands (NL)", code: "nl" },
                 { name: "български (BG)", code: "bg" }]
     }
 
