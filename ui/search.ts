@@ -65,6 +65,7 @@ export class ExerciseSearchComponent {
                 .count(hit => hit.tcomment.includes(this.term))
                 .filter(count => count > 0)
                 .map(count => new HitCount(rule, count))
+                .catch(Rx.Observable.empty())
         }).toArray().subscribe(hits => this.hits = hits,
             err => console.error(err),
             () => this.working = false)
