@@ -61,10 +61,16 @@ def downloadTranslationFilemap(lang="de"):
     # Extract filemap
     response = requests.get("http://crowdin.khanacademy.org/project/khanacademy/%s" % lang)
     soup = BeautifulSoup(response.text, "lxml")
-    scripttext = soup.find_all("script")[3].text
-    jsonStr = scripttext.partition("PROJECT_FILES = ")[2]
-    jsonStr = jsonStr.rpartition(", DOWNLOAD_PERMISSIONS")[0].replace("\\/", "/")
-    projectFiles = json.loads(jsonStr)
+    scripttext = None
+    scripts = soup.find_all("script")
+    for i in range(len(scripts)):
+        scripttext = scripts[i].text
+        if "PROJECT_FILES" not in scripttext:
+            continue
+        jsonStr = scripttext.partition("PROJECT_FILES = ")[2]
+        jsonStr = jsonStr.rpartition(", DOWNLOAD_PERMISSIONS")[0].replace("\\/", "/")
+        projectFiles = json.loads(jsonStr)
+        break
     # Build map for the directory structure
     directoryMap = {
         v["id"]: v["name"] + "/"
