@@ -51,12 +51,18 @@ def readAndMapLintEntries(filename, lang="de"):
     cnt = 0
     h = HTMLParser()
     for entry in readLintCSV(filename):
-        msgid, msgstr, comment, filename = downloadCrowdinByIdCached(session, entry.crid, lang)
+        if entry.crid.startswith("https://translate.khanacademy.org"):
+            msgid = "[KA Translate link]"
+            msgstr = "[KA Translate link]"
+            comment = "[KA Translate link]"
+            filename = "[KA Translate link]"
+        else:
+            msgid, msgstr, comment, filename = downloadCrowdinByIdCached(session, entry.crid, lang)
         #comment = re.sub(__urlRegex, r"<a href=\"\1\">\1</a>", comment)
         msgid = msgid.replace(" ", "⸱").replace("\t", "→")
         msgstr = msgstr.replace(" ", "⸱").replace("\t", "→")
         comment = h.unescape(comment).replace("<a href=", "<a target=\"_blank\" href=")
-        yield LintEntry(entry.date, entry.url,
+        yield LintEntry(entry.date, url,
                         entry.crid, entry.text, msgid, msgstr, comment, filename)
         cnt += 1
         if cnt % 100 == 0:
