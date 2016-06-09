@@ -14,7 +14,7 @@ from html.parser import HTMLParser
 from UpdateAllFiles import downloadCrowdinById, getCrowdinSession
 import shelve
 
-LintEntry = namedtuple("LintEntry", ["date", "url", "crid", "text",
+LintEntry = namedtuple("LintEntry", ["date", "url", "crid", "text", "errmsg",
                                      "msgid", "msgstr", "comment", "filename"])
 
 cache = None
@@ -40,7 +40,7 @@ def readLintCSV(filename):
     with open(filename) as lintin:
         reader = csv.reader(lintin, delimiter=',')
         return [LintEntry(row[0], row[1], row[1].rpartition("#")[2],
-                row[2], None, None, None, None) for row in reader]
+                row[2], row[3], None, None, None, None) for row in reader]
 
 
 def readAndMapLintEntries(filename, lang="de"):
@@ -62,8 +62,8 @@ def readAndMapLintEntries(filename, lang="de"):
         msgid = msgid.replace(" ", "⸱").replace("\t", "→")
         msgstr = msgstr.replace(" ", "⸱").replace("\t", "→")
         comment = h.unescape(comment).replace("<a href=", "<a target=\"_blank\" href=")
-        yield LintEntry(entry.date, entry.url,
-                        entry.crid, entry.text, msgid, msgstr, comment, filename)
+        yield LintEntry(entry.date, entry.url, entry.crid, entry.text,
+                        entry.errmsg, msgid, msgstr, comment, filename)
         cnt += 1
         if cnt % 100 == 0:
             print("Mapped {0} lint entries".format(cnt))

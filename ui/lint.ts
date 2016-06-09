@@ -29,7 +29,7 @@ export class LintService {
   <div *ngFor="#lintEntry of lintEntries ; #idx = index" class="row">
     <h3>#{{idx + 1}}: <a target="_blank" href="{{lintEntry.url}}">Lint error at {{lintEntry.date}}</a></h3>
     <h4>Lint message</h4>
-    <pre class="lint-entry">{{lintEntry.text}}</pre>
+    <pre class="lint-entry">{{lintEntry.errmsg}}</pre>
     <h4>Original</h4>
     <pre class="lint-entry">{{lintEntry.msgid}}</pre>
     <h4>Translated</h4>
