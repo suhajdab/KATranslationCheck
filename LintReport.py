@@ -54,7 +54,7 @@ def readAndMapLintEntries(filename, lang="de"):
         if entry.crid.startswith("https://translate.khanacademy.org"):
             msgid = "[KA Translate link]"
             msgstr = "[KA Translate link]"
-            comment = "[KA Translate link]"
+            comment = entry.text
             filename = "[KA Translate link]"
         else:
             msgid, msgstr, comment, filename = downloadCrowdinByIdCached(session, entry.crid, lang)
