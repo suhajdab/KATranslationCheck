@@ -62,7 +62,7 @@ def readAndMapLintEntries(filename, lang="de"):
         msgid = msgid.replace(" ", "⸱").replace("\t", "→")
         msgstr = msgstr.replace(" ", "⸱").replace("\t", "→")
         comment = h.unescape(comment).replace("<a href=", "<a target=\"_blank\" href=")
-        yield LintEntry(entry.date, url,
+        yield LintEntry(entry.date, entry.url,
                         entry.crid, entry.text, msgid, msgstr, comment, filename)
         cnt += 1
         if cnt % 100 == 0:
