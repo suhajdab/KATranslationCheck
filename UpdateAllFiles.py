@@ -48,6 +48,9 @@ def getCrowdinSession(credentials=None, domain="http://crowdin.khanacademy.org")
     username, password = credentials
     loginData = {"password": password, "submitted": 1, "redirect": "/profile", "email_as_login": "", "login": username}
     response = s.post("{0}/login".format(domain), data=loginData, stream=False)
+    # CSRF cookie is randomly generated in javascript. We can just use a fixed token here.
+    s.cookies["csrf_token"] = "m3h37r5y9f"
+    s.headers["X-Csrf-Token"] = "m3h37r5y9f"
     return s
 
 @retry(tries=8)
@@ -185,7 +188,7 @@ def updateTranslation(args):
             performDownload(t)
     #Set download timestamp
     timestamp = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")
-    with open("lastdownload.txt", "w") as outfile:
+    with open("lastdownload.txt", "w") as outfile:  
         outfile.write(timestamp)
 
 def downloadCrowdinById(session, crid, lang="de"):
@@ -210,5 +213,5 @@ def downloadCrowdinById(session, crid, lang="de"):
 if __name__ == "__main__":
     # Create new session
     s = getCrowdinSession(domain="https://crowdin.com")
-    print(downloadCrowdin(s, "2844363"))
+    print(downloadCrowdinById(s, "3475401"))
     # Load phrase
