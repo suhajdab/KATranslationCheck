@@ -1,6 +1,5 @@
 polib
 ansicolor
-jinja2
 requests
 BeautifulSoup4
 regex
