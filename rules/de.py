@@ -60,7 +60,7 @@ rules = [
     # Machine-readable stuff must be identical in the translation
     ExactCopyRule("All image URLs must match in order", r"!\[\]\s*\([^\)]+\)", severity=Severity.dangerous, aliases=imageAliases),
     ExactCopyRule("All image URLs must match in order (with translation)", r"!\[[^\]](\]\s*\([^\)]+\))", severity=Severity.info, aliases=imageAliases, group=1),
-    ExactCopyRule("All numeric digits must match in order", r"(?<!\#)\d+(?!\d)(?!rd)(?!-step)(?!-digit)(?!-stellig)(?!-stellige)(?!-stelligen)(?!\. )", severity=Severity.dangerous, aliases=imageAliases), # Avoid image URLs matching
+    ExactCopyRule("All numeric digits must match in order", r"(?<!powers of )(?<!\#)\d+(?!\d)(?!rd)(?!-step)(?!-digit)(?!-stellig)(?!-stellige)(?!-stelligen)(?!\. )", severity=Severity.dangerous, aliases=imageAliases), # Avoid image URLs matching
     DynamicTranslationIdentityRule("Non-identical whitespace before image (auto-translate) (experimental)", r"(\\n(\\n|\s|\*)*!\[)", group=0, severity=Severity.notice),
 ]
 
