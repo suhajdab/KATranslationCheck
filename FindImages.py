@@ -33,7 +33,7 @@ if __name__ == "__main__":
         findInPO(pot)
 
     with open(os.path.join("output", args.language, "images.json"), "w") as outfile:
-        json.dump(images, outfile)
+        json.dump(list(images), outfile)
 
     with open(os.path.join("output", args.language, "graphie.json"), "w") as outfile:
-        json.dump(graphie, outfile)
+        json.dump(list(graphie), outfile)
