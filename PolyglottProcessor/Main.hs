@@ -43,9 +43,6 @@ processPODirectory dir = do
     files <- listFilesRecursive dir
     concat <$> mapConcurrently (\f -> processPOData <$> parsePOFile f) files
 
-forConcurrently :: [a] -> (a -> IO b) -> IO [b]
-forConcurrently = flip mapConcurrently
-
 -- Process a directory of PO files
 processPODirectories :: FilePath -> [Text] -> IO [TranslationMap]
 processPODirectories dir langs = forConcurrently langs $ \lang -> do
