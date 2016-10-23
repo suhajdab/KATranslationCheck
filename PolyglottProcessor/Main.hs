@@ -11,8 +11,10 @@ import Data.Text (Text)
 import qualified Data.Text.Lazy.IO as LTIO
 import qualified Data.Text.Lazy as LT
 import Data.Maybe
+import Data.Monoid ((<>))
 import Data.Aeson
 import Filesystem
+import Filesystem.Path(filename)
 import Filesystem.Path.CurrentOS (encodeString)
 import Data.String (fromString)
 import Control.DeepSeq (force)
@@ -40,14 +42,15 @@ processPOData podata =
         toTuple r = (simplePOMsgid r, simplePOMsgstr r)
     in map toTuple filteredPO2
 
-getLanguageSubdirectories :: FilePath -> IO [Text]
-getLanguageSubdirectories dir = do
+-- Get the available language subdirectories for a given cache directory
+getAvailableLanguages :: FilePath -> IO [Text]
+getAvailableLanguages dir = do
     -- Find direct subdirectories
     dircontents <- listDirectory $ fromString dir
     -- Which ones are directories?
     isdir <- mapM isDirectory dircontents
     -- Get only subdirectories
-    return $ map (T.pack . encodeString . fst) $ filter snd (zip dircontents isdir)
+    return $ map (T.pack . encodeString . filename . fst) $ filter snd (zip dircontents isdir)
 
 -- Process a directory of PO files
 processPODirectory :: FilePath -> IO [(Text, Text)]
@@ -78,7 +81,8 @@ buildInvertedIndex tm =
 
 main :: IO ()
 main = do
-    languages <- getLanguageSubdirectories "../cache"
+    languages <- getAvailableLanguages "../cache"
+    TIO.putStrLn $ "Processing languages: " <> T.intercalate ", " languages
     results <- processPODirectories "../cache" languages
     let tm = foldr1 unionTranslationMap results
     let index = buildInvertedIndex tm

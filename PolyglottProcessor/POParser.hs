@@ -99,7 +99,7 @@ emptyLine = skipSpace <* endOfLine
 
 poRecord :: Parser PORecord
 poRecord = do
-    comment <- commentLines
+    comment <- option "" commentLines
     msgid <- msgidLines
     msgidPlural <- maybeOption msgidPluralLines 
     msgstr <- maybeOption msgstrLines
