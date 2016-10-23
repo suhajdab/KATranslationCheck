@@ -12,6 +12,9 @@ import qualified Data.Text.Lazy.IO as LTIO
 import qualified Data.Text.Lazy as LT
 import Data.Maybe
 import Data.Aeson
+import Filesystem
+import Filesystem.Path.CurrentOS (encodeString)
+import Data.String (fromString)
 import Control.DeepSeq (force)
 import System.FilePath.Posix
 import Data.Either.Combinators
@@ -36,6 +39,15 @@ processPOData podata =
         filteredPO2 = filter (not . T.null . simplePOMsgstr) $ filteredPO
         toTuple r = (simplePOMsgid r, simplePOMsgstr r)
     in map toTuple filteredPO2
+
+getLanguageSubdirectories :: FilePath -> IO [Text]
+getLanguageSubdirectories dir = do
+    -- Find direct subdirectories
+    dircontents <- listDirectory $ fromString dir
+    -- Which ones are directories?
+    isdir <- mapM isDirectory dircontents
+    -- Get only subdirectories
+    return $ map (T.pack . encodeString . fst) $ filter snd (zip dircontents isdir)
 
 -- Process a directory of PO files
 processPODirectory :: FilePath -> IO [(Text, Text)]
@@ -66,7 +78,8 @@ buildInvertedIndex tm =
 
 main :: IO ()
 main = do
-    results <- processPODirectories "../cache" ["de", "fr", "nl", "pt-BR", "ru", "hr", "ro", "pl", "sv-SE", "nn-NO", "es"]
+    languages <- getLanguageSubdirectories "../cache"
+    results <- processPODirectories "../cache" languages
     let tm = foldr1 unionTranslationMap results
     let index = buildInvertedIndex tm
     LB.writeFile "TranslationMap.json" $ encode tm
