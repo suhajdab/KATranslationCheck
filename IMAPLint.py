@@ -13,7 +13,6 @@ Ensure the correct credentials are entered in imap-credentials.json (see imap-cr
 import re
 import collections
 import operator
-from imapclient import IMAPClient
 from toolz.dicttoolz import valmap
 from toolz.itertoolz import unique
 from datetime import datetime
@@ -31,6 +30,7 @@ def fetchEMail(credentials):
     """
     Fetch all emails and delete old messages and other messages
     """
+    from imapclient import IMAPClient
     rgx = re.compile(r"(\d+) crowdin entries linted for ([a-z]{2}(-[a-zA-Z]{2})?)")
 
     server = IMAPClient(credentials["host"], use_uid=True, ssl=True)
