@@ -42,14 +42,10 @@ def writeJSONToFile(filename, obj):
     with open(filename, "w") as outfile:
         json.dump(obj, outfile)
 
-def readPOFiles(directory):
+def findPOFiles(directory):
     """
-    Read all PO files from a given directory and return
-    a dictionary path -> PO object.
-
-    Also supports using a single file as argument.
+    Get a list of PO files (.po / .pot) which are present in the directory.
     """
-
     if os.path.isfile(directory): #Single file>=
         poFilenames = [directory]
     else:
@@ -61,6 +57,16 @@ def readPOFiles(directory):
                 if not f.endswith(".po") and not f.endswith(".pot"): continue
                 #Add to list of files to process
                 poFilenames.append(os.path.join(curdir, f))
+    return poFilenames
+
+def readPOFiles(directory):
+    """
+    Read all PO files from a given directory and return
+    a dictionary path -> PO object.
+
+    Also supports using a single file as argument.
+    """
+    poFilenames = findPOFiles(directory)
     # Parsing is computationally expensive.
     # Distribute processing amongst distinct processing
     #  if there is a significant number of files
@@ -115,6 +121,7 @@ class JSONHitRenderer(object):
                 "https://crowdin.com/translate/khanacademy/{0}/enus-{1}".format(v["id"], lang)
             for v in translationFilemapCache.values()
         }
+
     def computeRuleHits(self, po, filename="[unknown filename]"):
         """
         Compute all rule hits for a single parsed PO file and return a list of futures
@@ -201,6 +208,7 @@ class JSONHitRenderer(object):
             for filename, ruleHits in self.fileRuleHits.items()
         }
         writeJSONToFile(os.path.join(self.outdir, "filestats.json"), stats)
+
     def _renderDirectory(self, ruleHits, ruleStats, directory, filename):
         # Generate output HTML for each rule
         for rule, hits in ruleHits.items():
@@ -239,6 +247,7 @@ class JSONHitRenderer(object):
                       if self.statsByFile[filename]["notices"] > 0]
         }
         writeJSONToFile(os.path.join(directory, "index.json"), js)
+
     def exportHitsAsJSON(self):
         """
         Apply a rule and write a directory of output HTML files
