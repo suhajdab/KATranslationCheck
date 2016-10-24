@@ -75,7 +75,7 @@ poDirResultToTranslationMap lang results =
     in M.fromList $ map f results
 
 unionTranslationMap :: TranslationMap -> TranslationMap -> TranslationMap
-unionTranslationMap = force . M.unionWith M.union
+unionTranslationMap = M.unionWith M.union
 
 buildInvertedIndex :: TranslationMap -> TranslationMapIndex
 buildInvertedIndex tm =
@@ -92,6 +92,7 @@ main = do
     -- Merge all translation maps (currently one for each language) into one
     putStrLn "Merging language maps..."
     let tm = foldr1 unionTranslationMap results
+    LB.writeFile "RawTranslationMap.json" $ encode tm
     -- Convert translation map to index
     putStrLn "Building inverted index..."
     let index = buildInvertedIndex tm
