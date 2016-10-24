@@ -54,13 +54,16 @@ getAvailableLanguages dir = do
     return $ map (T.pack . encodeString . filename . fst) $ filter snd (zip dircontents isdir)
 
 -- Process a directory of PO files
-processPODirectory :: FilePath -> IO [(Text, Text)]
+processPODirectory :: FilePath -- The directory path
+                   -> IO [(Text, Text)] -- [(msgid, msgstr)]
 processPODirectory dir = do
     files <- listFilesRecursive dir
     concat <$> mapConcurrently (\f -> processPOData <$> parsePOFile f) files
 
 -- Process a directory of PO files
-processPODirectories :: FilePath -> [Text] -> IO [TranslationMap]
+processPODirectories :: FilePath -- The root directory (must contain a language named subdir for each language)
+                     -> [Text] -- The languages to process
+                     -> IO [TranslationMap] -- A list of translation maps, one for each language
 processPODirectories dir langs = forConcurrently langs $ \lang -> do
         let curdir = dir </> T.unpack lang
         results <- processPODirectory curdir
@@ -84,9 +87,13 @@ main :: IO ()
 main = do
     languages <- getAvailableLanguages "../cache"
     TIO.putStrLn $ "Processing languages: " <> T.intercalate ", " languages
+    -- Create a translation map for each language
     results <- processPODirectories "../cache" languages
-    -- Merge all translation maps
+    -- Merge all translation maps (currently one for each language) into one
+    putStrLn "Merging language maps..."
     let tm = foldr1 unionTranslationMap results
+    -- Convert translation map to index
+    putStrLn "Building inverted index..."
     let index = buildInvertedIndex tm
     LB.writeFile "TranslationMap.json" $ encode tm
     LB.writeFile "TranslationIndex.json" $ encode index
