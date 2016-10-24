@@ -25,12 +25,15 @@ data PORecord = PORecord {
         poMsgstrPlural :: [Text]
     } deriving (Show, Eq)
 
--- ^ A simpler form of PO records that does not support
+-- ^ A simpler form of PO records that does not support plurals etc
 data SimplePORecord = SimplePORecord {
     simplePOComment :: Text,
     simplePOMsgid :: Text,
     simplePOMsgstr :: Text
 } deriving (Show, Eq)
+
+hasPOComment :: SimplePORecord -> Bool
+hasPOComment = not . T.null . simplePOMsgstr
 
 poToSimple :: PORecord -> Maybe SimplePORecord
 poToSimple (PORecord comm msgid _ (Just msgstr) _) = Just $ SimplePORecord comm msgid msgstr

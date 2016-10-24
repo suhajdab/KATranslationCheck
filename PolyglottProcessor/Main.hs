@@ -38,11 +38,12 @@ processPOData podata =
         test a = any (\t -> T.isInfixOf t a) allowedTypes
         poEntries = mapMaybe poToSimple podata
         filteredPO = filter (test . simplePOComment) $ poEntries
-        filteredPO2 = filter (not . T.null . simplePOMsgstr) $ filteredPO
+        filteredPO2 = filter hasPOComment $ filteredPO
         toTuple r = (simplePOMsgid r, simplePOMsgstr r)
     in map toTuple filteredPO2
 
 -- Get the available language subdirectories for a given cache directory
+-- Lists first-level subdirectories.
 getAvailableLanguages :: FilePath -> IO [Text]
 getAvailableLanguages dir = do
     -- Find direct subdirectories
@@ -84,6 +85,7 @@ main = do
     languages <- getAvailableLanguages "../cache"
     TIO.putStrLn $ "Processing languages: " <> T.intercalate ", " languages
     results <- processPODirectories "../cache" languages
+    -- Merge all translation maps
     let tm = foldr1 unionTranslationMap results
     let index = buildInvertedIndex tm
     LB.writeFile "TranslationMap.json" $ encode tm
