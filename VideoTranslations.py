@@ -34,7 +34,10 @@ def fetchVideoTranslationsCSV(lang):
             continue
     return result
 
-if __name__ == "__main__":
+def updateVideoMap(args):
+    """
+    Generates VideoTranslations.json from Khan Academy data
+    """
     pool = Pool(48)
     languages = list(sorted(list(findAllLanguages())))
 
@@ -51,4 +54,7 @@ if __name__ == "__main__":
     print(black("Writing JSON videomap...", bold=True))
     with open("VideoMap.json", "w") as outfile:
         json.dump(videoMap, outfile)
+
+if __name__ == "__main__":
+    updateVideoMap(None)
     

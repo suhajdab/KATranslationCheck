@@ -2,6 +2,7 @@
 from UpdateAllFiles import updateTranslations
 from check import performRender, performRenderLint
 from IMAPLint import updateLintIMAPHandler
+from VideoTranslations import updateVideoMap
 
 if __name__ == "__main__":
     import argparse
@@ -19,8 +20,11 @@ if __name__ == "__main__":
     updateLint = subparsers.add_parser('update-lint')
     updateLint.set_defaults(func=updateLintIMAPHandler)
 
-    renderLint = subparsers.add_parser('render-lint')
-    renderLint.set_defaults(func=performRenderLint)
+    updateLint = subparsers.add_parser('update-lint')
+    updateLint.set_defaults(func=updateLintIMAPHandler)
+
+    renderLint = subparsers.add_parser('update-video-translations')
+    renderLint.set_defaults(func=updateVideoMap)
 
     render = subparsers.add_parser('render')
     render.add_argument('-d', '--download', action='store_true', help='Download or update the directory')
