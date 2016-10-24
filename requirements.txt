@@ -8,7 +8,7 @@ compressinja
 lxml
 retry
 selenium
-IMAPClient
+IMAPClient==0.12
 toolz
 git+https://github.com/ulikoehler/cffi_re2.git
 simplejson
