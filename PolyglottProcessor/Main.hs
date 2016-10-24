@@ -75,7 +75,7 @@ poDirResultToTranslationMap lang results =
     in M.fromList $ map f results
 
 unionTranslationMap :: TranslationMap -> TranslationMap -> TranslationMap
-unionTranslationMap = M.unionWith M.union
+unionTranslationMap = force . M.unionWith M.union
 
 buildInvertedIndex :: TranslationMap -> TranslationMapIndex
 buildInvertedIndex tm =
