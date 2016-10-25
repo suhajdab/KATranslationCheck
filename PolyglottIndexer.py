@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from check import *
 from ansicolor import black
-import YakDB
 import polib
 
 def findAvailableLanguages(directory="cache"):
@@ -19,7 +18,7 @@ def findAvailableLanguages(directory="cache"):
 
 def loadTranslations(conn):
     """
-    Loads al inverted indice
+    Loads all PO strings in the database and builds a Polyglott Index
     """
     # Table 1 stores msgid => NUL-separated list of records
     #   Record: Langcode (KA-style) + ASCII record separator (0x1D) + msgstr
@@ -47,17 +46,20 @@ def loadTranslations(conn):
             values2 = {entry.msgid: entry.msgid for entry in po}
             conn.put(2, values)
             conn.put(2, values2)
+    # Perform anticipatory compation on both tables
+    print(black("Compacting language table...", bold=True))
+    conn.compact(1)
+    print(black("Compacting index table...", bold=True))
+    conn.compact(2)
 
-def buildInvertedIndex(conn):
-    """
-    Reads data from the yak
-    """
-    pass
-
-if __name__ == "__main__":
+def buildPolyglottIndex(args):
+    import YakDB
     print(black("Connecting to YakDB...", bold=True))
 
     conn = YakDB.Connection()
     conn.connect("tcp://localhost:7100")
 
     loadTranslations(conn)
+
+if __name__ == "__main__":
+    buildPolyglottIndex(None)
