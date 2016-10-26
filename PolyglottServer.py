@@ -8,7 +8,7 @@ conn = YakDB.Connection()
 conn.connect("tcp://localhost:7100")
 
 # Load video map
-with open(os.path.join("cache", "VideoMap.json")) as videofile
+with open(os.path.join("cache", "VideoMap.json")) as videofile:
     videomap = json.load(videofile)
 
 @route('/translate.json')
