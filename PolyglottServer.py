@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 from bottle import route, run, request
 import YakDB
+import json
+import os.path
 
 conn = YakDB.Connection()
 conn.connect("tcp://localhost:7100")
+
+# Load video map
+with open(os.path.join("cache", "VideoMap.json")) as videofile
+    videomap = json.load(videofile)
 
 @route('/translate.json')
 def translateAPI():
@@ -21,5 +27,13 @@ def translateAPI():
         string = vallist[1].decode("utf-8")
         ret[lang] = string
     return ret
+
+@route('/videos.json')
+def videoAPI():
+    if request.query.id in videomap:
+        return videomap[request.query.id]
+    else:
+        return {}
+
 
 run(host='localhost', port=7798, debug=True)
