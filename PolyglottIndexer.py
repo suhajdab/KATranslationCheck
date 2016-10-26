@@ -22,8 +22,8 @@ def loadTranslations(conn):
     """
     print(black("Deleting old tables...", bold=True))
     # Delete old tables (implicitly closes tables)
-    conn.deleteRange(1)
-    conn.deleteRange(2)
+    conn.deleteRange(1, startKey=None, endKey=None)
+    conn.deleteRange(2, startKey=None, endKey=None)
 
     print(black("Deleting old tables...", bold=True))
     # Table 1 stores msgid => NUL-separated list of records
