@@ -20,10 +20,12 @@ def loadTranslations(conn):
     """
     Loads all PO strings in the database and builds a Polyglott Index
     """
+    print(black("Deleting old tables...", bold=True))
     # Delete old tables (implicitly closes tables)
-    conn.truncate(1)
-    conn.truncate(2)
+    conn.deleteRange(1)
+    conn.deleteRange(2)
 
+    print(black("Deleting old tables...", bold=True))
     # Table 1 stores msgid => NUL-separated list of records
     #   Record: Langcode (KA-style) + ASCII record separator (0x1D) + msgstr
     conn.openTable(1, mergeOperator="NULAPPEND")
