@@ -22,4 +22,4 @@ def translateAPI():
         ret[lang] = string
     return ret
 
-run(host='localhost', port=8080, debug=True)
+run(host='localhost', port=7798, debug=True)
