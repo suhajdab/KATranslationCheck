@@ -52,7 +52,7 @@ def updateVideoMap(args):
             videoMap[slug]["en"] = orig_url
 
     print(black("Writing JSON videomap...", bold=True))
-    with open("VideoMap.json", "w") as outfile:
+    with open(os.path.join("cache", "VideoMap.json"), "w") as outfile:
         json.dump(videoMap, outfile)
 
 if __name__ == "__main__":
