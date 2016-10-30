@@ -45,5 +45,18 @@ def getCachedLanguageMap():
     with open(langsFile, "r") as infile:
         return json.load(infile)
 
+def findAvailableLanguages(directory="cache"):
+    """
+    Find available languages in the cache directory,
+    i.e. subdirectories and return a {lang: absolute dirpath} map
+    """
+    ret = {}
+    for child in os.listdir(directory):
+        path = os.path.join(directory, child)
+        if not os.path.isdir(path):
+            continue
+        ret[child] = path
+    return ret
+
 if __name__ == "__main__":
     print(findAllLanguages())

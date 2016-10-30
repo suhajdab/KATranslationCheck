@@ -3,6 +3,7 @@ from bottle import route, run, request
 import YakDB
 import json
 import os.path
+from Languages import findAvailableLanguages
 
 conn = YakDB.Connection()
 conn.connect("tcp://localhost:7100")
@@ -34,6 +35,11 @@ def videoAPI():
         return videomap[request.query.id]
     else:
         return {}
+
+@route('/languages.json')
+def translateAPI():
+    return list(findAvailableLanguages().keys())
+
 
 
 run(host='localhost', port=7798, debug=True)

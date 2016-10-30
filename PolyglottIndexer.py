@@ -2,19 +2,7 @@
 from check import *
 from ansicolor import black
 import polib
-
-def findAvailableLanguages(directory="cache"):
-    """
-    Find available languages in the cache directory,
-    i.e. subdirectories and return a {lang: absolute dirpath} map
-    """
-    ret = {}
-    for child in os.listdir(directory):
-        path = os.path.join(directory, child)
-        if not os.path.isdir(path):
-            continue
-        ret[child] = path
-    return ret
+from Languages import findAvailableLanguages
 
 def loadTranslations(conn):
     """
@@ -43,7 +31,7 @@ def loadTranslations(conn):
             # The large values are be handled in C++ code efficiently.
             print("\tProcessing {}".format(filename))
             po = polib.pofile(filename)
-            # Write table 1 
+            # Write table 1
             values = {entry.msgid: lang + "\x1D" + entry.msgstr
                       for entry in po if entry.msgstr.strip()}
             conn.put(1, values)
