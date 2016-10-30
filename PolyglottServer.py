@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from bottle import route, run, request
+from bottle import route, run, request, response
 import YakDB
 import json
 import os.path
@@ -37,8 +37,9 @@ def videoAPI():
         return {}
 
 @route('/languages.json')
-def translateAPI():
-    return list(findAvailableLanguages().keys())
+def langaugesAPI():
+    response.content_type = 'application/json'
+    return json.dumps(list(findAvailableLanguages().keys()))
 
 
 
