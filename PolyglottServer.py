@@ -39,7 +39,7 @@ def videoAPI():
 @route('/languages.json')
 def langaugesAPI():
     response.content_type = 'application/json'
-    return json.dumps(list(findAvailableLanguages().keys()))
+    return json.dumps(list(findAvailableLanguages().keys()) + ["en"])
 
 
 
