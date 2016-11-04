@@ -1,6 +1,6 @@
 # KATranslationCheck (KATC)
 
-[![Build Status](https://travis-ci.org/ulikoehler/KATranslationCheck.svg?branch=master)](https://travis-ci.org/ulikoehler/KATranslationCheck)
+[![Build Status](https://travis-ci.org/KA-Advocates/KATranslationCheck.svg?branch=master)](https://travis-ci.org/ulikoehler/KATranslationCheck)
 
 A rule-based checker for Khan Academy translations.
 
