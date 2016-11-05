@@ -47,10 +47,10 @@ Returns a PO file based on the given crowdin filepath that contains ONLY untrans
 Based on Hitoshi Yamauchi's pofilter script.
 Works only for cached files.
 
-[https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de](https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de)
+[https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de](https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de)
 
 ## Example for /po API
 
 Returns the raw PO file. This file is updated periodically for most languages, and the service is much faster than exporting from Crowdin. Works only for cached files
 
-[https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de](https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de)
+[https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de](https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de)

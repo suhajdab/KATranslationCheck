@@ -69,6 +69,6 @@ def languagesAPI(filename):
         return "PO file not found: {}".format(filename)
 
     response.content_type = 'text/x-gettext-translation'
-    return pofilter.find_untranslated_entries()
+    return pofilter.find_untranslated_entries(filename)
 
 run(host='localhost', port=7798, debug=True)
