@@ -40,3 +40,17 @@ bn: "https://www.youtube.com/watch?v=izVE03egWV8",
 bg: "https://www.youtube.com/watch?v=IrdMDufjFvg",
 sr: "https://www.youtube.com/watch?v=stdoQSAFZng"
 }`
+
+## Example for /untranslated API
+
+Returns a PO file based on the given crowdin filepath that contains ONLY untranslated.
+Based on Hitoshi Yamauchi's pofilter script.
+Works only for cached files.
+
+[https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de](https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de)
+
+## Example for /po API
+
+Returns the raw PO file. This file is updated periodically for most languages, and the service is much faster than exporting from Crowdin. Works only for cached files
+
+[https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de](https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny.articles.pot?lang=de)
