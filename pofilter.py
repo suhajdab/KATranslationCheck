@@ -25,10 +25,11 @@ def is_entry_untranslated(entry):
     return entry.msgid == entry.msgstr
 
 def replace_msgstr_by_msgid(entry):
-    entry.msgstr = entry.msgid
-    # Fix comment not being exported
-    entry.comment = entry.tcomment
-    return entry
+    return polib.POEntry(**{
+        "msgid": entry.msgid,
+        "msgstr": entry.msgid,
+        "comment": entry.tcomment, # Fix comment not being written to output file
+    })
 
 def remove_context_from_entry(entry):
     entry.comment = None
@@ -53,7 +54,7 @@ def find_untranslated_entries(infile, outfile, remove_context=False):
         export_entries = list(map(remove_context_from_entry, export_entries))
     # Create a new PO with the entries
     result = polib.POFile()
-    result.merge(export_entries)
+    [result.append(entry) for entry in export_entries]
     # Save to file
     result.save(outfile)
 
