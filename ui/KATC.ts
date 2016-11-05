@@ -1,12 +1,12 @@
-import {bootstrap} from 'angular2/platform/browser';
-import {Component, provide, OnChanges, SimpleChange} from 'angular2/core';
-import { RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS } from 'angular2/router';
-import {LocationStrategy, Location, HashLocationStrategy, Router } from 'angular2/router'; 
+
+import {Component, provide, OnChanges, SimpleChange} from '@angular/core';
+import { RouteConfig, RouterModule } from '@angular/router';
+import {LocationStrategy, Location, HashLocationStrategy, Router } from '@angular/router';
+
 import {OverviewComponent} from "./overview.ts";
 import {HitListComponent, RuleErrorsComponent} from "./hits.ts";
 import {LintComponent} from "./lint.ts";
 import {LanguageService} from "./utils.ts";
-import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
 
 @Component({
   selector: 'katc',
@@ -56,8 +56,7 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
   `,
   styles: ["#maincontainer {margin-top: 80px}"],
   directives: [ROUTER_DIRECTIVES],
-  providers: [ROUTER_PROVIDERS],
-  bindings: [LanguageService]
+  providers: [ROUTER_PROVIDERS]
 })
 @RouteConfig([
     {
@@ -80,19 +79,19 @@ import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
       path: '/lint',
       name: 'Lint results',
       component: LintComponent
-    }
+    },
     {
       path: '/ruleerrors',
       name: 'Rule errors',
       component: RuleErrorsComponent
-    }
+    },
     {
         path: '/**',
         name: 'Catchall',
         redirectTo: ['Home']
     }
 ])
-export class KATCApp {
+export class KATCComponent {
     language: string;
     languages: any;
 
@@ -109,10 +108,4 @@ export class KATCApp {
         this.language = this._langService.getStoredLanguage();
     }
 }
-
-bootstrap(KATCApp, [
-  HTTP_BINDINGS,
-  ROUTER_PROVIDERS,
-  provide(LocationStrategy, { useClass: HashLocationStrategy })])
-  //
 

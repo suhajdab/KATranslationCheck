@@ -1,9 +1,9 @@
-import {Component, Injectable, Injector } from 'angular2/core';
-import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+import {Component, Injectable, Injector } from '@angular/core';
+import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from '@angular/http';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
 import {LanguageService} from './utils.ts';
-import { RouterLink, ROUTER_PROVIDERS, ROUTER_DIRECTIVES, Router, CanReuse, RouteParams } from 'angular2/router';
+import { RouterLink, ROUTER_PROVIDERS, ROUTER_DIRECTIVES, Router, CanReuse, RouteParams } from '@angular/router';
 
 
 class HitCount {

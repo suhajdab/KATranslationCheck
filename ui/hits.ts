@@ -1,9 +1,8 @@
-import {Component, OnInit, Injectable, Pipe, PipeTransform} from 'angular2/core';
-import {bootstrap} from 'angular2/platform/browser';
+import {Component, OnInit, Injectable, Pipe, PipeTransform} from '@angular/core';
 import 'rxjs/add/operator/map';
-import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
+import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from '@angular/http';
 import { LanguageService } from './utils.ts';
-import { RouteParams, ROUTER_DIRECTIVES, Router, CanReuse } from 'angular2/router';
+import { RouteParams, ROUTER_DIRECTIVES, Router, CanReuse } from '@angular/router';
 
 @Injectable()
 export class HitListService {
@@ -95,9 +94,6 @@ export class CommentFilterPipe implements PipeTransform {
         ".report-button, .translate-button {float: right;}",
         ".tcomment {margin-left: 25px; color: #444;}"
     ]
-    directives: [RuleInfoComponent],
-    bindings: [HitListService],
-    pipes: [CommentFilterPipe]
 })
 export class HitListComponent implements CanReuse, OnInit {
     rule: any

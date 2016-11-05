@@ -1,9 +1,8 @@
-import {bootstrap} from 'angular2/platform/browser';
-import {Component} from 'angular2/core';
+import {Component} from '@angular/core';
 import 'rxjs/add/operator/map';
-import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from 'angular2/http';
-import { Injectable } from 'angular2/core';
-import { CanReuse } from 'angular2/router';
+import {Http, HTTP_PROVIDERS, HTTP_BINDINGS} from '@angular/http';
+import { Injectable } from '@angular/core';
+import { CanReuse } from '@angular/router';
 import { LanguageService } from './utils.ts';
 
 @Injectable()

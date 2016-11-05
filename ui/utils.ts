@@ -1,4 +1,4 @@
-import { Injectable, Injector } from 'angular2/core';
+import { Injectable, Injector } from '@angular/core';
 import 'rxjs/add/operator/map';
 import Rx from 'rxjs/Rx';
 import { KATCApp } from './index.ts';
@@ -11,8 +11,8 @@ export class LanguageService {
 
     storageAvailable() {
         try {
-            let storage = window.localStorage,
-                let x = '__storage_test__';
+            let storage = window.localStorage;
+            let x = '__storage_test__';
             storage.setItem(x, x);
             storage.removeItem(x);
             return true;
