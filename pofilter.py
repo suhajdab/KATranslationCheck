@@ -36,13 +36,13 @@ def remove_context_from_entry(entry):
     entry.occurrences = []
     return entry
 
-def find_untranslated_entries(infile, outfile, remove_context=False):
+def find_untranslated_entries(infile, remove_context=False):
     """
     Read a PO file and find all untranslated entries.
     Note that polib's untranslated_entries() doesn't seem to work
     for Crowdin PO files.
 
-    Returns a StringIO containing the resulting PO entries
+    Returns a string containing the resulting PO entries
     """
     poentries = polib.pofile(infile)
     # Find untranslated strings
@@ -55,23 +55,29 @@ def find_untranslated_entries(infile, outfile, remove_context=False):
     # Create a new PO with the entries
     result = polib.POFile()
     [result.append(entry) for entry in export_entries]
-    # Save to file
-    result.save(outfile)
+    # Generate PO string
+    return result.__unicode__()
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("infile", type=str,
                         help="Input PO/POT file")
 
-    parser.add_argument("outfile", type=str,
-                        help="Output filename")
+    parser.add_argument("outfile", type=str, default="-", nargs="?",
+                        help="Output filename (- is stdout)")
 
     parser.add_argument("-n", "--no-context", action="store_true",
                         help="Remove context from all strings")
 
     args = parser.parse_args()
 
-    find_untranslated_entries(args.infile, args.outfile, args.no_context)
+    postr = find_untranslated_entries(args.infile, args.no_context)
+    # Write or print to stdout
+    if args.outfile == "-":
+        print(postr)
+    else:
+        with open(args.outfile, "w") as outfile:
+            outfile.write(postr)
 
 
 if __name__ == "__main__":
