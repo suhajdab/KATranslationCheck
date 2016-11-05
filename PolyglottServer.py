@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-from bottle import route, run, request, response
+from bottle import route, run, request, response, static_file
 import YakDB
 import json
 import os.path
 from Languages import findAvailableLanguages
+import pofilter
 
 conn = YakDB.Connection()
 conn.connect("tcp://localhost:7100")
@@ -41,6 +42,27 @@ def langaugesAPI():
     response.content_type = 'application/json'
     return json.dumps(list(findAvailableLanguages().keys()) + ["en"])
 
+@route('/po/<filename:path>')
+def languagesAPI(filename):
+    if ".." in filename: # SECURITY
+        response.status = 403
+        response.content_type = 'text/plain'
+        return "Path disallowed"
+    lang = request.query.lang
 
+    response.content_type = 'text/x-gettext-translation'
+    return static_file(os.path.join("cache", lang, filename), root=".")
+
+
+@route('/untranslated/<filename:path>')
+def languagesAPI(filename):
+    if ".." in filename: # SECURITY
+        response.status = 403
+        response.content_type = 'text/plain'
+        return "Path disallowed"
+    lang = request.query.lang
+
+    response.content_type = 'text/x-gettext-translation'
+    return pofilter.find_untranslated_entries(os.path.join("cache", lang, filename))
 
 run(host='localhost', port=7798, debug=True)
