@@ -101,8 +101,10 @@ Known members of KA translation teams and frequent contributors may gain direct 
 
 ## License & Acknowledgements
 
-Copyright (C) 2015 Uli Köhler
+Copyright (C) 2015-2016 Uli Köhler
 
 KATC is distributed under the Apache 2.0 license.
+
+PoFilter.py: Copyright (C) 2015 Hitoshi Yamauchi (Modifications by Uli Köhler), published under New BSD license.
 
 Special thanks to [alani1](https://github.com/alani1) (also the [KALR](https://github.com/alani1/KALanguageReport) author) and [w0lfg](https://github.com/w0lfg) who contributed in making this a useful software.
