@@ -60,9 +60,15 @@ def languagesAPI(filename):
         response.status = 403
         response.content_type = 'text/plain'
         return "Path disallowed"
+    # Checks OK -> process request
     lang = request.query.lang
+    filename = os.path.join("cache", lang, filename)
+    if not os.path.isfile(filename):
+        response.status = 404
+        response.content_type = 'text/plain'
+        return "PO file not found: {}".format(filename)
 
     response.content_type = 'text/x-gettext-translation'
-    return pofilter.find_untranslated_entries(os.path.join("cache", lang, filename))
+    return pofilter.find_untranslated_entries()
 
 run(host='localhost', port=7798, debug=True)
