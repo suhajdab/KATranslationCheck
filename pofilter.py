@@ -22,7 +22,7 @@ import polib
 
 def is_entry_untranslated(entry):
     """filter() function to determine if a given entry is"""
-    return entry.msgid == entry.msgstr
+    return entry.msgid == entry.msgstr or (not entry.msgstr and entry.msgid)
 
 def replace_msgstr_by_msgid(entry):
     return polib.POEntry(**{
