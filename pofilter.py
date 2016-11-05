@@ -21,8 +21,9 @@ import argparse, sys, re, codecs
 import polib
 
 def is_entry_untranslated(entry):
-    """filter() function to determine if a given entry is"""
-    return entry.msgid == entry.msgstr or (not entry.msgstr and entry.msgid)
+    """filter() function to determine if a given entry is untranslated"""
+    # Msgstr not empty OR both msgid and msgstr empty
+    return (not entry.msgstr and entry.msgid)
 
 def replace_msgstr_by_msgid(entry):
     return polib.POEntry(**{
