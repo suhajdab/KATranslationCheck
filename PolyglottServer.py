@@ -5,6 +5,8 @@ import json
 import os.path
 from Languages import findAvailableLanguages
 import pofilter
+from toolz.dicttoolz import valmap
+import operator
 
 conn = YakDB.Connection()
 conn.connect("tcp://localhost:7100")
@@ -36,6 +38,20 @@ def videoAPI():
         return videomap[request.query.id]
     else:
         return {}
+
+@route('/pofiles.json')
+def pofilesAPI():
+    """Get a sorted list of all PO files"""
+    response.content_type = 'application/json'
+    # Use the DE translation map as master (for no good reason, really)
+    with open("cache/translation-filemap-de.json") as infile:
+        filemap = json.load(infile)
+        # Extract only paths
+        pathdict = valmap(operator.itemgetter("path"), filemap)
+        # Sort lexicographically
+        pathlist = list(pathdict.values())
+        pathlist = sorted(pathlist)
+        return json.dumps(pathlist)
 
 @route('/languages.json')
 def langaugesAPI():

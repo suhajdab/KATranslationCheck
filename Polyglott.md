@@ -54,3 +54,18 @@ Works only for cached files.
 Returns the raw PO file. This file is updated periodically for most languages, and the service is much faster than exporting from Crowdin. Works only for cached files
 
 [https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de](https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de)
+
+## pofiles.json API
+
+This API is non-parametric and allows you to retrieve a sorted list of filenames.
+
+[https://qa.kadeutsch.org/pofiles.json](https://qa.kadeutsch.org/pofiles.json)
+
+```json
+[
+"1_high_priority_platform/_other_.pot",
+"1_high_priority_platform/about.donate.pot",
+"1_high_priority_platform/about.privacy_policy.pot",
+"1_high_priority_platform/about.terms_of_service.pot",
+....
+```
