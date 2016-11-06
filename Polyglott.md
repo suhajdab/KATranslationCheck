@@ -5,7 +5,7 @@ The server backend works with [YakDB](https://github.com/ulikoehler/YakDB), a fa
 
 ## API examples :
 **Input:**
-   http://localhost:7798/translate.json?s=Einfache%20Addition
+   [https://qa.kadeutsch.org/translate.json?s=Einfache%20Addition](https://qa.kadeutsch.org/translate.json?s=Einfache%20Addition)
 
 **Response:**
    
@@ -18,7 +18,7 @@ en: "Basic addition"
 
 ##Example for Video-Map
 **Input:**
-   http://localhost:7798/videos.json?id=basic-addition
+   [https://qa.kadeutsch.org/videos.json?id=basic-addition](https://qa.kadeutsch.org/videos.json?id=basic-addition)
 
 **Response:**
 
