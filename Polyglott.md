@@ -65,9 +65,24 @@ Please see [the source code](https://github.com/KA-Advocates/KATranslationCheck/
 
 [https://qa.kadeutsch.org/pofilter/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str](https://qa.kadeutsch.org/pofilter/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str)
 
+## languages.json API
+
+This API provides information about all languages which are active (i.e. the PO files have been downloaded) in the KATC installation. It also provides metadata such as english name and native name for these languages
+
+[https://qa.kadeutsch.org/languages.json](https://qa.kadeutsch.org/languages.json)
+
+Excerpt:
+```json
+{
+    de: {nativeName: "Deutsch", name: "German"},
+    pt-BR: {nativeName: "Português", name: "Portuguese (Brazilian)"},
+    ...
+}
+```
+
 ## Example for /po API
 
-Returns the raw PO file. This file is updated periodically for most languages, and the service is much faster than exporting from Crowdin. Works only for cached files
+Returns the raw PO file. This file is updated periodically for most lan)guages, and the service is much faster than exporting from Crowdin. Works only for cached files
 
 [https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de](https://qa.kadeutsch.org/po/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de)
 
