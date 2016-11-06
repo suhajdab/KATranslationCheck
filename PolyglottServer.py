@@ -7,6 +7,7 @@ from Languages import findAvailableLanguages
 import pofilter
 from toolz.dicttoolz import valmap
 import operator
+from collections import OrderedDict
 
 conn = YakDB.Connection()
 conn.connect("tcp://localhost:7100")
@@ -55,15 +56,16 @@ def pofilesAPI():
 
 @route('/languages.json')
 def languagesAPI():
-    langcodes = list(findAvailableLanguages().keys()) + ["en"]
+    langcodes = sorted(list(findAvailableLanguages().keys()) + ["en"])
     # Get language metadata
     with open("language-meta.json") as infile:
         langmeta = json.load(infile)
     # Access langmeta information for each langcode
-    return {
-        langcode: langmeta[langcode]
+    OrderedDict()
+    return OrderedDict([
+        (langcode, langmeta[langcode])
         for langcode in langcodes
-    }
+    ])
 
 @route('/po/<filename:path>')
 def languagesAPI(filename):
