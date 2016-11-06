@@ -72,7 +72,7 @@ This API provides information about all languages which are active (i.e. the PO 
 [https://qa.kadeutsch.org/languages.json](https://qa.kadeutsch.org/languages.json)
 
 Excerpt:
-```json
+```
 {
     de: {nativeName: "Deutsch", name: "German"},
     pt-BR: {nativeName: "Português", name: "Portuguese (Brazilian)"},
