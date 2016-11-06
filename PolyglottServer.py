@@ -54,9 +54,16 @@ def pofilesAPI():
         return json.dumps(pathlist)
 
 @route('/languages.json')
-def langaugesAPI():
-    response.content_type = 'application/json'
-    return json.dumps(list(findAvailableLanguages().keys()) + ["en"])
+def languagesAPI():
+    langcodes = list(findAvailableLanguages().keys()) + ["en"]
+    # Get language metadata
+    with open("language-meta.json") as infile:
+        langmeta = json.load(infile)
+    # Access langmeta information for each langcode
+    return {
+        langcode: langmeta[langcode]
+        for langcode in langcodes
+    }
 
 @route('/po/<filename:path>')
 def languagesAPI(filename):
