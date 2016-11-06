@@ -78,7 +78,7 @@ def languagesAPI(filename):
         return "Path disallowed"
     # Checks OK -> process request
     lang = request.query.lang
-    tool = request.query.tools or "id_to_str"
+    tool = request.query.tool or "id_to_str"
     filename = os.path.join("cache", lang, filename)
     if not os.path.isfile(filename):
         response.status = 404
