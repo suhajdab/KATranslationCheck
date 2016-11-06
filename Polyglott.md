@@ -43,10 +43,25 @@ sr: "https://www.youtube.com/watch?v=stdoQSAFZng"
 
 ## Example for /pofilter API
 
-Returns a PO file based on the given crowdin filepath that contains filtered PO data.
-Please see [the source code](https://github.com/KA-Advocates/KATranslationCheck/blob/master/pofilter.py#L12) for documentation on which tools (query option) are available. The default `tool=id_to_str` contains untranslated strings.
+Returns a PO file based on the given crowdin filepath that contains filtered PO data. The default `tool=id_to_str` contains untranslated strings.
 Based on Hitoshi Yamauchi's pofilter script.
 Works only for cached files.
+
+Available tools:
+```
+# tool=none
+#        no filtering
+# tool=id_to_str [DEFAULT]
+#        copy msgid string to msgstr string if msgstr is empty.
+# tool=same
+#        Outout when msgid == mgsstr
+# tool=differ
+#        Outout when msgid != mgsstr
+#
+```
+
+Please see [the source code](https://github.com/KA-Advocates/KATranslationCheck/blob/master/pofilter.py) for more details
+
 
 [https://qa.kadeutsch.org/pofilter/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str](https://qa.kadeutsch.org/pofilter/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str)
 
