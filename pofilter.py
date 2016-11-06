@@ -9,6 +9,15 @@
 #
 # Usecase:
 #    Remove translated entries from the .po file
+# Tool:
+# --tool none
+#        no filtering
+# --tool id_to_str [DEFAULT]
+#        copy msgid string to msgstr string if msgstr is empty.
+# --tool same
+#        Outout when msgid == mgsstr
+# --tool differ
+#        Outout when msgid != mgsstr
 #
 # Example:
 #    Extract non-translated entries (keeps context)
@@ -45,17 +54,20 @@ def replace_msgstr_by_msgid(entry):
 filter_tools = {
     "id_to_str": id_to_str,
     "same": same,
-    "differ": differ
+    "differ": differ,
+    "none": lambda _: True
 }
 
 map_tools = {
     "id_to_str": replace_msgstr_by_msgid,
     "same": lambda a: a,
-    "differ": lambda a: a
+    "differ": lambda a: a,
+    "none": lambda a: a
 }
 
 def remove_context_from_entry(entry):
     entry.comment = None
+    entry.tcomment = None
     entry.occurrences = []
     return entry
 
@@ -89,7 +101,7 @@ def main():
     parser.add_argument("outfile", type=str, default="-", nargs="?",
                         help="Output filename (- is stdout)")
 
-    parser.add_argument("--tool", choices=['id_to_str', 'same', 'differ'], default="id_to_str",
+    parser.add_argument("--tool", choices=['id_to_str', 'same', 'differ', 'none'], default="id_to_str",
                         help="tools. id_to_str: copy msgid to msgstr. same: msgid == msgstr. differ: msgid != mgsstr")
 
     parser.add_argument("-n", "--no-context", action="store_true",

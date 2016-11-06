@@ -70,7 +70,7 @@ def languagesAPI(filename):
     return static_file(os.path.join("cache", lang, filename), root=".")
 
 
-@route('/untranslated/<filename:path>')
+@route('/pofilter/<filename:path>')
 def languagesAPI(filename):
     if ".." in filename: # SECURITY
         response.status = 403
@@ -78,6 +78,7 @@ def languagesAPI(filename):
         return "Path disallowed"
     # Checks OK -> process request
     lang = request.query.lang
+    tool = request.query.tools
     filename = os.path.join("cache", lang, filename)
     if not os.path.isfile(filename):
         response.status = 404
@@ -85,6 +86,6 @@ def languagesAPI(filename):
         return "PO file not found: {}".format(filename)
 
     response.content_type = 'text/x-gettext-translation'
-    return pofilter.find_untranslated_entries(filename)
+    return pofilter.find_untranslated_entries(filename, tool=tool)
 
 run(host='localhost', port=7798, debug=True)
