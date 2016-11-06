@@ -48,7 +48,7 @@ Please see [the source code](https://github.com/KA-Advocates/KATranslationCheck/
 Based on Hitoshi Yamauchi's pofilter script.
 Works only for cached files.
 
-[https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str](https://qa.kadeutsch.org/untranslated/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str)
+[https://qa.kadeutsch.org/pofilter/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str](https://qa.kadeutsch.org/pofilter/2_high_priority_content/learn.math.3rd-engage-ny-eureka.articles.pot?lang=de&tool=id_to_str)
 
 ## Example for /po API
 
