@@ -41,7 +41,7 @@ def loadUsernamePassword():
 # Globally load credentials
 
 # Perform login
-def getCrowdinSession(credentials=None, domain="http://crowdin.khanacademy.org"):
+def getCrowdinSession(credentials=None, domain="https://crowdin.com"):
     s = requests.Session()
     if credentials is None:
         credentials = loadUsernamePassword()
@@ -101,7 +101,7 @@ def performPOTDownload(lang, argtuple):
     """
     # Extract argument tuple
     fileid, filepath = argtuple
-    urlPrefix = "http://crowdin.khanacademy.org/project/khanacademy/{0}/{1}/".format(lang, fileid)
+    urlPrefix = "https://crowdin.com/project/khanacademy/{0}/{1}/".format(lang, fileid)
     # Initialize session
     s = getCrowdinSession()
     # Trigger export
