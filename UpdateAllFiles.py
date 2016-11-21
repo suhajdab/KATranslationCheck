@@ -79,7 +79,7 @@ def downloadTranslationFilemap(lang="de"):
         v["id"]: v["name"] + "/"
         for k, v in projectFiles.items()
         if v["node_type"] == "0"} # 0 -> directory
-    directoryMap["0"] = "/"
+    directoryMap["0"] = ""
     # Filter only POT. Create filename -> object map with "id" property set
     idRegex = re.compile("/khanacademy/(\d+)/enus-de")
     dct = {
