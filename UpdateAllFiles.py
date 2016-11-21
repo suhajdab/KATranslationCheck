@@ -62,7 +62,7 @@ def downloadTranslationFilemap(lang="de"):
     containing the path inside the language directory.
     """
     # Extract filemap
-    response = requests.get("http://crowdin.khanacademy.org/project/khanacademy/%s" % lang)
+    response = requests.get("https://crowdin.com/project/khanacademy/%s" % lang)
     soup = BeautifulSoup(response.text, "lxml")
     scripttext = None
     scripts = soup.find_all("script")
@@ -79,6 +79,7 @@ def downloadTranslationFilemap(lang="de"):
         v["id"]: v["name"] + "/"
         for k, v in projectFiles.items()
         if v["node_type"] == "0"} # 0 -> directory
+    directoryMap["0"] = "/"
     # Filter only POT. Create filename -> object map with "id" property set
     idRegex = re.compile("/khanacademy/(\d+)/enus-de")
     dct = {
@@ -136,7 +137,7 @@ def updateTranslationFilemapCache(lang="de"):
     with open(filename, "w") as outfile:
         translation_filemap = downloadTranslationFilemap(lang)
         json.dump(translation_filemap, outfile)
-        return translation_filemap
+    return translation_filemap
 
 def getTranslationFilemapCache(lang="de",  forceUpdate=False):
     # Enforce update if file does not exist
