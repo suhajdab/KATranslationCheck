@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 from html.parser import HTMLParser
 from Languages import findAllLanguages
 from ansicolor import red, black, blue, green
-from Languages import getCachedLanguageMap
+from Languages import getCachedLanguageMap, findAvailableLanguages
 
 languageIDs = getCachedLanguageMap()
 
@@ -151,7 +151,7 @@ def getTranslationFilemapCache(lang="de",  forceUpdate=False):
 
 def updateTranslations(args):
     if args.all_languages:
-        for language in findAllLanguages():
+        for language in findAvailableLanguages():
             print(green("Downloading language {0}".format(language), bold=True))
             args.language = language
             updateTranslation(args)
