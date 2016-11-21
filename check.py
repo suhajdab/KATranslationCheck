@@ -16,6 +16,7 @@ import operator
 import simplejson as json
 import itertools
 import os
+import queue
 import os.path
 import glob
 import urllib
@@ -62,22 +63,15 @@ def findPOFiles(directory):
 def readPOFiles(directory):
     """
     Read all PO files from a given directory and return
-    a dictionary path -> PO object.
+    a dictionary path -> PO function.
+
+    Each Po function can be called without arguments to get the PO file.
 
     Also supports using a single file as argument.
     """
     poFilenames = findPOFiles(directory)
     # Parsing is computationally expensive.
-    # Distribute processing amongst distinct processing
-    #  if there is a significant number of files
-    if len(poFilenames) > 10:
-        pool = Pool(None) #As many as CPUs
-        parsedFiles = pool.map(polib.pofile, poFilenames)
-        return {os.path.relpath(path, directory): parsedFile
-                for path, parsedFile
-                in zip(poFilenames, parsedFiles)}
-    else: #Only a small number of files, process directly
-        return {os.path.relpath(path, directory): polib.pofile(path) for path in poFilenames}
+    return {os.path.relpath(path, directory): lambda: polib.pofile(path) for path in poFilenames}
 
 _multiSpace = re.compile(r"\s+")
 
@@ -101,6 +95,9 @@ class JSONHitRenderer(object):
         os.makedirs(self.outdir, exist_ok=True)
         # Async executor
         self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count())
+        # Modified queue behaviour so new rules are run before reading new PO files,
+        # in effect saving a ton of RAM
+        self.executor._work_queue = queue.LifoQueue(512)
         # Load rules for language
         rules, rule_errors = importRulesForLanguage(lang)
         self.rules = sorted(rules, reverse=True)
@@ -125,11 +122,17 @@ class JSONHitRenderer(object):
     def computeRuleHits(self, po, filename="[unknown filename]"):
         """
         Compute all rule hits for a single parsed PO file and return a list of futures
-        that return (filename, rule, results tuples)
+        that return (filename, rule, results tuples).
+
+        po must be a function that returns a pofile object
         """
-        def _apply_wrapper(rule, po, filename):
+        def _wrapper(rule, po, filename):
+            # print("   {} => Rule {}".format(filename, rule))
             return (filename, rule, list(rule.apply_to_po(po, filename=filename)))
-        futures = [self.executor.submit(_apply_wrapper, rule, po, filename) for rule in self.rules]
+        # Actually read PO file
+        print(black("Reading {} ...".format(filename), bold=True))
+        po = po()
+        futures = [self.executor.submit(_wrapper, rule, po, filename) for rule in self.rules]
         return futures
 
     def computeRuleHitsForFileSet(self, poFiles):
