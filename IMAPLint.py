@@ -63,6 +63,8 @@ def fetchEMail(credentials):
             date = date[:-len("(UTC)")].strip()
         if date.endswith("(CEST)"):
             date = date[:-len("(CEST)")].strip()
+        if date.endswith("(EST)"):
+            date = date[:-len("(EST)")].strip()
         date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
         #
         match = rgx.match(subject)
