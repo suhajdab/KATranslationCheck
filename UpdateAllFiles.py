@@ -7,6 +7,7 @@ Non-present files will NOT be updated.
 """
 import requests
 import simplejson as json
+import simplejson
 import re
 import gc
 import os
@@ -107,8 +108,11 @@ def performPOTDownload(lang, argtuple):
     # Trigger export
     exportResponse = s.get(urlPrefix + "export", headers={"Accept": "application/json"})
     #print(exportResponse.text)
-    if exportResponse.json()["success"] != True:
-        raise Exception("Crowdin export failed: " + exportResponse.text)
+    try:
+        if exportResponse.json()["success"] != True:
+            raise Exception("Crowdin export failed: " + exportResponse.text)
+    except simplejson.scanner.JSONDecodeError:
+        print(exportResponse.text)
     # Trigger download
     # Store in file
     with open(filepath, "w+b") as outfile:
