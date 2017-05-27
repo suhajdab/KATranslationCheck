@@ -47,8 +47,10 @@ def getCrowdinSession(credentials=None, domain="https://crowdin.com"):
     if credentials is None:
         credentials = loadUsernamePassword()
     username, password = credentials
-    loginData = {"password": password, "submitted": 1, "redirect": "/profile", "email_as_login": "", "login": username}
-    response = s.post("{0}/login".format(domain), data=loginData, stream=False)
+    s.get("{}/login".format(domain))
+    loginData = {"password": password, "redirect": "/profile", "login": username}
+    headers = {"Referer": "https://crowdin.com/login"}
+    response = s.post("{}/login/submit".format(domain), data=loginData, headers=headers, stream=False)
     # CSRF cookie is randomly generated in javascript. We can just use a fixed token here.
     s.cookies["csrf_token"] = "m3h37r5y9f"
     s.headers["X-Csrf-Token"] = "m3h37r5y9f"
@@ -109,14 +111,16 @@ def performPOTDownload(lang, argtuple):
     exportResponse = s.get(urlPrefix + "export", headers={"Accept": "application/json"})
     #print(exportResponse.text)
     try:
+        exportJSON = exportResponse.json()
         if exportResponse.json()["success"] != True:
             raise Exception("Crowdin export failed: " + exportResponse.text)
     except simplejson.scanner.JSONDecodeError:
         print(exportResponse.text)
+        return
     # Trigger download
     # Store in file
     with open(filepath, "w+b") as outfile:
-        response = s.get(urlPrefix + "download", stream=True)
+        response = s.get(exportJSON["url"], stream=True)
 
         if not response.ok:
             raise Exception("Download error")
@@ -218,5 +222,6 @@ def downloadCrowdinById(session, crid, lang="de"):
 if __name__ == "__main__":
     # Create new session
     s = getCrowdinSession(domain="https://crowdin.com")
-    print(downloadCrowdinById(s, "3475401"))
+    #print(s.__dict__)
+    print(downloadCrowdinById(s, "41065"))
     # Load phrase
