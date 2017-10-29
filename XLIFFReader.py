@@ -62,8 +62,8 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
             autotranslated_count += 1
 
     # Remove empty text content of the body to conserve spce
-    [c.extract() for c in body.contents]
-
+    # TODO
+    
     # Print stats
     print(black("Autotranslated {} of {} untranslated strings ({} total)".format(
         autotranslated_count, untranslated_count, overall_count), bold=True))

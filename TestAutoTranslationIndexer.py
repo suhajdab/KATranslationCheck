@@ -18,6 +18,7 @@ if __name__ == "__main__":
     # Artificial strings
     assertSame("$a$")
     assertSame(">$a$")
+    assertNotTranslated("$i$q")
     assertSame(" $b$ ")
     assertSame("$c$\\n")
     assertSame("$d$\\n\\n$db$ \\n")
