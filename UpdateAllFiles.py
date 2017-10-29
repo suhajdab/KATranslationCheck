@@ -88,6 +88,50 @@ def downloadTranslationFilemap(lang="de"):
     #    if v["type"] == "glossary"})
     return dct
 
+
+@retry(tries=8, delay=5.0)
+def performPOTDownload(lang, argtuple):
+    # Extract argument tuple
+    fileid, filepath = argtuple
+    downloadPOT(lang, fileid, filepath, asXLIFF=False)
+
+@retry(tries=8, delay=5.0)
+def performXLIFFDownload(lang, argtuple):
+    # Extract argument tuple
+    fileid, filepath = argtuple
+    downloadPOT(lang, fileid, filepath, asXLIFF=True)
+
+def downloadPOT(lang, fileid, filepath, asXLIFF=False):
+    """
+    Explicitly uncurried function that downloads a single Crowdin file
+    to a filesystem file. fileid, filepath
+    """
+    urlPrefix = "https://crowdin.com/project/khanacademy/{}/{}/export".format(lang, fileid)
+    # Initialize session
+    s = getCrowdinSession()
+    # Trigger export
+    params = {"as_xliff": "1"} if asXLIFF else {}
+    exportResponse = s.get(urlPrefix, headers={"Accept": "application/json"}, params=params)
+    print(exportResponse.text)
+    try:
+        exportJSON = exportResponse.json()
+        if exportResponse.json()["success"] != True:
+            raise Exception("Crowdin export failed: " + exportResponse.text)
+    except simplejson.scanner.JSONDecodeError:
+        print(exportResponse.text)
+        return
+    # Trigger download
+    # Store in file
+    with open(filepath, "w+b") as outfile:
+        response = s.get(exportJSON["url"], stream=True)
+
+        if not response.ok:
+            raise Exception("Download error")
+
+        for block in response.iter_content(1024):
+            outfile.write(block)
+    print(green("Downloaded %s" % filepath))
+
 @retry(tries=8, delay=5.0)
 def performPOTDownload(lang, argtuple):
     """
@@ -179,7 +223,7 @@ def updateTranslation(args):
         fileid = fileinfo["id"]
         fileinfos.append((fileid, filepath))
     # Curry the function with the language
-    performDownload = functools.partial(performPOTDownload, args.language)
+    performDownload = functools.partial(performXLIFFDownload if args.xliff else performPOTDownload, args.language)
     # Perform parallel download
     if args.num_processes > 1:
         pool = Pool(args.num_processes)
