@@ -78,7 +78,6 @@ def downloadTranslationFilemap(lang="de"):
         v["id"]: v["name"] + "/"
         for k, v in filesTree.items()
         if v["node_type"] == "0"} # 0 -> directory
-    print(directoryMap)
     directoryMap["0"] = ""
     # Filter only POT. Create filename -> object map with "id" property set
     dct = {
