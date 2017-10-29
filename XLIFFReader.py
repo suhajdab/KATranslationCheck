@@ -114,15 +114,19 @@ def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=
         export_xliff_file(soup, outfilename)
     # Upload if enabled
     if upload and autotranslated_count > 0:
-        try:
             basename = os.path.basename(filename)
             print(blue("Uploading {} ...".format(basename)))
             upload_file(outfilename, fileid, auto_approve=approve, lang=lang)
             print(green("Uploaded {}".format(basename)))
-        except:
-            print(sys.exc_info())
 
+
+def readAndProcessXLIFFRunner(*args, **kwargs):
+    try:
+        readAndProcessXLIFF(*args, **kwargs)
+    except:
+        print(sys.exc_info())
     gc.collect()
+
 
 def autotranslate_xliffs(args):
     os.makedirs("output-{}".format(args.language), exist_ok=True)
@@ -130,7 +134,8 @@ def autotranslate_xliffs(args):
     # Initialize pattern indexers
     text_tag_indexer = TextTagIndexer() if args.text_tags else None
     pattern_indexer = PatternIndexer() if args.patterns else None
-    indexer = CompositeIndexer(text_tag_indexer, pattern_indexer)
+    name_indexer = NamePatternIndexer()
+    indexer = CompositeIndexer(text_tag_indexer, pattern_indexer, name_indexer)
 
     # Initialize autotranslators
     rule_autotranslator = RuleAutotranslator()
@@ -152,7 +157,7 @@ def autotranslate_xliffs(args):
         if filtered:
             continue
         # Run in background
-        future = executor.submit(readAndProcessXLIFF, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
+        future = executor.submit(readAndProcessXLIFFRunner, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
         futures.append(future)
     # stats
     kwargs = {
@@ -166,6 +171,7 @@ def autotranslate_xliffs(args):
 
     # Export indexed
     print(green("Exporting CSV indices..."))
+    name_indexer.exportCSV(os.path.join("output-" + args.language, "names.csv"))
     if text_tag_indexer:
         text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
     if pattern_indexer:
