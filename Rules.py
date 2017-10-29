@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # coding: utf-8
 import re
-import cffi_re2
+try:
+    import cffi_re2
+except ImportError:
+    import re as cffi_re2
 import os
 import sys
 import fnmatch

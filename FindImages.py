@@ -3,7 +3,10 @@ import argparse
 import os.path
 import json
 from check import readPOFiles
-import cffi_re2 as re2
+try:
+    import cffi_re2 as re2
+except ImportError:
+    import re as re2
 import simplejson as json
 
 imageRegex = re2.compile(r"https?://ka-perseus-(images|graphie)\.s3\.amazonaws.com/([a-z0-9]+)\.(jpeg|jpg|png)")
