@@ -47,13 +47,18 @@ def getCrowdinSession(credentials=None, domain="https://crowdin.com"):
     if credentials is None:
         credentials = loadUsernamePassword()
     username, password = credentials
-    s.get("{}/login".format(domain))
+    s.cookies["csrf_token"] = "79ywqnyhig"
+    s.headers["X-Csrf-Token"] = "79ywqnyhig"
+    s.headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36"
+    response = s.get("{}/login".format(domain))
     loginData = {"password": password, "redirect": "/profile", "login": username}
-    headers = {"Referer": "https://crowdin.com/login"}
+    headers = {"Referer": "https://crowdin.com/login", "Accept": "application/json"}
     response = s.post("{}/login/submit".format(domain), data=loginData, headers=headers, stream=False)
     # CSRF cookie is randomly generated in javascript. We can just use a fixed token here.
-    s.cookies["csrf_token"] = "m3h37r5y9f"
-    s.headers["X-Csrf-Token"] = "m3h37r5y9f"
+    #print(response.__dict__)
+    #print(s.__dict__)
+
+    response = s.get("https://crowdin.com/profile")
     return s
 
 @retry(tries=8)
@@ -76,7 +81,6 @@ def downloadTranslationFilemap(lang="de"):
     print(directoryMap)
     directoryMap["0"] = ""
     # Filter only POT. Create filename -> object map with "id" property set
-    idRegex = re.compile("/khanacademy/(\d+)/enus-de")
     dct = {
         v["name"]: dict(v.items() | [("id", int(v["id"])), ("path", directoryMap[v["parent_id"]] + v["name"])])
         for k, v in filesTree.items()
@@ -93,15 +97,15 @@ def downloadTranslationFilemap(lang="de"):
 def performPOTDownload(lang, argtuple):
     # Extract argument tuple
     fileid, filepath = argtuple
-    downloadPOT(lang, fileid, filepath, asXLIFF=False)
+    exportTranslationFile(lang, fileid, filepath, asXLIFF=False)
 
 @retry(tries=8, delay=5.0)
 def performXLIFFDownload(lang, argtuple):
     # Extract argument tuple
     fileid, filepath = argtuple
-    downloadPOT(lang, fileid, filepath, asXLIFF=True)
+    exportTranslationFile(lang, fileid, filepath, asXLIFF=True)
 
-def downloadPOT(lang, fileid, filepath, asXLIFF=False):
+def exportTranslationFile(lang, fileid, filepath, asXLIFF=False):
     """
     Explicitly uncurried function that downloads a single Crowdin file
     to a filesystem file. fileid, filepath
@@ -112,46 +116,12 @@ def downloadPOT(lang, fileid, filepath, asXLIFF=False):
     # Trigger export
     params = {"as_xliff": "1"} if asXLIFF else {}
     exportResponse = s.get(urlPrefix, headers={"Accept": "application/json"}, params=params)
-    print(exportResponse.text)
     try:
         exportJSON = exportResponse.json()
         if exportResponse.json()["success"] != True:
             raise Exception("Crowdin export failed: " + exportResponse.text)
     except simplejson.scanner.JSONDecodeError:
-        print(exportResponse.text)
-        return
-    # Trigger download
-    # Store in file
-    with open(filepath, "w+b") as outfile:
-        response = s.get(exportJSON["url"], stream=True)
-
-        if not response.ok:
-            raise Exception("Download error")
-
-        for block in response.iter_content(1024):
-            outfile.write(block)
-    print(green("Downloaded %s" % filepath))
-
-@retry(tries=8, delay=5.0)
-def performPOTDownload(lang, argtuple):
-    """
-    Explicitly uncurried function that downloads a single Crowdin file
-    to a filesystem file. fileid, filepath
-    """
-    # Extract argument tuple
-    fileid, filepath = argtuple
-    urlPrefix = "https://crowdin.com/project/khanacademy/{0}/{1}/".format(lang, fileid)
-    # Initialize session
-    s = getCrowdinSession()
-    # Trigger export
-    exportResponse = s.get(urlPrefix + "export", headers={"Accept": "application/json"})
-    #print(exportResponse.text)
-    try:
-        exportJSON = exportResponse.json()
-        if exportResponse.json()["success"] != True:
-            raise Exception("Crowdin export failed: " + exportResponse.text)
-    except simplejson.scanner.JSONDecodeError:
-        print(exportResponse.text)
+        #print(exportResponse.text)
         return
     # Trigger download
     # Store in file
