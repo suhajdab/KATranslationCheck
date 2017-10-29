@@ -26,15 +26,13 @@ class TextTagIndexer(object):
         engl_hits = self._re.findall(engl)
         # Just make sure that transl_hits has the same length as index
         transl_hits = engl if translated is None else self._re.findall(translated)
-        if transl_hits:
-            print(transl_hits)
         # Find hits in english
         for engl_hit, transl_hit in zip(engl_hits, transl_hits):
             engl_hit = engl_hit.strip()
             transl_hit = transl_hit.strip()
             self.index[engl_hit] += 1
             # If untranslated, do not index translions
-            if translated is not None:
+            if translated is not None and transl_hit:
                 self.translated_index[engl_hit] = transl_hit
         #except Exception as ex:
         #    print(red("Failed to index '{}' --> {}: {}".format(engl, translated, ex) bold=True))
@@ -43,6 +41,7 @@ class TextTagIndexer(object):
         with open(filename, "w") as outfile:
             for (hit, count) in self.index.most_common():
                 transl = self.translated_index[hit] if hit in self.translated_index else ""
+                # engl,translated(or ""),count
                 outfile.write("\"{}\",\"{}\",{}\n".format(hit, transl, count))
 
 
