@@ -47,20 +47,20 @@ class TextTagIndexer(object):
 
 class PatternIndexer(object):
     def __init__(self):
-        self.index = defaultdict(list)
+        self.index = Counter()
         self._re = re.compile(r"\d")
 
     def add(self, engl, translated):
         # Currently just remove digits
         normalized = self._re.sub("", engl)
-        self.index[normalized] += engl
+        self.index[normalized] += 1
 
     def exportCSV(self, filename):
         with open(filename, "w") as outfile:
-            for (hit, hitlist) in self.index.most_common():
-                if len(hitlist) == 1:  # Ignore non-patterns
+            for (hit, count) in self.index.most_common():
+                if count == 1:  # Ignore non-patterns
                     continue
-                outfile.write("\"{}\",{}\n".format(hit, len(hitlist)))
+                outfile.write("\"{}\",{}\n".format(hit, count))
 
 if __name__ == "__main__":
     tti = TextTagIndexer()

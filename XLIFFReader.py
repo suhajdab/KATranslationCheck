@@ -8,6 +8,7 @@ from ansicolor import black, blue
 from UpdateAllFiles import *
 from XLIFFUpload import *
 import concurrent.futures
+import gc
 
 def findXLIFFFiles(directory):
     """
@@ -93,8 +94,8 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
     # TODO
 
     # Print stats
-    print(black("Autotranslated {} of {} untranslated strings ({} total)".format(
-        autotranslated_count, untranslated_count, overall_count)))
+    print(black("Autotranslated {} of {} untranslated strings ({} total) in {}".format(
+        autotranslated_count, untranslated_count, overall_count, os.path.basename(filename))))
 
     return autotranslated_count
 
@@ -112,11 +113,11 @@ def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=
     # Upload if enabled
     if upload and autotranslated_count > 0:
         basename = os.path.basename(filename)
+        print(blue("Uploading {} ...".format(basename)))
         upload_file(filename, fileid, auto_approve=approve, lang=lang)
-        print(blue("Uploaded {}".format(basename), bold=True))
+        print(blue("Uploaded {}".format(basename)))
 
-    # Return for possible auto upload etc
-    return soup
+    gc.collect()
 
 def autotranslate_xliffs(args):
     os.makedirs("output-{}".format(args.language), exist_ok=True)
@@ -131,7 +132,8 @@ def autotranslate_xliffs(args):
     autotranslator = CompositeAutoTranslator(rule_autotranslator)
 
     # Process in parallel
-    executor = concurrent.futures.ThreadPoolExecutor(32)
+    print(args)
+    executor = concurrent.futures.ThreadPoolExecutor(args.num_processes)
     futures = []
 
     xliffs = findXLIFFFiles("cache/{}".format(args.language))
