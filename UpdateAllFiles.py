@@ -8,20 +8,14 @@ Non-present files will NOT be updated.
 import requests
 import simplejson as json
 import simplejson
-import re
 import gc
 import os
-import time
 import errno
 import os.path
 import datetime
 import functools
 from retry import retry
 from multiprocessing import Pool
-from bs4 import BeautifulSoup
-from html.parser import HTMLParser
-from Languages import findAllLanguages
-from ansicolor import red, black, blue, green
 from Languages import getCachedLanguageMap, findAvailableLanguages
 
 languageIDs = getCachedLanguageMap()
@@ -30,7 +24,7 @@ def translationFilemapCacheFilename(lang="de"):
     return os.path.join("cache", "translation-filemap-{0}.json".format(lang))
 
 def loadUsernamePassword():
-    """ """
+    """Load the crowdin credentials from the config JSON file"""
     try:
         with open("crowdin-credentials.json") as infile:
             data = json.load(infile)
@@ -160,7 +154,6 @@ def getTranslationFilemapCache(lang="de",  forceUpdate=False):
     # Read filename cache
     with open(filename) as infile:
         return json.load(infile)
-
 
 def updateTranslations(args):
     if args.all_languages:
