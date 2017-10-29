@@ -64,30 +64,22 @@ def downloadTranslationFilemap(lang="de"):
     containing the numeric file ID on Crowdin and the "path" property
     containing the path inside the language directory.
     """
+    langid = getCachedLanguageMap()[lang]
     # Extract filemap
-    response = requests.get("https://crowdin.com/project/khanacademy/%s" % lang)
-    soup = BeautifulSoup(response.text, "lxml")
-    scripttext = None
-    scripts = soup.find_all("script")
-    for i in range(len(scripts)):
-        scripttext = scripts[i].text
-        if "PROJECT_FILES" not in scripttext:
-            continue
-        jsonStr = scripttext.partition("PROJECT_FILES = ")[2]
-        jsonStr = jsonStr.rpartition(", DOWNLOAD_PERMISSIONS")[0].replace("\\/", "/")
-        projectFiles = json.loads(jsonStr)
-        break
+    response = requests.get("https://crowdin.com/project/khanacademy/de/get_files_tree?language_id={}".format(langid))
+    filesTree = response.json()["files_tree"]
     # Build map for the directory structure
     directoryMap = {
         v["id"]: v["name"] + "/"
-        for k, v in projectFiles.items()
+        for k, v in filesTree.items()
         if v["node_type"] == "0"} # 0 -> directory
+    print(directoryMap)
     directoryMap["0"] = ""
     # Filter only POT. Create filename -> object map with "id" property set
     idRegex = re.compile("/khanacademy/(\d+)/enus-de")
     dct = {
         v["name"]: dict(v.items() | [("id", int(v["id"])), ("path", directoryMap[v["parent_id"]] + v["name"])])
-        for k, v in projectFiles.items()
+        for k, v in filesTree.items()
         if v["name"].endswith(".pot")}
     # Parse glossary
     #dct.update({
