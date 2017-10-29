@@ -10,7 +10,7 @@ def upload_file(filename, fileid, auto_approve=False, lang="lol"):
         lang, fileid, auto_approve, basename)
 
     s = getCrowdinSession()
-    with open(filename) as infile:
+    with open(filename, "rb") as infile:
         response = s.post(url, data=infile)
     if response.json()["success"] != True:
         print("Submit failed: {}".format(response.text))

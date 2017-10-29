@@ -4,8 +4,9 @@ from AutoTranslationIndexer import *
 from AutoTranslationTranslator import *
 import os.path
 import os
+import sys
 from tqdm import tqdm
-from ansicolor import black, blue
+from ansicolor import black, blue, green
 from UpdateAllFiles import *
 from XLIFFUpload import *
 import concurrent.futures
@@ -113,10 +114,13 @@ def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=
         export_xliff_file(soup, outfilename)
     # Upload if enabled
     if upload and autotranslated_count > 0:
-        basename = os.path.basename(filename)
-        #print(blue("Uploading {} ...".format(basename)))
-        upload_file(filename, fileid, auto_approve=approve, lang=lang)
-        #print(blue("Uploaded {}".format(basename)))
+        try:
+            basename = os.path.basename(filename)
+            print(blue("Uploading {} ...".format(basename)))
+            upload_file(outfilename, fileid, auto_approve=approve, lang=lang)
+            print(green("Uploaded {}".format(basename)))
+        except:
+            print(sys.exc_info())
 
     gc.collect()
 
@@ -143,7 +147,7 @@ def autotranslate_xliffs(args):
         # Ignore files not in filter, if any
         for filt in args.filter:
             for subfilt in filt: # argparse creates nested list
-                if subfilt not in filepath:
+                if subfilt not in filepath and subfilt not in filepath.replace(".xliff", ".pot"):
                     filtered = True
         if filtered:
             continue
@@ -161,6 +165,7 @@ def autotranslate_xliffs(args):
         pass
 
     # Export indexed
+    print(green("Exporting CSV indices..."))
     if text_tag_indexer:
         text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
     if pattern_indexer:
