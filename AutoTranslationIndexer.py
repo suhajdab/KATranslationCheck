@@ -96,7 +96,7 @@ class NamePatternIndexer(object):
     def exportCSV(self, filename):
         with open(filename, "w") as outfile:
             for (hit, count) in self.index.most_common():
-                outfile.write("\"{}\",{}".format(hit, count))
+                outfile.write("\"{}\",{}\n".format(hit, count))
 
 if __name__ == "__main__":
     tti = TextTagIndexer()

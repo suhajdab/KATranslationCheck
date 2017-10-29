@@ -118,14 +118,17 @@ def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=
             print(blue("Uploading {} ...".format(basename)))
             upload_file(outfilename, fileid, auto_approve=approve, lang=lang)
             print(green("Uploaded {}".format(basename)))
+    return autotranslated_count
 
 
 def readAndProcessXLIFFRunner(*args, **kwargs):
+    result = 0
     try:
-        readAndProcessXLIFF(*args, **kwargs)
+        result = readAndProcessXLIFF(*args, **kwargs)
     except:
         print(sys.exc_info())
     gc.collect()
+    return result
 
 
 def autotranslate_xliffs(args):
@@ -166,8 +169,11 @@ def autotranslate_xliffs(args):
         'unit_scale': True,
         'leave': True
     }
+    autotranslated_count = 0
     for future in tqdm(concurrent.futures.as_completed(futures), **kwargs):
-        pass
+        autotranslated_count += future.result()
+
+    print("\nAuto-translated {} strings !\n".format(autotranslated_count))
 
     # Export indexed
     print(green("Exporting CSV indices..."))
