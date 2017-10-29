@@ -4,9 +4,10 @@ from AutoTranslationIndexer import *
 from AutoTranslationTranslator import *
 import os.path
 import os
-from ansicolor import black
+from ansicolor import black, blue
 from UpdateAllFiles import *
 from XLIFFUpload import *
+import concurrent.futures
 
 def findXLIFFFiles(directory):
     """
@@ -51,6 +52,10 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
         overall_count += 1
         source = trans_unit.source
         target = trans_unit.target
+        # Broken XLIFF?
+        if target is None:
+            print(trans_unit.prettify())
+            continue
         note = trans_unit.note
         is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
 
@@ -89,18 +94,27 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
 
     # Print stats
     print(black("Autotranslated {} of {} untranslated strings ({} total)".format(
-        autotranslated_count, untranslated_count, overall_count), bold=True))
+        autotranslated_count, untranslated_count, overall_count)))
 
-def readAndProcessXLIFF(lang, filename, indexer, autotranslator):
+    return autotranslated_count
+
+def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False):
     soup = parse_xliff_file(filename)
-    process_xliff_soup(filename, soup, autotranslator, indexer)
+    autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer)
     # Export XLIFF
     outdir = "output-{}".format(lang)
     outfilename = filename.replace("cache/{}".format(lang), outdir)
-    # Create directories
-    os.makedirs(os.path.dirname(outfilename), exist_ok=True)
-    print(black("Exporting to {}".format(outfilename), bold=True))
-    export_xliff_file(soup, outfilename)
+    # Create directories & export
+    if autotranslated_count > 0:
+        os.makedirs(os.path.dirname(outfilename), exist_ok=True)
+        print(black("Exporting to {}".format(outfilename), bold=True))
+        export_xliff_file(soup, outfilename)
+    # Upload if enabled
+    if upload and autotranslated_count > 0:
+        basename = os.path.basename(filename)
+        upload_file(filename, fileid, auto_approve=approve, lang=lang)
+        print(blue("Uploaded {}".format(basename), bold=True))
+
     # Return for possible auto upload etc
     return soup
 
@@ -116,9 +130,15 @@ def autotranslate_xliffs(args):
     rule_autotranslator = RuleAutotranslator()
     autotranslator = CompositeAutoTranslator(rule_autotranslator)
 
+    # Process in parallel
+    executor = concurrent.futures.ThreadPoolExecutor(32)
+    futures = []
+
     xliffs = findXLIFFFiles("cache/{}".format(args.language))
     for filepath, fileid in xliffs.items():
-        readAndProcessXLIFF(args.language, filepath, indexer, autotranslator)
+        future = executor.submit(readAndProcessXLIFF, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
+        futures.append(future)
+    concurrent.futures.wait(futures)
 
     # Export indexed
     text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))

@@ -27,6 +27,8 @@ if __name__ == "__main__":
     updateLint.set_defaults(func=updateLintIMAPHandler)
 
     autotranslate = subparsers.add_parser('autotranslate')
+    autotranslate.add_argument('-u', '--upload', action="store_true", help='Upload to Crowdin')
+    autotranslate.add_argument('-a', '--approve', action="store_true", help='For --upload, auto-approve the strings')
     autotranslate.set_defaults(func=autotranslate_xliffs)
 
     renderLint = subparsers.add_parser('update-video-translations')
