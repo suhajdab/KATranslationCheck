@@ -199,7 +199,7 @@ def updateTranslation(args):
             performDownload(t)
     #Set download timestamp
     timestamp = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")
-    with open("lastdownload.txt", "w") as outfile:  
+    with open("lastdownload.txt", "w") as outfile:
         outfile.write(timestamp)
 
 def downloadCrowdinById(session, crid, lang="de"):

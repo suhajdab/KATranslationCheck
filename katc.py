@@ -4,6 +4,7 @@ from check import performRender, performRenderLint
 from IMAPLint import updateLintIMAPHandler
 from VideoTranslations import updateVideoMap
 from PolyglottIndexer import buildPolyglottIndex
+from XLIFFReader import autotranslate_xliffs
 
 if __name__ == "__main__":
     import argparse
@@ -25,6 +26,9 @@ if __name__ == "__main__":
     updateLint = subparsers.add_parser('update-lint')
     updateLint.set_defaults(func=updateLintIMAPHandler)
 
+    autotranslate = subparsers.add_parser('autotranslate')
+    autotranslate.set_defaults(func=autotranslate_xliffs)
+
     renderLint = subparsers.add_parser('update-video-translations')
     renderLint.set_defaults(func=updateVideoMap)
 
@@ -35,11 +39,9 @@ if __name__ == "__main__":
     render.add_argument('outdir', nargs='?', default=None, help='The output directory to use (default: output-<lang>)')
     render.set_defaults(func=performRender)
 
-
     render = subparsers.add_parser('index')
     render.add_argument('-t', '--table', type=int, default=1, help='Table offset (where to store the data in YakDB. 1 => production setup)')
     render.set_defaults(func=buildPolyglottIndex)
-
 
     args = parser.parse_args()
 

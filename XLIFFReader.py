@@ -3,7 +3,30 @@ from bs4 import BeautifulSoup
 from AutoTranslationIndexer import *
 from AutoTranslationTranslator import *
 import os.path
+import os
 from ansicolor import black
+from UpdateAllFiles import *
+from XLIFFUpload import *
+
+def findXLIFFFiles(directory):
+    """
+    Get a list of PO files (.po / .pot) which are present in the directory.
+    """
+    transFilemap = getTranslationFilemapCache()
+    if os.path.isfile(directory): #Single file>=
+        poFilenames = [directory]
+    else:
+        poFilenames = {}
+        #Recursively iterate directory, ignore everythin except *.po
+        for (curdir, _, files) in os.walk(directory):
+            for f in files:
+                #Ignore non-PO files
+                if not f.endswith(".xliff"): continue
+                #Add to list of files to process
+                filename = os.path.join(curdir, f)
+                basename = os.path.basename(filename)
+                poFilenames[filename] = transFilemap[basename.replace(".xliff", ".pot")]["id"]
+    return poFilenames
 
 def parse_xliff_file(filename):
     with open(filename) as infile:
@@ -63,28 +86,40 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
 
     # Remove empty text content of the body to conserve spce
     # TODO
-    
+
     # Print stats
     print(black("Autotranslated {} of {} untranslated strings ({} total)".format(
         autotranslated_count, untranslated_count, overall_count), bold=True))
 
+def readAndProcessXLIFF(lang, filename, indexer, autotranslator):
+    soup = parse_xliff_file(filename)
+    process_xliff_soup(filename, soup, autotranslator, indexer)
+    # Export XLIFF
+    outdir = "output-{}".format(lang)
+    outfilename = filename.replace("cache/{}".format(lang), outdir)
+    # Create directories
+    os.makedirs(os.path.dirname(outfilename), exist_ok=True)
+    print(black("Exporting to {}".format(outfilename), bold=True))
+    export_xliff_file(soup, outfilename)
+    # Return for possible auto upload etc
+    return soup
 
+def autotranslate_xliffs(args):
+    os.makedirs("output-{}".format(args.language), exist_ok=True)
 
-if __name__ == "__main__":
-    lang = "de"
-    filename = "cache/lol/2_high_priority_content/learn.math.precalculus.exercises.xliff"
+    # Initialize pattern indexers
     text_tag_indexer = TextTagIndexer()
     pattern_indexer = TextTagIndexer()
     indexer = CompositeIndexer(text_tag_indexer, pattern_indexer)
 
+    # Initialize autotranslators
     rule_autotranslator = RuleAutotranslator()
     autotranslator = CompositeAutoTranslator(rule_autotranslator)
 
-    soup = parse_xliff_file(filename)
-    process_xliff_soup(filename, soup, autotranslator, indexer)
-    # Export indexed
-    text_tag_indexer.exportCSV(os.path.join("output-" + lang, "texttags.csv"))
-    pattern_indexer.exportCSV(os.path.join("output-" + lang, "patterns.csv"))
+    xliffs = findXLIFFFiles("cache/{}".format(args.language))
+    for filepath, fileid in xliffs.items():
+        readAndProcessXLIFF(args.language, filepath, indexer, autotranslator)
 
-    # Export XLIFF
-    export_xliff_file(soup, "/ram/test.xliff")
+    # Export indexed
+    text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
+    pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
