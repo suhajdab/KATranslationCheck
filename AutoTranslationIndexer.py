@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-import cffi_re2 as re
+import re as re
 from collections import Counter, defaultdict
 from ansicolor import red
 
 class CompositeIndexer(object):
     """
     Utility that calls add() once for every child object.
-    So you dont need to change indexers all over the place
+    So you dont need to change indexers all over the place.
+
+    Args are filtered for None
     """
     def __init__(self, *args):
-        self.children = args
+        self.children = list(filter(lambda arg: arg is not None, args))
 
     def add(self, *args, **kwargs):
         for child in self.children:
@@ -19,7 +21,7 @@ class TextTagIndexer(object):
     def __init__(self):
         self.index = Counter()
         self.translated_index = {}
-        self._re = re.compile(r"\\text\{\s*([^\}]+?)\s*\}")
+        self._re = re.compile(r"\\text\{\s*([^\}]+)\}")
 
     def add(self, engl, translated=None):
         # Find english hits and possible hits in target lang to be able to match them!
@@ -36,6 +38,9 @@ class TextTagIndexer(object):
                 self.translated_index[engl_hit] = transl_hit
         #except Exception as ex:
         #    print(red("Failed to index '{}' --> {}: {}".format(engl, translated, ex) bold=True))
+
+    def __len__(self):
+        return len(self.index)
 
     def exportCSV(self, filename):
         with open(filename, "w") as outfile:

@@ -124,7 +124,7 @@ def autotranslate_xliffs(args):
 
     # Initialize pattern indexers
     text_tag_indexer = TextTagIndexer()
-    pattern_indexer = TextTagIndexer()
+    pattern_indexer = PatternIndexer() if args.patterns else None
     indexer = CompositeIndexer(text_tag_indexer, pattern_indexer)
 
     # Initialize autotranslators
@@ -132,14 +132,21 @@ def autotranslate_xliffs(args):
     autotranslator = CompositeAutoTranslator(rule_autotranslator)
 
     # Process in parallel
+    # Cant use process pool as indexers currently cant be merged
     executor = concurrent.futures.ThreadPoolExecutor(args.num_processes)
     futures = []
 
     xliffs = findXLIFFFiles("cache/{}".format(args.language))
     for filepath, fileid in xliffs.items():
+        # Ignore files not in filter, if any
+        if args.filter and args.filter not in filepath:
+            continue
+        # Run in background
         future = executor.submit(readAndProcessXLIFF, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
         futures.append(future)
-    concurrent.futures.wait(futures)
+    # stats
+    for future in concurrent.futures.as_completed(futures):
+        pass #print(len(text_tag_indexer))
 
     # Export indexed
     text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))

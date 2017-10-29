@@ -9,7 +9,7 @@ class CompositeAutoTranslator(object):
     the string.
     """
     def __init__(self, *args):
-        self.children = args
+        self.children = list(filter(lambda arg: arg is not None, args))
 
     def translate(self, engl):
         for child in self.children:
