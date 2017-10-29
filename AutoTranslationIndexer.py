@@ -81,17 +81,24 @@ class NamePatternIndexer(object):
         self._re1 = re.compile(r"^\s*Only\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
         self._re2 = re.compile(r"^\s*Neither\s+([A-Z][a-z]+)\s+nor\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
         self._re3 = re.compile(r"^\s*Either\s+([A-Z][a-z]+)\s+or\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
+        self._re4 = re.compile(r"^\s*Both\s+([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
 
     def add(self, engl, translated=None):
         m1 = self._re1.match(engl)
         m2 = self._re2.match(engl)
         m3 = self._re3.match(engl)
+        m4 = self._re4.match(engl)
         if m1:
             self.index[m1.group(1)] += 1
         if m2:
             self.index[m2.group(1)] += 1
+            self.index[m2.group(2)] += 1
         if m3:
             self.index[m3.group(1)] += 1
+            self.index[m3.group(2)] += 1
+        if m4:
+            self.index[m4.group(1)] += 1
+            self.index[m4.group(2)] += 1
 
     def exportCSV(self, filename):
         with open(filename, "w") as outfile:
