@@ -183,8 +183,12 @@ def updateTranslation(args):
     fileinfos = []
     for filename, fileinfo in translationFilemap.items():
         filepath = os.path.join("cache", args.language, fileinfo["path"])
+        # Handle XLIFF filenames
+        if args.xliff:
+            filepath = filepath.replace(".pot", ".xliff")
         # Create dir if not exists
-        try: os.makedirs(os.path.dirname(filepath))
+        try:
+            os.makedirs(os.path.dirname(filepath))
         except OSError as exc:
             if exc.errno == errno.EEXIST:
                 pass
