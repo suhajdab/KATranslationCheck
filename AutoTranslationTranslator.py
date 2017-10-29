@@ -43,7 +43,7 @@ class RuleAutotranslator(object):
 
     def translate(self, engl):
         is_formula = self._is_formula.match(engl) is not None
-        contains_text = self._contains_text.match(engl) is not None
+        contains_text = self._contains_text.search(engl) is not None
         is_perseus_img_url = self._is_perseus_img_url.match(engl) is not None
         is_formula_plus_img = self._is_formula_plus_img.match(engl) is not None
 
