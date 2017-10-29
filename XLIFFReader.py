@@ -124,7 +124,7 @@ def autotranslate_xliffs(args):
     os.makedirs("output-{}".format(args.language), exist_ok=True)
 
     # Initialize pattern indexers
-    text_tag_indexer = TextTagIndexer()
+    text_tag_indexer = TextTagIndexer() if args.text_tags else None
     pattern_indexer = PatternIndexer() if args.patterns else None
     indexer = CompositeIndexer(text_tag_indexer, pattern_indexer)
 
@@ -142,8 +142,9 @@ def autotranslate_xliffs(args):
         filtered = False # true => ignore this file
         # Ignore files not in filter, if any
         for filt in args.filter:
-            if filt[0] not in filepath: # argparse creates nested list
-                filtered = True
+            for subfilt in filt: # argparse creates nested list
+                if subfilt not in filepath:
+                    filtered = True
         if filtered:
             continue
         # Run in background
