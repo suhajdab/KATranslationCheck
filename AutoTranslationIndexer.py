@@ -53,19 +53,23 @@ class TextTagIndexer(object):
 class PatternIndexer(object):
     def __init__(self):
         self.index = Counter()
+        self.translated_index = {}
         self._re = re.compile(r"\d")
 
     def add(self, engl, translated):
         # Currently just remove digits
         normalized = self._re.sub("", engl)
         self.index[normalized] += 1
+        if translated:
+            self.translated_index[normalized] = translated
 
     def exportCSV(self, filename):
         with open(filename, "w") as outfile:
             for (hit, count) in self.index.most_common():
+                transl = self.translated_index[hit] if hit in self.translated_index else ""
                 if count == 1:  # Ignore non-patterns
                     continue
-                outfile.write("\"{}\",{}\n".format(hit, count))
+                outfile.write("\"{}\",\"{}\",{}\n".format(hit,transl,count))
 
 if __name__ == "__main__":
     tti = TextTagIndexer()
