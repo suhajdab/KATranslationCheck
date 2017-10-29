@@ -158,7 +158,7 @@ def getTranslationFilemapCache(lang="de",  forceUpdate=False):
 def updateTranslations(args):
     if args.all_languages:
         for language in findAvailableLanguages():
-            print(green("Downloading language {0}".format(language), bold=True))
+            print(green("Downloading language {}".format(language), bold=True))
             args.language = language
             updateTranslation(args)
             # Cleanup objects (especially the pool) left from last language

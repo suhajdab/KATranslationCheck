@@ -132,7 +132,6 @@ def autotranslate_xliffs(args):
     autotranslator = CompositeAutoTranslator(rule_autotranslator)
 
     # Process in parallel
-    print(args)
     executor = concurrent.futures.ThreadPoolExecutor(args.num_processes)
     futures = []
 
