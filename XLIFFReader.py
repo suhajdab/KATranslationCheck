@@ -4,6 +4,7 @@ from AutoTranslationIndexer import *
 from AutoTranslationTranslator import *
 import os.path
 import os
+from tqdm import tqdm
 from ansicolor import black, blue
 from UpdateAllFiles import *
 from XLIFFUpload import *
@@ -108,14 +109,14 @@ def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=
     # Create directories & export
     if autotranslated_count > 0:
         os.makedirs(os.path.dirname(outfilename), exist_ok=True)
-        print(black("Exporting to {}".format(outfilename), bold=True))
+        #print(black("Exporting to {}".format(outfilename), bold=True))
         export_xliff_file(soup, outfilename)
     # Upload if enabled
     if upload and autotranslated_count > 0:
         basename = os.path.basename(filename)
-        print(blue("Uploading {} ...".format(basename)))
+        #print(blue("Uploading {} ...".format(basename)))
         upload_file(filename, fileid, auto_approve=approve, lang=lang)
-        print(blue("Uploaded {}".format(basename)))
+        #print(blue("Uploaded {}".format(basename)))
 
     gc.collect()
 
@@ -138,16 +139,28 @@ def autotranslate_xliffs(args):
 
     xliffs = findXLIFFFiles("cache/{}".format(args.language))
     for filepath, fileid in xliffs.items():
+        filtered = False # true => ignore this file
         # Ignore files not in filter, if any
-        if args.filter and args.filter not in filepath:
+        for filt in args.filter:
+            if filt[0] not in filepath: # argparse creates nested list
+                filtered = True
+        if filtered:
             continue
         # Run in background
         future = executor.submit(readAndProcessXLIFF, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
         futures.append(future)
     # stats
-    for future in concurrent.futures.as_completed(futures):
-        pass #print(len(text_tag_indexer))
+    kwargs = {
+        'total': len(futures),
+        'unit': 'it',
+        'unit_scale': True,
+        'leave': True
+    }
+    for future in tqdm(concurrent.futures.as_completed(futures), **kwargs):
+        pass
 
     # Export indexed
-    text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
-    pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
+    if text_tag_indexer:
+        text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
+    if pattern_indexer:
+        pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))

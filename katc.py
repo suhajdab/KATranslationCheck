@@ -27,7 +27,7 @@ if __name__ == "__main__":
     autotranslate.add_argument('-j', '--num-processes', default=16, type=int, help='Number of threads to use for parallel processing')
     autotranslate.add_argument('-u', '--upload', action="store_true", help='Upload to Crowdin')
     autotranslate.add_argument('-a', '--approve', action="store_true", help='For --upload, auto-approve the strings')
-    autotranslate.add_argument('-f', '--filter', default="", help='Ignore file paths that do not contain this string, e.g. exercises or 2_high_priority')
+    autotranslate.add_argument('-f', '--filter', nargs="*", action="append", help='Ignore file paths that do not contain this string, e.g. exercises or 2_high_priority. Can use multiple ones which are ANDed')
     autotranslate.add_argument('-p', '--patterns', action="store_true", help='Recognize and export patterns. Will consume a lot of RAM.')
     autotranslate.set_defaults(func=autotranslate_xliffs)
 
