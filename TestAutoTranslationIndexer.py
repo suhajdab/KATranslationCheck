@@ -37,6 +37,10 @@ if __name__ == "__main__":
     assertSame("$d\\\\text{cm}$")
     assertSame("$d\\\\text{g}$")
     assertSame("$d\\\\text{m}$")
+    assertSame("$d\\\\text{ s}$")
+    assertSame("$d\\\\text{ min}$")
+    assertNotTranslated("$d\\\\text{ sa}$")
+    assertNotTranslated("$d\\\\text{ max}$")
 
     # Real strings
     assertSame("web+graphie://ka-perseus-graphie.s3.amazonaws.com/b8ca00d508c9e7b593c669977fdde31570195273")

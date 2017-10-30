@@ -32,7 +32,7 @@ class RuleAutotranslator(object):
         #   \text{ cm}
         #   \text{ m}
         #   \text{ g}
-        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?kg\})");
+        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})");
         # URLs:
         #   ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/...)
         #   web+graphie://ka-perseus-graphie.s3.amazonaws.com/...
