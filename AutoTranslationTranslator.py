@@ -34,7 +34,7 @@ class RuleAutotranslator(object):
         #   \text{ cm}
         #   \text{ m}
         #   \text{ g}
-        self._contains_text = re.compile(r"\\text\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
+        self._contains_text = re.compile(r"\\(text|mathrm)\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
         # URLs:
         #   ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/...)
         #   web+graphie://ka-perseus-graphie.s3.amazonaws.com/...
@@ -77,7 +77,7 @@ class IFPatternAutotranslator(object):
         }
         # Compile regexes
         self._formula_re = re.compile(r"\$[^\$]+\$")
-        self._text = re.compile(r"\\text\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
+        self._text = re.compile(r"\\(text|mathrm)\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
 
     def translate(self, engl):
         # Normalize and filter out formulae with translatable text

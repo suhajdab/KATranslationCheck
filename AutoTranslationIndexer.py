@@ -26,7 +26,7 @@ class TextTagIndexer(object):
     def __init__(self):
         self.index = Counter()
         self.translated_index = {}
-        self._re = re.compile(r"\\text\{\s*([^\}]+)\}")
+        self._re = re.compile(r"\\(text|mathrm)\{\s*([^\}]+)\}")
 
     def add(self, engl, translated=None, filename=None):
         # Find english hits and possible hits in target lang to be able to match them!
