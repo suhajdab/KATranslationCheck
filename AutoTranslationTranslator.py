@@ -2,6 +2,8 @@
 import re as re
 from collections import Counter, defaultdict
 from ansicolor import red
+import os.path
+import json
 
 class CompositeAutoTranslator(object):
     """
@@ -144,4 +146,37 @@ class NameAutotranslator(object):
             return self.transmap[5].replace("<name1>", name1).replace("<name2>", name2) + rest
 
 
+class SimplePatternAutotranslator(object):
+    """
+    Auto-translates based on simple patterns with known form
+    Will mostly auto-translate formula-only etc
+    """
+    def __init__(self, lang):
+        self.lang = lang
+        self._re1 = re.compile(r"(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)")
+        self._trans1 = defaultdict(list)
+        # Translation patterns in this order:
+        #   Only <name1>
+        #   Neither <name1> nor <name2>
+        #   Either <name1> or <name2>
+        #   Both <name1> and <name2>
+        #   Neither <name1> nor <name2> are correct
+        #   Both <name1> and <name2> are correct
+        with open(os.path.join("transmap", lang + ".1.json")) as infile:
+            self.transmap1 = json.load(infile)
 
+    def replace_name(self, lang, name):
+        """
+        Get the localized replacement name
+        """
+        # TODO not implemented
+        return name
+
+    def translate(self, engl):
+        m1 = self._re1.match(engl)
+        if m1:
+            word = m1.group(2)
+            if word not in self.transmap1[word]:
+                return None # Dont know how to translate
+            transWord = self.transmap1[word]
+            return engl.replace(word, transWord)

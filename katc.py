@@ -31,6 +31,7 @@ if __name__ == "__main__":
     autotranslate.add_argument('-f', '--filter', nargs="*", action="append", help='Ignore file paths that do not contain this string, e.g. exercises or 2_high_priority. Can use multiple ones which are ANDed')
     autotranslate.add_argument('-p', '--patterns', action="store_true", help='Recognize and export patterns. Will consume a lot of RAM.')
     autotranslate.add_argument('-n', '--name-autotranslate', action="store_true", help='Auto-translate simple name patterns')
+    autotranslate.add_argument('-s', '--simple-patterns', action="store_true", help='Auto-translate simple patterns with predefined form')
     autotranslate.set_defaults(func=autotranslate_xliffs)
 
     renderLint = subparsers.add_parser('update-video-translations')

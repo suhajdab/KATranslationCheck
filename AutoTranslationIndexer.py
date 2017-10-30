@@ -5,6 +5,8 @@ from ansicolor import red
 from toolz.dicttoolz import valmap
 from AutoTranslationTranslator import RuleAutotranslator
 from Utils import *
+import os
+import json
 
 class CompositeIndexer(object):
     """
@@ -57,9 +59,9 @@ class SimplePatternIndexer(object):
     Indexes simple patterns with known form:
     Tries to find translated forms of given patterns
     """
-    def __init__(self):
-        self.index = {} # engl pattern -> translated
-        self._re1 = re.compile(r"(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)")
+    def __init__(self, lang):
+        self.lang = lang
+        self._re1 = re.compile(r"(\$[^\$]+\$)\s+([\w\s]+)\s+(\$[^\$]+\$\s*)")
         self._trans1 = defaultdict(list)
 
     def add(self, engl, translated=None):
@@ -72,10 +74,11 @@ class SimplePatternIndexer(object):
     def majority_voted_map(self, src):
         return valmap(lambda v: majority_vote(v), src)
 
-    def print(self, lang):
-        print("Name translation patterns for {}:\n\tPattern 1: {}".format(lang,
-            self.majority_voted_map(self._trans1)))
 
+    def exportCSV(self):
+        with open(os.path.join("transmap", self.lang + ".1.json"), "w") as outfile:
+            json.dump(self.majority_voted_map(self._trans1),
+                outfile, indent=4, sort_keys=True)
 
 class PatternIndexer(object):
     """
