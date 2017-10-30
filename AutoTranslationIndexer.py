@@ -2,7 +2,9 @@
 import re as re
 from collections import Counter, defaultdict
 from ansicolor import red
+from toolz.dicttoolz import valmap
 from AutoTranslationTranslator import RuleAutotranslator
+from Utils import *
 
 class CompositeIndexer(object):
     """
@@ -50,8 +52,35 @@ class TextTagIndexer(object):
                 # engl,translated(or ""),count
                 outfile.write("\"{}\",\"{}\",{}\n".format(hit, transl, count))
 
+class SimplePatternIndexer(object):
+    """
+    Indexes simple patterns with known form:
+    Tries to find translated forms of given patterns
+    """
+    def __init__(self):
+        self.index = {} # engl pattern -> translated
+        self._re1 = re.compile(r"(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)")
+        self._trans1 = defaultdict(list)
+
+    def add(self, engl, translated=None):
+        if translated is not None:
+            m1e = self._re1.match(engl)
+            m1t = self._re1.match(translated)
+            if m1e and m1t:
+                self._trans1[m1e.group(2)].append(m1t.group(2))
+
+    def majority_voted_map(self, src):
+        return valmap(lambda v: majority_vote(v), src)
+
+    def print(self, lang):
+        print("Name translation patterns for {}:\n\tPattern 1: {}".format(lang,
+            self.majority_voted_map(self._trans1)))
+
 
 class PatternIndexer(object):
+    """
+    Indexes arbitrary patters with unknown form
+    """
     def __init__(self):
         self.index = Counter()
         self.translated_index = {}
@@ -74,7 +103,7 @@ class PatternIndexer(object):
         with open(filename, "w") as outfile:
             for (hit, count) in self.index.most_common():
                 transl = self.translated_index[hit] if hit in self.translated_index else ""
-                if count == 1:  # Ignore non-patterns
+                if count < 3:  # Ignore non-patterns
                     continue
                 outfile.write("\"{}\",\"{}\",{}\n".format(hit,transl,count))
 
