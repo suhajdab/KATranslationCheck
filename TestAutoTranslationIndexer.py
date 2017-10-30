@@ -66,12 +66,13 @@ if __name__ == "__main__":
     assertSame("$\\\\displaystyle\\\\lim_{x\\\\to \\\\frac{\\\\pi}{4}}\\\\csc(x)=?$\\n\\n[[☃ radio 1]]")
     
     assertSame("$y=\\\\arcsin\\\\!\\\\left(\\\\dfrac{x}{4}\\\\right)$\\n\\n$\\\\dfrac{dy}{dx}=?$\\n\\n[[☃ radio 1]]")
-    
-    
-    
-   
-    
     #B | $x$ |$-2$ | $-1.5$ | $-1.25$ | $-1.1$ | $-1.005$ | $-1.001$ \n:- | -: | :-: | :-: | :-: | :-: | :-: | :-:\n| $g(x)$ | $-2.91$ | $-2.5$ | $-2.2$ | $-1.99$ | $-1.86$ | $-1.86$
+    
+    assertNotTranslated("$3\\text { fours}$")
+    assertNotTranslated("$3\\text { fives}$")
+    assertNotTranslated("$3\\text { fives}$")
+    assertNotTranslated("$3\\text { baabaz}$")
+    
 
     # Name translation
     assertNameTrans("Only John", "Endast John")
