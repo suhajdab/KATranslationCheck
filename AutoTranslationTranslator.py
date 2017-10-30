@@ -153,6 +153,7 @@ class SimplePatternAutotranslator(object):
     """
     def __init__(self, lang):
         self.lang = lang
+        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})");
         self._re1 = re.compile(r"^(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)$")
         self._trans1 = defaultdict(list)
         # Translation patterns in this order:
@@ -174,7 +175,10 @@ class SimplePatternAutotranslator(object):
 
     def translate(self, engl):
         m1 = self._re1.match(engl)
-        if m1:
+        if m1: # $...$ <text> $...$
+            # \\text might contain separate translatable text, so ignore
+            if self._contains_text.match(engl) is not None:
+                return None
             word = m1.group(2)
             if word not in self.transmap1[word]:
                 return None # Dont know how to translate
