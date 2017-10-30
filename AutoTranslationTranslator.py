@@ -65,8 +65,8 @@ class IFPatternAutotranslator(object):
     Ignore Formula pattern autotranslator
     """
     def __init__(self, lang):
-        self.lang = langs
-        with open(os.path.join("transmap", self.lang + ".ifpatterns.json")) as infile:
+        self.lang = lang
+        with open(os.path.join("transmap", lang + ".ifpatterns.json")) as infile:
             ifpatterns = json.load(infile)
         # Remove
         self.patterns = {
@@ -75,20 +75,30 @@ class IFPatternAutotranslator(object):
             if v["translated"] # Ignore empty string == untranslated
             and v["english"].count("<formula>") == v["translated"].count("<formula>")
         }
-        print(self.patterns)
         # Compile regexes
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._text = re.compile(r"\\text\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
 
     def translate(self, engl):
-        # Normalize
+        # Normalize and filter out formulae with translatable text
         normalized = self._formula_re.sub("<formula>", engl)
+        has_text = self._text.search(engl)
+        if has_text: # Currently ignore
+            # TODO Maybe we have a translation for the text?
+            return None
         # Check if it matches
         if normalized not in self.patterns:
-            continue # Do not have pattern
-        transl = self.patterns[normalize]
-        print("Transl ", transl)
-        # Find formulas in english text
+            return None # Do not have pattern
+        print("engl ", engl)
+        transl = self.patterns[normalized]
+        # Find formulae in english text
+        src_formulae = self._formula_re.findall(engl)
+        # Replace one-by-one
+        while "<formula>" in transl:
+            told = transl
+            next_formula = src_formulae.pop(0) # Next "source formula"
+            transl = transl.replace("<formula>", next_formula)
+        print("\tResult ", transl)
 
 
 class NameAutotranslator(object):

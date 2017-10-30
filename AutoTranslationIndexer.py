@@ -61,8 +61,8 @@ class IgnoreFormulaPatternIndexer(object):
     def __init__(self, lang):
         self.lang = lang
         self.autotrans = RuleAutotranslator()
-        self.index= Counter()
-        self.translated_index = {}
+        self.index = Counter()
+        self.translated_index = defaultdict(list)
         self._formula_re = re.compile(r"\$[^\$]+\$")
         # Ignore specific whitelisted texts which are not translated
         self._text = re.compile(r"\\text\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
@@ -73,7 +73,7 @@ class IgnoreFormulaPatternIndexer(object):
             return
 
         normalized_engl = self._formula_re.sub("<formula>", engl)
-        has_text = self._text.match(engl)
+        has_text = self._text.search(engl)
         if has_text: # Currently ignore
             # TODO Maybe we have a translation for the text?
             return
@@ -81,12 +81,14 @@ class IgnoreFormulaPatternIndexer(object):
         self.index[normalized_engl] += 1
         if translated is not None:
             normalized_trans = self._formula_re.sub("<formula>", translated)
-            self.translated_index[normalized_engl] = normalized_trans
+            self.translated_index[normalized_engl].append(normalized_trans)
 
     def exportJSON(self):
         ifpatterns = []
         for (hit, count) in self.index.most_common():
-            transl = self.translated_index[hit] if hit in self.translated_index else ""
+            # Get the most common pattern
+            transl_list = self.translated_index[hit]
+            transl = majority_vote(transl_list) if transl_list else ""
             if count >= 2:  # Ignore non-patterns
                 ifpatterns.append({"english": hit, "translated": transl, "count": count})
 
