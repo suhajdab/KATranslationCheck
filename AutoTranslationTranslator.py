@@ -89,16 +89,14 @@ class IFPatternAutotranslator(object):
         # Check if it matches
         if normalized not in self.patterns:
             return None # Do not have pattern
-        print("engl ", engl)
         transl = self.patterns[normalized]
         # Find formulae in english text
         src_formulae = self._formula_re.findall(engl)
         # Replace one-by-one
         while "<formula>" in transl:
-            told = transl
             next_formula = src_formulae.pop(0) # Next "source formula"
-            transl = transl.replace("<formula>", next_formula)
-        print("\tResult ", transl)
+            transl = transl.replace("<formula>", next_formula, 1)
+        return transl
 
 
 class NameAutotranslator(object):
