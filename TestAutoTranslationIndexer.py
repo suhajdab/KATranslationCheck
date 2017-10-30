@@ -47,6 +47,9 @@ if __name__ == "__main__":
     assertSame(">$\\\\pink{\\\\text{m}\\\\angle D} + \\\\blue{106} = 180$")
     assertSame("$3c^3-12c-8$")
     assertSame("### $\\log_{\\,5}{25}$ = [[☃ numeric-input 1]]")
+    assertSame("(-2,4]")
+    assertSame("[-2,4)")
+    assertSame("[-2,-4]")
 
     # Name translation
     assertNameTrans("Only John", "Endast John")

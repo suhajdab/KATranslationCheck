@@ -32,7 +32,7 @@ class RuleAutotranslator(object):
         #   \text{ cm}
         #   \text{ m}
         #   \text{ g}
-        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})");
+        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?kg\})");
         # URLs:
         #   ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/...)
         #   web+graphie://ka-perseus-graphie.s3.amazonaws.com/...
@@ -42,7 +42,7 @@ class RuleAutotranslator(object):
         self._is_formula_plus_img = re.compile(r"^>?[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+(!\[\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)?\s*$")
         self._is_input = re.compile(r"^\[\[\s*☃\s*[a-z-]+\s*\d*\s*\]\](\s|\\n)*$", re.UNICODE)
         self._is_formula_plus_input = re.compile(r"^(>|#)*[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+=?\s*\[\[\s*☃\s*[a-z-]+\s*\d*\s*\]\](\s|\\n)*$", re.UNICODE);
-
+        self._is_simple_coordinate = re.compile(r"^[\[\(]-?\d+,-?\d+[\]\)]$")
 
     def translate(self, engl):
         is_formula = self._is_formula.match(engl) is not None
@@ -51,8 +51,9 @@ class RuleAutotranslator(object):
         is_formula_plus_img = self._is_formula_plus_img.match(engl) is not None
         is_formula_plus_input = self._is_formula_plus_input.match(engl) is not None
         is_input = self._is_input.match(engl) is not None
+        is_simple_coordinate = self._is_simple_coordinate.match(engl) is not None
 
-        if is_perseus_img_url or is_formula_plus_img or is_input or is_formula_plus_input:
+        if is_perseus_img_url or is_formula_plus_img or is_input or is_formula_plus_input or is_simple_coordinate:
             return engl
         if is_formula and not contains_text:
             return engl
