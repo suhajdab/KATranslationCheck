@@ -28,7 +28,7 @@ class TextTagIndexer(object):
         self.translated_index = {}
         self._re = re.compile(r"\\text\{\s*([^\}]+)\}")
 
-    def add(self, engl, translated=None):
+    def add(self, engl, translated=None, filename=None):
         # Find english hits and possible hits in target lang to be able to match them!
         engl_hits = self._re.findall(engl)
         # Just make sure that transl_hits has the same length as index
@@ -54,6 +54,29 @@ class TextTagIndexer(object):
                 # engl,translated(or ""),count
                 outfile.write("\"{}\",\"{}\",{}\n".format(hit, transl, count))
 
+class IgnoreFormulaPatternIndexer(object):
+    """
+    Indexes patterns with only the text as key, replacing all formulas with <formula>
+    """
+    def __init__(self, lang):
+        self.lang = lang
+        self._formula_re = re.compile(r"\$[^\$]+\$")
+        self._text = re.compile(r"\$[^\$]+\$")
+        self._trans1 = defaultdict(list)
+
+    def add(self, engl, translated=None, filename=None):
+        normalized_engl = self._formula_re.replace("<formula>")
+        normalized_trans = self._formula_re.replace("<formula>")
+        if translated is not None:
+            m1e = self._re1.match(engl)
+            m1t = self._re1.match(translated)
+            if m1e and m1t:
+                # Uncomment to debug source of strange patterns.
+                #if m1e.group(2) == m1t.group(2):
+                #    print("{} ===> {} ({})".format(engl, translated, filename))
+                self._trans1[m1e.group(2)].append(m1t.group(2))
+
+
 class SimplePatternIndexer(object):
     """
     Indexes simple patterns with known form:
@@ -64,14 +87,17 @@ class SimplePatternIndexer(object):
         self._re1 = re.compile(r"(\$[^\$]+\$)\s+([\w\s]+)\s+(\$[^\$]+\$\s*)")
         self._trans1 = defaultdict(list)
 
-    def add(self, engl, translated=None):
+    def add(self, engl, translated=None, filename=None):
         if translated is not None:
             m1e = self._re1.match(engl)
             m1t = self._re1.match(translated)
             if m1e and m1t:
+                # Uncomment to debug source of strange patterns.
+                #if m1e.group(2) == m1t.group(2):
+                #    print("{} ===> {} ({})".format(engl, translated, filename))
                 self._trans1[m1e.group(2)].append(m1t.group(2))
 
-    def majority_voted_map(self, src):
+    def majority_voted_map(self, src, min_confidence=2):
         return valmap(lambda v: majority_vote(v), src)
 
 
@@ -80,9 +106,9 @@ class SimplePatternIndexer(object):
             json.dump(self.majority_voted_map(self._trans1),
                 outfile, indent=4, sort_keys=True)
 
-class PatternIndexer(object):
+class GenericPatternIndexer(object):
     """
-    Indexes arbitrary patters with unknown form
+    Indexes arbitrary patters with unknown form by replacing ndoes
     """
     def __init__(self):
         self.index = Counter()
@@ -90,7 +116,7 @@ class PatternIndexer(object):
         self.autotranslator = RuleAutotranslator()
         self._re = re.compile(r"\d")
 
-    def add(self, engl, translated=None):
+    def add(self, engl, translated=None, filename=None):
         # If the autotranslator can translate it, ignore it
         if self.autotranslator.translate(engl) is not None:
             return
@@ -123,7 +149,7 @@ class NamePatternIndexer(object):
         self._re3 = re.compile(r"^\s*Either\s+([A-Z][a-z]+)\s+or\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
         self._re4 = re.compile(r"^\s*Both\s+([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
 
-    def add(self, engl, translated=None):
+    def add(self, engl, translated=None, filename=None):
         m1 = self._re1.match(engl)
         m2 = self._re2.match(engl)
         m3 = self._re3.match(engl)

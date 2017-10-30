@@ -66,7 +66,7 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
         translated = target.text
         # Index tags in the indexer (e.g. to extract text tags)
         # This is done even if they are translated
-        indexer.add(engl, None if is_untranslated else translated)
+        indexer.add(engl, None if is_untranslated else translated, filename=filename)
 
         # Remove entire tag if translated (or suggested)
         if not is_untranslated:
@@ -138,8 +138,9 @@ def autotranslate_xliffs(args):
     text_tag_indexer = TextTagIndexer() if args.text_tags else None
     pattern_indexer = PatternIndexer() if args.patterns else None
     simple_pattern_indexer = SimplePatternIndexer(args.language) if args.patterns else None
+    ignore_formula_pattern_idxer = IgnoreFormulaPatternIndexer(args.language) if args.patterns else None
     name_indexer = NamePatternIndexer()
-    indexer = CompositeIndexer(text_tag_indexer, pattern_indexer, simple_pattern_indexer, name_indexer)
+    indexer = CompositeIndexer(text_tag_indexer, pattern_indexer, simple_pattern_indexer, ignore_formula_pattern_idxer, name_indexer)
 
     # Initialize autotranslators
     rule_autotranslator = RuleAutotranslator()
