@@ -87,7 +87,7 @@ class NameAutotranslator(object):
                 "Antingen <name1> eller <name2>",
                 "Både <name1> och <name2>",
                 "Varken <name1> eller <name2> är korrekta",
-                "Både <name1> och <name2> är korrekta"
+                "Både <name1> och <name2> har rätt"
             ], "lol": [
                 "Only <name1>",
                 "Neither <name1> norz <name2>",
