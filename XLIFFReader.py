@@ -136,17 +136,18 @@ def autotranslate_xliffs(args):
 
     # Initialize pattern indexers
     text_tag_indexer = TextTagIndexer() if args.text_tags else None
-    pattern_indexer = GenericPatternIndexer() if args.patterns else None
-    simple_pattern_indexer = SimplePatternIndexer(args.language) if args.patterns else None
-    ignore_formula_pattern_idxer = IgnoreFormulaPatternIndexer(args.language) if args.patterns else None
+    pattern_indexer = GenericPatternIndexer() if args.index_patterns else None
+    simple_pattern_indexer = SimplePatternIndexer(args.language) if args.index_patterns else None
+    ignore_formula_pattern_idxer = IgnoreFormulaPatternIndexer(args.language) if args.index_patterns else None
     name_indexer = NamePatternIndexer()
     indexer = CompositeIndexer(text_tag_indexer, pattern_indexer, simple_pattern_indexer, ignore_formula_pattern_idxer, name_indexer)
 
     # Initialize autotranslators
     rule_autotranslator = RuleAutotranslator()
     simple_pattern_autotranslator = SimplePatternAutotranslator(args.language) if args.simple_patterns else None
+    ifpattern_autotranslator = IFPatternAutotranslator(args.language) if args.patterns else None
     name_autotranslator = NameAutotranslator(args.language) if args.name_autotranslate else None
-    autotranslator = CompositeAutoTranslator(rule_autotranslator, name_autotranslator, simple_pattern_autotranslator)
+    autotranslator = CompositeAutoTranslator(rule_autotranslator, ifpattern_autotranslator, name_autotranslator, simple_pattern_autotranslator)
 
     # Process in parallel
     # Cant use process pool as indexers currently cant be merged
@@ -187,6 +188,6 @@ def autotranslate_xliffs(args):
     if text_tag_indexer:
         text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
     if pattern_indexer:
-        ignore_formula_pattern_idxer.exportCSV(os.path.join("output-" + args.language, "if-patterns.csv"))
+        ignore_formula_pattern_idxer.exportJSON()
         simple_pattern_indexer.exportCSV()
         pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))

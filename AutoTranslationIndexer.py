@@ -64,8 +64,9 @@ class IgnoreFormulaPatternIndexer(object):
         self.index= Counter()
         self.translated_index = {}
         self._formula_re = re.compile(r"\$[^\$]+\$")
-        self._text = re.compile(r"\$[^\$]+\$")
-
+        # Ignore specific whitelisted texts which are not translated
+        self._text = re.compile(r"\\text\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
+    
     def add(self, engl, translated=None, filename=None):
         # Ignore if auto-translatable using universal string rules
         if self.autotrans.translate(engl) is not None:
@@ -82,13 +83,16 @@ class IgnoreFormulaPatternIndexer(object):
             normalized_trans = self._formula_re.sub("<formula>", translated)
             self.translated_index[normalized_engl] = normalized_trans
 
-    def exportCSV(self, filename):
-        with open(filename, "w") as outfile:
-            for (hit, count) in self.index.most_common():
-                transl = self.translated_index[hit] if hit in self.translated_index else ""
-                if count < 3:  # Ignore non-patterns
-                    continue
-                outfile.write("\"{}\",\"{}\",{}\n".format(hit,transl,count))
+    def exportJSON(self):
+        ifpatterns = []
+        for (hit, count) in self.index.most_common():
+            transl = self.translated_index[hit] if hit in self.translated_index else ""
+            if count >= 2:  # Ignore non-patterns
+                ifpatterns.append({"english": hit, "translated": transl, "count": count})
+
+        with open(os.path.join("transmap", self.lang + ".ifpatterns.json"), "w") as outfile:
+            json.dump(ifpatterns, outfile, indent=4, sort_keys=True)
+
 
 class SimplePatternIndexer(object):
     """
