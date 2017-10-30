@@ -154,7 +154,7 @@ def autotranslate_xliffs(args):
     for filepath, fileid in xliffs.items():
         filtered = False # true => ignore this file
         # Ignore files not in filter, if any
-        for filt in args.filter:
+        for filt in (args.filter or []):
             for subfilt in filt: # argparse creates nested list
                 if subfilt not in filepath and subfilt not in filepath.replace(".xliff", ".pot"):
                     filtered = True
