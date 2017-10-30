@@ -34,7 +34,7 @@ class RuleAutotranslator(object):
         #   \text{ cm}
         #   \text{ m}
         #   \text{ g}
-        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})");
+        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
         # URLs:
         #   ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/...)
         #   web+graphie://ka-perseus-graphie.s3.amazonaws.com/...
@@ -156,13 +156,6 @@ class SimplePatternAutotranslator(object):
         self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})");
         self._re1 = re.compile(r"^(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)$")
         self._trans1 = defaultdict(list)
-        # Translation patterns in this order:
-        #   Only <name1>
-        #   Neither <name1> nor <name2>
-        #   Either <name1> or <name2>
-        #   Both <name1> and <name2>
-        #   Neither <name1> nor <name2> are correct
-        #   Both <name1> and <name2> are correct
         with open(os.path.join("transmap", lang + ".1.json")) as infile:
             self.transmap1 = json.load(infile)
 

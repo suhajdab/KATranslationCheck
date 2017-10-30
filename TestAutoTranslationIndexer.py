@@ -54,6 +54,24 @@ if __name__ == "__main__":
     assertSame("(-2,4]")
     assertSame("[-2,4)")
     assertSame("[-2,-4]")
+    assertSame("$\\\\begin{align}\\n&F(x)=4x^2-5x\\n\\\\\\\\\\\\\\\\\\n&f(x)=F'(x)\\n\\\\end{align}$\\n\\n$\\\\displaystyle\\\\int_1^4 f(x)\\\\,dx=$ [[☃ numeric-input 1]]")
+    assertSame("$\\\\displaystyle\\\\sum_{j=0}^3 3-jn=\\\\,?$\\n\\n[[☃ radio 1]]")
+    assertSame("$\\\\displaystyle\\\\int x^{-7}\\\\,dx=$ [[☃ expression 1]]$+C$")
+    assertSame("$\\\\text{cm}/\\\\text{min}$")
+    assertSame("$\\\\text{cm}^2/\\\\text{h}$")
+    assertSame("$\\\\begin{align}\\nf(x)&=\\\\sin(-3x^2-3x+7)\\n\\\\\\\\\\\\\\\\\\nf'(x)&=\\\\,?\\n\\\\end{align}$\\n\\n[[☃ radio 1]]")
+    assertSame("$2x^2-x+5$")
+    assertSame("$f(x)=x^2$\\n\\n$f'(x)=$ [[☃ expression 1]]")
+    assertSame("$\\\\dfrac{d}{dx}\\\\left[\\\\dfrac{x^3}{\\\\sin(x)}\\\\right]=$ [[☃ expression 1]]\\n")
+    assertSame("$\\\\displaystyle\\\\lim_{x\\\\to \\\\frac{\\\\pi}{4}}\\\\csc(x)=?$\\n\\n[[☃ radio 1]]")
+    
+    assertSame("$y=\\\\arcsin\\\\!\\\\left(\\\\dfrac{x}{4}\\\\right)$\\n\\n$\\\\dfrac{dy}{dx}=?$\\n\\n[[☃ radio 1]]")
+    
+    
+    
+   
+    
+    #B | $x$ |$-2$ | $-1.5$ | $-1.25$ | $-1.1$ | $-1.005$ | $-1.001$ \n:- | -: | :-: | :-: | :-: | :-: | :-: | :-:\n| $g(x)$ | $-2.91$ | $-2.5$ | $-2.2$ | $-1.99$ | $-1.86$ | $-1.86$
 
     # Name translation
     assertNameTrans("Only John", "Endast John")
@@ -69,8 +87,8 @@ if __name__ == "__main__":
     assertNameTrans("Both John and Jack", "Både John och Jack")
     assertNameTrans("Both Jack and John.", "Både Jack och John.")
 
-    assertNameTrans("Neither John nor Jack are correct", "Varken John eller Jack är korrekta")
-    assertNameTrans("Neither Jack nor John are correct.", "Varken Jack eller John är korrekta.")
+    assertNameTrans("Neither John nor Jack are correct", "Varken John eller Jack har rätt")
+    assertNameTrans("Neither Jack nor John are correct.", "Varken Jack eller John har rätt.")
 
-    assertNameTrans("Both John and Jack are correct", "Både John och Jack är korrekta")
-    assertNameTrans("Both Jack and John are correct.", "Både Jack och John är korrekta.")
+    assertNameTrans("Both John and Jack are correct", "Både John och Jack har rätt")
+    assertNameTrans("Both Jack and John are correct.", "Både Jack och John har rätt.")

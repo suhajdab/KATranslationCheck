@@ -136,7 +136,7 @@ def autotranslate_xliffs(args):
 
     # Initialize pattern indexers
     text_tag_indexer = TextTagIndexer() if args.text_tags else None
-    pattern_indexer = PatternIndexer() if args.patterns else None
+    pattern_indexer = GenericPatternIndexer() if args.patterns else None
     simple_pattern_indexer = SimplePatternIndexer(args.language) if args.patterns else None
     ignore_formula_pattern_idxer = IgnoreFormulaPatternIndexer(args.language) if args.patterns else None
     name_indexer = NamePatternIndexer()
@@ -187,5 +187,6 @@ def autotranslate_xliffs(args):
     if text_tag_indexer:
         text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
     if pattern_indexer:
+        ignore_formula_pattern_idxer.exportCSV(os.path.join("output-" + args.language, "if-patterns.csv"))
         simple_pattern_indexer.exportCSV()
         pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
