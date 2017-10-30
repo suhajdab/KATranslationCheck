@@ -2,6 +2,7 @@
 import re as re
 from collections import Counter, defaultdict
 from ansicolor import red
+from AutoTranslationTranslator import RuleAutotranslator
 
 class CompositeIndexer(object):
     """
@@ -54,6 +55,7 @@ class PatternIndexer(object):
     def __init__(self):
         self.index = Counter()
         self.translated_index = {}
+        self.rule_autotranslator = RuleAutotranslator()
         self._re = re.compile(r"\d")
 
     def add(self, engl, translated=None):

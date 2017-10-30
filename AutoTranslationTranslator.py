@@ -86,6 +86,13 @@ class NameAutotranslator(object):
                 "Både <name1> och <name2>",
                 "Varken <name1> eller <name2> är korrekta",
                 "Både <name1> och <name2> är korrekta"
+            ], "lol": [
+                "Only <name1>",
+                "Neither <name1> norz <name2>",
+                "Either <name1> or <name2>",
+                "Both <name1> and <name2>",
+                "Neither <name1> nor <name2> are correct",
+                "Both <name1> and <name2> are correct"
             ]
         }
         if lang not in transmap:
