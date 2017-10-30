@@ -153,7 +153,7 @@ class SimplePatternAutotranslator(object):
     """
     def __init__(self, lang):
         self.lang = lang
-        self._re1 = re.compile(r"(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)")
+        self._re1 = re.compile(r"^(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)$")
         self._trans1 = defaultdict(list)
         # Translation patterns in this order:
         #   Only <name1>
