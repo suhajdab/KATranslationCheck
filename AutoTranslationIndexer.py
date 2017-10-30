@@ -55,13 +55,18 @@ class PatternIndexer(object):
     def __init__(self):
         self.index = Counter()
         self.translated_index = {}
-        self.rule_autotranslator = RuleAutotranslator()
+        self.autotranslator = RuleAutotranslator()
         self._re = re.compile(r"\d")
 
     def add(self, engl, translated=None):
+        # If the autotranslator can translate it, ignore it
+        if self.autotranslator.translate(engl) is not None:
+            return
         # Currently just remove digits
         normalized = self._re.sub("<num>", engl)
+        # Add to index
         self.index[normalized] += 1
+        # Add translated version to index
         if translated:
             self.translated_index[normalized] = self._re.sub("<num>", translated)
 
