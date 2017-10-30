@@ -27,7 +27,7 @@ class RuleAutotranslator(object):
         # Formulas:
         #   $...$
         #    **$...$
-        self._is_formula = re.compile(r"^>?[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+$");
+        self._is_formula = re.compile(r"^(>|#)*[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+$");
         # contains a \text{ clause except specific text clauses:
         #   \text{ cm}
         #   \text{ m}
@@ -41,6 +41,7 @@ class RuleAutotranslator(object):
 
         self._is_formula_plus_img = re.compile(r"^>?[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+(!\[\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)?\s*$")
         self._is_input = re.compile(r"^\[\[\s*☃\s*[a-z-]+\s*\d*\s*\]\](\s|\\n)*$", re.UNICODE)
+        self._is_formula_plus_input = re.compile(r"^(>|#)*[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+=?\s*\[\[\s*☃\s*[a-z-]+\s*\d*\s*\]\](\s|\\n)*$", re.UNICODE);
 
 
     def translate(self, engl):
@@ -48,9 +49,10 @@ class RuleAutotranslator(object):
         contains_text = self._contains_text.search(engl) is not None
         is_perseus_img_url = self._is_perseus_img_url.match(engl) is not None
         is_formula_plus_img = self._is_formula_plus_img.match(engl) is not None
+        is_formula_plus_input = self._is_formula_plus_input.match(engl) is not None
         is_input = self._is_input.match(engl) is not None
 
-        if is_perseus_img_url or is_formula_plus_img or is_input:
+        if is_perseus_img_url or is_formula_plus_img or is_input or is_formula_plus_input:
             return engl
         if is_formula and not contains_text:
             return engl

@@ -31,6 +31,7 @@ if __name__ == "__main__":
 
     assertNotTranslated("$d\\\\text{foo}$")
     assertSame("$d\\\\text{ cm}$")
+    assertSame("$d\\\\text{ cm}$")
     assertSame("$d\\\\text{ g}$")
     assertSame("$d\\\\text{ m}$")
     assertSame("$d\\\\text{cm}$")
@@ -45,6 +46,7 @@ if __name__ == "__main__":
     assertSame("$\\\\blue{A_c} = \\\\pi (\\\\pink{10})^2$\\n\\n $\\\\blue{A_c} = 100\\\\pi$\\n\\n ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/b8ca00d508c9e7b593c669977fdde31570195273)")
     assertSame(">$\\\\pink{\\\\text{m}\\\\angle D} + \\\\blue{106} = 180$")
     assertSame("$3c^3-12c-8$")
+    assertSame("### $\\log_{\\,5}{25}$ = [[☃ numeric-input 1]]")
 
     # Name translation
     assertNameTrans("Only John", "Endast John")
