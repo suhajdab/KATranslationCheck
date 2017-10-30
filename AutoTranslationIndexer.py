@@ -78,6 +78,7 @@ class NamePatternIndexer(object):
     """
     def __init__(self):
         self.index = Counter()
+        self.translated_patterns = [None, None, None, None] # Translations of pattern 1..4
         self._re1 = re.compile(r"^\s*Only\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
         self._re2 = re.compile(r"^\s*Neither\s+([A-Z][a-z]+)\s+nor\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
         self._re3 = re.compile(r"^\s*Either\s+([A-Z][a-z]+)\s+or\s+([A-Z][a-z]+)(\.|\s+|\\n)*$")
@@ -89,16 +90,47 @@ class NamePatternIndexer(object):
         m3 = self._re3.match(engl)
         m4 = self._re4.match(engl)
         if m1:
-            self.index[m1.group(1)] += 1
+            name1 = m1.group(1)
+            self.index[name1] += 1
+            if translated is not None and name1 in translated:
+                self.translated_patterns[0] = translated.replace(name1, "<name1>")
         if m2:
-            self.index[m2.group(1)] += 1
-            self.index[m2.group(2)] += 1
+            name1 = m2.group(1)
+            name2 = m2.group(2)
+            self.index[name1] += 1
+            self.index[name2] += 1
+            if translated is not None and name1 in translated and name2 in translated:
+                self.translated_patterns[1] = \
+                    translated.replace(name1, "<name1>").replace(name2, "<name2>")
         if m3:
-            self.index[m3.group(1)] += 1
-            self.index[m3.group(2)] += 1
+            name1 = m3.group(1)
+            name2 = m3.group(2)
+            self.index[name1] += 1
+            self.index[name2] += 1
+            if translated is not None and name1 in translated and name2 in translated:
+                self.translated_patterns[2] = \
+                    translated.replace(name1, "<name1>").replace(name2, "<name2>")
         if m4:
-            self.index[m4.group(1)] += 1
-            self.index[m4.group(2)] += 1
+            name1 = m4.group(1)
+            name2 = m4.group(2)
+            self.index[name1] += 1
+            self.index[name2] += 1
+            if translated is not None and name1 in translated and name2 in translated:
+                self.translated_patterns[3] = \
+                    translated.replace(name1, "<name1>").replace(name2, "<name2>")
+
+    def __len__(self):
+        cnt = 0
+        for (_, count) in self.index.most_common():
+            cnt += count
+        return cnt
+
+    def printTranslationPattern(self, lang):
+        print("Name translation patterns for {}:\n\t{}\n\t{}\n\t{}\n\t{}".format(lang,
+            self.translated_patterns[0],
+            self.translated_patterns[1],
+            self.translated_patterns[2],
+            self.translated_patterns[3]))
 
     def exportCSV(self, filename):
         with open(filename, "w") as outfile:

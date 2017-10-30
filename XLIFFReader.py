@@ -142,7 +142,8 @@ def autotranslate_xliffs(args):
 
     # Initialize autotranslators
     rule_autotranslator = RuleAutotranslator()
-    autotranslator = CompositeAutoTranslator(rule_autotranslator)
+    name_autotranslator = NameAutotranslator(args.language) if args.name_autotranslate else None
+    autotranslator = CompositeAutoTranslator(rule_autotranslator, name_autotranslator)
 
     # Process in parallel
     # Cant use process pool as indexers currently cant be merged
@@ -178,6 +179,8 @@ def autotranslate_xliffs(args):
     # Export indexed
     print(green("Exporting CSV indices..."))
     name_indexer.exportCSV(os.path.join("output-" + args.language, "names.csv"))
+    print("Found {} name occurrences".format(len(name_indexer)))
+    name_indexer.printTranslationPattern(args.language)
     if text_tag_indexer:
         text_tag_indexer.exportCSV(os.path.join("output-" + args.language, "texttags.csv"))
     if pattern_indexer:
