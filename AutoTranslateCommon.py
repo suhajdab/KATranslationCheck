@@ -21,18 +21,24 @@ def read_patterns(lang, identifier):
         return json.load(infile)
 
 def read_ifpattern_index(lang):
-    ifpatterns = read_patterns(lang, "ifpatterns")
-    return {
-        v["english"]: v["translated"]
-        for v in ifpatterns
-        if v["translated"] # Ignore empty string == untranslated
-        and v["english"].count("<formula>") == v["translated"].count("<formula>")
-    }
+    try:
+        ifpatterns = read_patterns(lang, "ifpatterns")
+        return {
+            v["english"]: v["translated"]
+            for v in ifpatterns
+            if v["translated"] # Ignore empty string == untranslated
+            and v["english"].count("<formula>") == v["translated"].count("<formula>")
+        }
+    except FileNotFoundError:
+        return {}
 
 def read_texttag_index(lang):
-    texttags = read_patterns(lang, "texttags")
-    return {
-        v["english"]: v["translated"]
-        for v in texttags
-        if v["translated"] # Ignore empty string == untranslated
-    }
+    try:
+        texttags = read_patterns(lang, "texttags")
+        return {
+            v["english"]: v["translated"]
+            for v in texttags
+            if v["translated"] # Ignore empty string == untranslated
+        }
+    except FileNotFoundError:
+        return {}
