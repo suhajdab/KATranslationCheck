@@ -76,13 +76,13 @@ class JSONHitRenderer(object):
     """
     A state container for the code which applies rules and generates HTML.
     """
-    def __init__(self, outdir, lang="de"):
+    def __init__(self, outdir, lang="de", num_processes=2):
         self.lang = lang
         # Create output directory
         self.outdir = os.path.join(outdir, lang)
         os.makedirs(self.outdir, exist_ok=True)
         # Async executor
-        self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count())
+        self.executor = concurrent.futures.ThreadPoolExecutor(num_processes)
         # Load rules for language
         rules, rule_errors = importRulesForLanguage(lang)
         self.rules = sorted(rules, reverse=True)
@@ -321,7 +321,7 @@ def performRender(args):
         args.outdir = "output"
     os.makedirs(args.outdir, exist_ok=True)
 
-    renderer = JSONHitRenderer(args.outdir, args.language)
+    renderer = JSONHitRenderer(args.outdir, args.language, args.num_processes)
 
     # Import
     potDir = os.path.join("cache", args.language)

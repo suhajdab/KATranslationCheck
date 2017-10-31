@@ -39,6 +39,7 @@ if __name__ == "__main__":
     renderLint.set_defaults(func=updateVideoMap)
 
     render = subparsers.add_parser('render')
+    autotranslate.add_argument('-j', '--num-processes', default=2, type=int, help='Number of threads to use for parallel processing')
     render.add_argument('-d', '--download', action='store_true', help='Download or update the directory')
     render.add_argument('-f', '--filter', nargs="*", action="append", help='Ignore file paths that do not contain this string, e.g. exercises or 2_high_priority. Can use multiple ones which are ANDed')
     render.add_argument('--only-lint', action='store_true', help='Only render the lint hierarchy')
