@@ -126,6 +126,9 @@ class NameAutotranslator(object):
         self._re5 = re.compile(r"^\s*Neither\s+([A-Z][a-z]+)\s+nor\s+([A-Z][a-z]+)\s+are\s+correct((\.|\s+|\\n)*)$")
         self._re6 = re.compile(r"^\s*Both\s+([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+)\s+are\s+correct((\.|\s+|\\n)*)$")
         self._re7 = re.compile(r"^\s*Yes,\s+([A-Z][a-z]+)\s+is\s+correct\s+but\s+([A-Z][a-z]+)\s+is\s+not((\.|\s+|\\n)*)$")
+        self._re8 = re.compile(r"^\s*In conclusion,\s*([A-Z][a-z]+)\s+is\s+correct((\.|\s+|\\n)*)$")
+        self._re9 = re.compile(r"^\s*Only\s*([A-Z][a-z]+)\s+is\s+correct((\.|\s+|\\n)*)$")
+        self._re10 = re.compile(r"^\s*([A-Z][a-z]+)'s\s+work\s+is\s+correct((\.|\s+|\\n)*)$")
         # Translation patterns in this order:
         #   1. Only <name1>
         #   2. Neither <name1> nor <name2>
@@ -136,7 +139,7 @@ class NameAutotranslator(object):
         #   7. Yes, <name1> is correct but <name2> is not
         #   8. In conclusion, <name1> is correct
         #   9. Only <name1> is correct
-        #   <name1>'s work is correct
+        #   10.<name1>'s work is correct
         transmap = {
             "sv-SE": [
                 "Endast <name1>",
@@ -163,7 +166,11 @@ class NameAutotranslator(object):
                 "Entweder <name1> oder <name2>",
                 "Sowohl <name1> als auch <name2>",
                 "Weder <name1> noch <name2> liegen richtig",
-                "Sowohl <name1> als auch <name2> liegt richig"
+                "Sowohl <name1> als auch <name2> liegt richig",
+                "Ja, <name1> liegt richtig, aber <name2> liegt falsch",
+                "Zusammenfassend liegt <name1> richtig",
+                "Nur <name1> liegt richtig",
+                "Die Lösung von <name1> ist korrekt"
             ]
         }
         if lang not in transmap:
@@ -183,6 +190,13 @@ class NameAutotranslator(object):
         rest = m.group(3)
         return transmap_entry.replace("<name1>", name1).replace("<name2>", name2) + rest
 
+    def _translate_match_one_name(self, m, transmap_entry):
+        if transmap_entry is None: # Unknown translation
+            return None # Cant translate
+        name1 = m.group(1)
+        rest = m.group(2)
+        return transmap_entry.replace("<name1>", name1) + rest
+
     def translate(self, engl):
         m1 = self._re1.match(engl)
         m2 = self._re2.match(engl)
@@ -190,18 +204,27 @@ class NameAutotranslator(object):
         m4 = self._re4.match(engl)
         m5 = self._re5.match(engl)
         m6 = self._re6.match(engl)
+        m7 = self._re7.match(engl)
+        m8 = self._re8.match(engl)
+        m9 = self._re9.match(engl)
+        m10 = self._re10.match(engl)
         if m1:
-            name1 = m1.group(1)
-            rest = m1.group(2)
-            return self.transmap[0].replace("<name1>", name1) + rest
+            return self._translate_match_one_name(m1, self.transmap[0])
         elif m2:
-            return translate_match_two_names(m2, self.transmap[1])
+            return self._translate_match_two_names(m2, self.transmap[1])
         elif m3:
-            return translate_match_two_names(m3, self.transmap[2])
+            return self._translate_match_two_names(m3, self.transmap[2])
         elif m4:
-            return translate_match_two_names(m4, self.transmap[3])
+            return self._translate_match_two_names(m4, self.transmap[3])
         elif m5:
-            return translate_match_two_names(m5, self.transmap[4])
+            return self._translate_match_two_names(m5, self.transmap[4])
         elif m6:
-            return translate_match_two_names(m6, self.transmap[5])
-
+            return self._translate_match_two_names(m6, self.transmap[5])
+        elif m7:
+            return self._translate_match_two_names(m7, self.transmap[6])
+        elif m8:
+            return self._translate_match_one_name(m8, self.transmap[7])
+        elif m9:
+            return self._translate_match_one_name(m9, self.transmap[8])
+        elif m10:
+            return self._translate_match_one_name(m10, self.transmap[9])
