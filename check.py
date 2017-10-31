@@ -105,7 +105,7 @@ class JSONHitRenderer(object):
         # Get timestamp
         self.timestamp = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")
         # Process lastdownload date (copied to the templated)
-        lastdownloadPath = os.path.join("cache", "lastdownload-{0}.txt".format(lang))
+        lastdownloadPath = os.path.join("cache", "lastdownload-{}.txt".format(lang))
         if os.path.isfile(lastdownloadPath):
             with open(lastdownloadPath) as infile:
                 self.downloadTimestamp = infile.read().strip()
@@ -115,7 +115,7 @@ class JSONHitRenderer(object):
         translationFilemapCache = getTranslationFilemapCache(lang)
         self.translationURLs = {
             v["path"]:
-                "https://crowdin.com/translate/khanacademy/{0}/enus-{1}".format(v["id"], lang)
+                "https://crowdin.com/translate/khanacademy/{}/enus-{}".format(v["id"], lang)
             for v in translationFilemapCache.values()
         }
 
