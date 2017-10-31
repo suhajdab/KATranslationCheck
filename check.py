@@ -25,6 +25,7 @@ import datetime
 import functools
 import concurrent.futures
 import collections
+from XLIFFReader import *
 from toolz.dicttoolz import valfilter, merge, merge_with, keyfilter, valmap
 from toolz.itertoolz import groupby, reduceby
 from multiprocessing import Pool
@@ -60,19 +61,6 @@ def findPOFiles(directory):
                 poFilenames.append(os.path.join(curdir, f))
     return poFilenames
 
-def readPOFiles(directory):
-    """
-    Read all PO files from a given directory and return
-    a dictionary path -> PO function.
-
-    Each Po function can be called without arguments to get the PO file.
-
-    Also supports using a single file as argument.
-    """
-    poFilenames = findPOFiles(directory)
-    # Parsing is computationally expensive.
-    return {os.path.relpath(path, directory): lambda: polib.pofile(path) for path in poFilenames}
-
 _multiSpace = re.compile(r"\s+")
 
 def genCrowdinSearchString(entry):
@@ -94,7 +82,7 @@ class JSONHitRenderer(object):
         self.outdir = os.path.join(outdir, lang)
         os.makedirs(self.outdir, exist_ok=True)
         # Async executor
-        self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count())
+        self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count() * 2)
         # Modified queue behaviour so new rules are run before reading new PO files,
         # in effect saving a ton of RAM
         self.executor._work_queue = queue.LifoQueue(512)
@@ -119,21 +107,33 @@ class JSONHitRenderer(object):
             for v in translationFilemapCache.values()
         }
 
-    def computeRuleHits(self, po, filename="[unknown filename]"):
+    def computeRuleHits(self, filename):
         """
-        Compute all rule hits for a single parsed PO file and return a list of futures
-        that return (filename, rule, results tuples).
-
-        po must be a function that returns a pofile object
+        Compute all rule hits for a single parsed PO file and return a list of hits
         """
-        def _wrapper(rule, po, filename):
-            # print("   {} => Rule {}".format(filename, rule))
-            return (filename, rule, list(rule.apply_to_po(po, filename=filename)))
-        # Actually read PO file
-        print(black("Reading {} ...".format(filename), bold=True))
-        po = po()
-        futures = [self.executor.submit(_wrapper, rule, po, filename) for rule in self.rules]
-        return futures
+        # Read XLIFF
+        basename = os.path.basename(filename)
+        soup = parse_xliff_file(filename)
+        body = soup.xliff.file.body
+        # Iterate over all translatable strings and apply rule
+        ruleHits = defaultdict(list)
+        for trans_unit in body.find_all("trans-unit"):
+            # Extract info
+            source = trans_unit.source
+            target = trans_unit.target
+            # Broken XLIFF entry
+            if target is None:
+                continue
+            #note = trans_unit.note
+            is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
+            # Apply to rules
+            for rule in self.rules:
+                rule_hits[rule] += list(rule.apply_to_xliff_entry(po, filename=filename))
+        # Convert to list which is easier to process down the chain
+        return [
+            (basename, rule, hits)
+            for rule, hits in ruleHits.items()
+        ]
 
     def computeRuleHitsForFileSet(self, poFiles):
         """
@@ -146,8 +146,8 @@ class JSONHitRenderer(object):
         # Compute dict with sorted & prettified filenames
         self.files = sorted(poFiles.keys())
         # Add all futures to the executor
-        futures = list(itertools.chain(*(self.computeRuleHits(po, filename)
-                                         for filename, po in poFiles.items())))
+        futures = [self.executor.submit(self.computeRuleHits, filename)
+            for filename in poFiles.keys()]
         # Process the results in first-received order. Also keep track of rule performance
         self.fileRuleHits = collections.defaultdict(dict)
         n_finished = 0
@@ -320,12 +320,11 @@ def performRender(args):
 
     # Import
     potDir = os.path.join("cache", args.language)
-    print(black("Reading files from {0} folder...".format(potDir), bold=True))
-    poFiles = readPOFiles(potDir)
-    print(black("Read {0} files".format(len(poFiles)), bold=True))
+    xliffFiles = findXLIFFFiles(potDir)
+    print(black("Reading {} files from {} folder...".format(len(xliffFiles), potDir), bold=True))
     # Compute hits
     print(black("Computing rules...", bold=True))
-    renderer.computeRuleHitsForFileSet(poFiles)
+    renderer.computeRuleHitsForFileSet(xliffFiles)
     # Ensure the HUGE po stuff goes out of scope ASAP
     del poFiles
 

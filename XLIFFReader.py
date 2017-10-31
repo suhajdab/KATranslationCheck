@@ -20,17 +20,16 @@ def findXLIFFFiles(directory):
     if os.path.isfile(directory): #Single file>=
         poFilenames = [directory]
     else:
-        poFilenames = {}
+        xliffFiles = {} # name => crowdin file id
         #Recursively iterate directory, ignore everythin except *.po
         for (curdir, _, files) in os.walk(directory):
-            for f in files:
-                #Ignore non-PO files
-                if not f.endswith(".xliff"): continue
+            # Ignore non-XLIFF files
+            for f in filter(lambda f: f.endswith(".xliff"), files):
                 #Add to list of files to process
                 filename = os.path.join(curdir, f)
                 basename = os.path.basename(filename)
-                poFilenames[filename] = transFilemap[basename.replace(".xliff", ".pot")]["id"]
-    return poFilenames
+                xliffFiles[filename] = transFilemap[basename.replace(".xliff", ".pot")]["id"]
+    return xliffFiles
 
 def parse_xliff_file(filename):
     with open(filename) as infile:
