@@ -10,7 +10,6 @@ Instructions:
  - Unzip the 'de' folder.
  - From the directory where the 'de' folder is located, run this script.
 """
-import polib
 import re
 import operator
 import simplejson as json
