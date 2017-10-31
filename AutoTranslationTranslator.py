@@ -114,7 +114,7 @@ class IFPatternAutotranslator(object):
             transl = transl.replace("<formula>", next_formula, 1)
         # Translate text-tags, if any
         for src, repl in texttag_replace.items():
-            if src in transl:
+            if src not in transl:
                 print(red("Text-tag translation: Can't find '{}' in '{}'".format(
                     src, transl), bold=True))
                 return None
