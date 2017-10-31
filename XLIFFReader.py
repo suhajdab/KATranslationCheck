@@ -146,8 +146,7 @@ def autotranslate_xliffs(args):
     text_tag_indexer = TextTagIndexer(args.language) if args.index else None
     pattern_indexer = GenericPatternIndexer() if args.index else None
     ignore_formula_pattern_idxer = IgnoreFormulaPatternIndexer(args.language) if args.index else None
-    name_indexer = NamePatternIndexer() if args.index else None
-    indexer = CompositeIndexer(text_tag_indexer, pattern_indexer, ignore_formula_pattern_idxer, name_indexer)
+    indexer = CompositeIndexer(text_tag_indexer, pattern_indexer, ignore_formula_pattern_idxer)
 
     # Initialize autotranslators
     rule_autotranslator = RuleAutotranslator()
@@ -181,7 +180,6 @@ def autotranslate_xliffs(args):
     # Export indexed
     if args.index:
         print("Exporting indices...")
-        name_indexer.printTranslationPattern(args.language)
         text_tag_indexer.exportJSON()
         text_tag_indexer.exportXLIFF()
         ignore_formula_pattern_idxer.exportJSON()
