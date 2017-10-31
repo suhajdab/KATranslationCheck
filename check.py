@@ -111,7 +111,11 @@ class JSONHitRenderer(object):
         # Read XLIFF
         basename = os.path.basename(filename)
         soup = parse_xliff_file(filename)
-        body = soup.xliff.file.body
+        try:
+            body = soup.xliff.file.body
+        except AttributeError:
+            print(red("File {} is not valid XLIFF - Ignoring.".format(relpath)))
+            return []
         # Iterate over all translatable strings and apply rule
         rule_hits = defaultdict(list)
         print(filename)
