@@ -27,7 +27,7 @@ class TextTagIndexer(object):
         self.lang = lang
         self.index = Counter() # UNTRANSLATED count for each text tag
         self.translated_index = defaultdict(Counter)
-        self._re = re.compile(r"\\text\s*\{\s*([^\}]+)\}")
+        self._re = get_text_content_regex()
 
     def add(self, engl, translated=None, filename=None):
         # Find english hits and possible hits in target lang to be able to match them!
@@ -38,8 +38,8 @@ class TextTagIndexer(object):
         if translated is not None: # Translated, do not count but index
             for engl_hit, transl_hit in zip(engl_hits, transl_hits):
                 # Extract corresponding hits
-                engl_hit = engl_hit.group(1).strip()
-                transl_hit = transl_hit.group(1).strip()
+                engl_hit = engl_hit.group(2).strip()
+                transl_hit = transl_hit.group(2).strip()
                 # Count
                 self.index[engl_hit] += 1
                 # If untranslated, do not index translions

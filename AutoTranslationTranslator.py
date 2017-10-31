@@ -67,36 +67,58 @@ class IFPatternAutotranslator(object):
     """
     def __init__(self, lang):
         self.lang = lang
-        with open(transmap_filename(self.lang, "ifpatterns")) as infile:
-            ifpatterns = json.load(infile)
-        # Remove
-        self.patterns = {
+        # Read patterns
+        ifpatterns = read_patterns(self.lang, "ifpatterns")
+        texttags = read_patterns(self.lang, "texttags")
+        # Preprocess patterns to index
+        self.ifpatterns = {
             v["english"]: v["translated"]
             for v in ifpatterns
             if v["translated"] # Ignore empty string == untranslated
             and v["english"].count("<formula>") == v["translated"].count("<formula>")
         }
+        self.texttags = {
+            v["english"]: v["translated"]
+            for v in texttags
+            if v["translated"] # Ignore empty string == untranslated
+        }
         # Compile regexes
         self._formula_re = re.compile(r"\$[^\$]+\$")
-        self._text = get_text_regex()
+        self._text = get_text_content_regex()
 
     def translate(self, engl):
         # Normalize and filter out formulae with translatable text
         normalized = self._formula_re.sub("<formula>", engl)
-        has_text = self._text.search(engl)
-        if has_text: # Currently ignore
-            # TODO Maybe we have a translation for the text?
+        # Mathrm is a rare alternative to \\text which is unhanled at the moment
+        if "mathrm" in engl:
             return None
+        # If there are any texts, check if we know how to translate
+        texttag_replace = {} # texttags: engl full tag to translated full tag 
+        for text_hit in self._text.finditer(engl):
+            content = text_hit.group(2).strip()
+            if content in self.texttags:
+                # Assemble the correct replacement string
+                translated = text_hit.group(1) + self.texttags[content] + text_hit.group(3)
+                texttag_replace[text_hit.group(0)] = translated
+            else: # Untranslatable tag
+                return None # Cant fully translate this string
         # Check if it matches
-        if normalized not in self.patterns:
+        if normalized not in self.ifpatterns:
             return None # Do not have pattern
-        transl = self.patterns[normalized]
+        transl = self.ifpatterns[normalized]
         # Find formulae in english text
         src_formulae = self._formula_re.findall(engl)
         # Replace one-by-one
         while "<formula>" in transl:
             next_formula = src_formulae.pop(0) # Next "source formula"
             transl = transl.replace("<formula>", next_formula, 1)
+        # Translate text-tags, if any
+        for src, repl in texttag_replace.items():
+            if src in transl:
+                print(red("Text-tag translation: Can't find '{}' in '{}'".format(
+                    src, transl), bold=True))
+                return None
+            transl = transl.replace(src, repl)
         return transl
 
 
