@@ -124,8 +124,9 @@ class JSONHitRenderer(object):
             source = trans_unit.source
             target = trans_unit.target
             # Broken XLIFF entry
-            if target is None:
+            if source is None or target is None:
                 continue
+            # Convert to XLIFF entry
             is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
             entry = XLIFFEntry(source.text, target.text, is_untranslated, trans_unit.note.text)
             # Apply to rules
