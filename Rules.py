@@ -145,7 +145,7 @@ class Rule(object):
         # Translated string cleanup
         translated = cleanupTranslatedString(entry.translated)
         # Apply the rule
-        for hit in self(entry.translated, entry.english, "", filename=filename):
+        for hit in self(translated, entry.english, entry.note, filename=filename):
             #Find images in both original and new string
             origImages = [h[0] for h in _extractImgRegex.findall(entry.english)]
             translatedImages = [h[0] for h in _extractImgRegex.findall(translated)]
