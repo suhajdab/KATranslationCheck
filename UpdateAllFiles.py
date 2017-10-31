@@ -237,6 +237,6 @@ def get_translation_urls(lang, xliff=True):
     return {
         v["path"].replace(".pot", ".xliff" if xliff else ".pot"):
             "https://crowdin.com/translate/khanacademy/{}/enus-{}".format(
-                v["id"], lang)
+                v["id"], lang.partition("-")[0])
         for v in translationFilemapCache.values()
     }
