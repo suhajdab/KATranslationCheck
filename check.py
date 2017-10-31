@@ -124,7 +124,7 @@ class JSONHitRenderer(object):
             source = trans_unit.source
             target = trans_unit.target
             # Broken XLIFF entry
-            if source is None or target is None or:
+            if source is None or target is None:
                 continue
             note = "" if trans_unit.note is None  else trans_unit.note.texts
             # Convert to XLIFF entry
