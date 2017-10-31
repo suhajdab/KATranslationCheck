@@ -30,7 +30,7 @@ from toolz.dicttoolz import valfilter, merge, merge_with, keyfilter, valmap
 from toolz.itertoolz import groupby, reduceby
 from multiprocessing import Pool
 from ansicolor import red, black, blue
-from UpdateAllFiles import getTranslationFilemapCache
+from UpdateAllFiles import get_translation_urls
 from Rules import Severity, importRulesForLanguage
 from LintReport import readAndMapLintEntries, NoResultException
 
@@ -102,12 +102,7 @@ class JSONHitRenderer(object):
         else:
             self.downloadTimestamp = None
         # Initialize translation ID/URL map
-        translationFilemapCache = getTranslationFilemapCache(lang)
-        self.translationURLs = {
-            v["path"]:
-                "https://crowdin.com/translate/khanacademy/{}/enus-{}".format(v["id"], lang)
-            for v in translationFilemapCache.values()
-        }
+        self.translationURLs = get_translation_urls(lang)
 
     def computeRuleHits(self, filename):
         """
@@ -136,7 +131,7 @@ class JSONHitRenderer(object):
         # Convert to list which is easier to process down the chain
         gc.collect()
         return [
-            (basename, rule, hits)
+            (os.path.relpath(filename, os.path.join("cache", self.lang)), rule, hits)
             for rule, hits in rule_hits.items()
         ]
 
@@ -330,8 +325,6 @@ def performRender(args):
     # Compute hits
     print(black("Computing rules...", bold=True))
     renderer.computeRuleHitsForFileSet(xliffFiles)
-    # Ensure the HUGE po stuff goes out of scope ASAP
-    del poFiles
 
     # Generate HTML
     print(black("Rendering HTML...", bold=True))

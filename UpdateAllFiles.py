@@ -228,3 +228,15 @@ if __name__ == "__main__":
     #print(s.__dict__)
     print(downloadCrowdinById(s, "41065"))
     # Load phrase
+
+def get_translation_urls(lang, xliff=True):
+    """
+    Get a map from filename to "where to translate on Crowdin" URL
+    """
+    translationFilemapCache = getTranslationFilemapCache(lang)
+    return {
+        v["path"].replace(".pot", ".xliff" if xliff else ".pot"):
+            "https://crowdin.com/translate/khanacademy/{}/enus-{}".format(
+                v["id"], lang)
+        for v in translationFilemapCache.values()
+    }
