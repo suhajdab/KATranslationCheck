@@ -82,7 +82,7 @@ class JSONHitRenderer(object):
         self.outdir = os.path.join(outdir, lang)
         os.makedirs(self.outdir, exist_ok=True)
         # Async executor
-        self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count() * 2)
+        self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count())
         # Load rules for language
         rules, rule_errors = importRulesForLanguage(lang)
         self.rules = sorted(rules, reverse=True)
