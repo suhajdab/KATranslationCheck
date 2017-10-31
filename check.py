@@ -108,6 +108,8 @@ class JSONHitRenderer(object):
         """
         Compute all rule hits for a single parsed PO file and return a list of hits
         """
+        # Compute relative path (which is how Crowin refers to the file)
+        relpath = os.path.relpath(filename, os.path.join("cache", self.lang))
         # Read XLIFF
         basename = os.path.basename(filename)
         soup = parse_xliff_file(filename)
@@ -126,11 +128,11 @@ class JSONHitRenderer(object):
             entry = XLIFFEntry(source.text, target.text, is_untranslated, trans_unit.note.text)
             # Apply to rules
             for rule in self.rules:
-                rule_hits[rule] += list(rule.apply_to_xliff_entry(entry, basename))
+                rule_hits[rule] += list(rule.apply_to_xliff_entry(entry, relpath))
         # Convert to list which is easier to process down the chain
         gc.collect()
         return [
-            (os.path.relpath(filename, os.path.join("cache", self.lang)), rule, hits)
+            (relpath, rule, hits)
             for rule, hits in rule_hits.items()
         ]
 
