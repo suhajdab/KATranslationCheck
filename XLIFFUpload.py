@@ -6,8 +6,8 @@ from UpdateAllFiles import getCrowdinSession
 def upload_file(filename, fileid, auto_approve=False, lang="lol"):
     auto_approve = 1 if auto_approve else 0
     basename = os.path.basename(filename)
-    url = "https://crowdin.com/project/khanacademy/{}/{}/upload?import_eq_suggestions=1&auto_approve_imported={}&qqfile={}".format(
-        lang, fileid, auto_approve, basename)
+    url = "https://crowdin.com/project/khanacademy/{}/{}/upload?import_eq_suggestions=1&{}qqfile={}".format(
+        lang, fileid, "auto_approve_imported=1&" if auto_approve else "", basename)
 
     s = getCrowdinSession()
     with open(filename, "rb") as infile:
