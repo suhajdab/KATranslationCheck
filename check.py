@@ -247,7 +247,7 @@ class JSONHitRenderer(object):
             "downloadTimestamp": self.downloadTimestamp,
             "stats": ruleInfos,
             "files": [merge(self.statsByFile[filename], {"filename": filename})
-                      for filename in self.files
+                      for filename in map(self.file_relpath, self.files)
                       if self.statsByFile[filename]["notices"] > 0]
         }
         writeJSONToFile(os.path.join(directory, "index.json"), js)
