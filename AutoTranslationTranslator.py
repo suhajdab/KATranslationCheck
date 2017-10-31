@@ -147,6 +147,13 @@ class NameAutotranslator(object):
                 "Both <name1> and <name2>",
                 "Neither <name1> nor <name2> are correct",
                 "Both <name1> and <name2> are correct"
+            ], "de": [
+                "Nur <name1>",
+                "Weder <name1> noch <name2>",
+                "Entweder <name1> oder <name2>",
+                "Sowohl <name1> als auch <name2>",
+                "Weder <name1> noch <name2> liegen richtig",
+                "Sowohl <name1> als auch <name2> liegt richig"
             ]
         }
         if lang not in transmap:
