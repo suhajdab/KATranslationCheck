@@ -47,7 +47,7 @@ export class LanguageService {
                 { name: "Português (BR)", code: "pt-BR" },
                 { name: "Polski (PL)", code: "pl" },
                 { name: "Nederlands (NL)", code: "nl" },
-                { name: "български (BG)", code: "bg" }],
+                { name: "български (BG)", code: "bg" },
                 { name: "Svenska (sv-SE)", code: "sv-SE" }]
     }
 
