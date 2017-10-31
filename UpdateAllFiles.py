@@ -99,7 +99,7 @@ def performXLIFFDownload(lang, argtuple):
     fileid, filepath = argtuple
     exportTranslationFile(lang, fileid, filepath, asXLIFF=True)
 
-def exportTranslationFile(lang, fileid, filepath, asXLIFF=False):
+def exportTranslationFile(lang, fileid, filepath, asXLIFF=True):
     """
     Explicitly uncurried function that downloads a single Crowdin file
     to a filesystem file. fileid, filepath
@@ -177,7 +177,7 @@ def updateTranslation(args):
     for filename, fileinfo in translationFilemap.items():
         filepath = os.path.join("cache", args.language, fileinfo["path"])
         # Handle XLIFF filenames
-        if args.xliff:
+        if not args.po:
             filepath = filepath.replace(".pot", ".xliff")
         # Create dir if not exists
         try:
@@ -190,7 +190,7 @@ def updateTranslation(args):
         fileid = fileinfo["id"]
         fileinfos.append((fileid, filepath))
     # Curry the function with the language
-    performDownload = functools.partial(performXLIFFDownload if args.xliff else performPOTDownload, args.language)
+    performDownload = functools.partial(performPOTDownload if args.po else performXLIFFDownload, args.language)
     # Perform parallel download
     if args.num_processes > 1:
         pool = Pool(args.num_processes)
