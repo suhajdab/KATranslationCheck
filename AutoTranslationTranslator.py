@@ -67,21 +67,9 @@ class IFPatternAutotranslator(object):
     """
     def __init__(self, lang):
         self.lang = lang
-        # Read patterns
-        ifpatterns = read_patterns(self.lang, "ifpatterns")
-        texttags = read_patterns(self.lang, "texttags")
-        # Preprocess patterns to index
-        self.ifpatterns = {
-            v["english"]: v["translated"]
-            for v in ifpatterns
-            if v["translated"] # Ignore empty string == untranslated
-            and v["english"].count("<formula>") == v["translated"].count("<formula>")
-        }
-        self.texttags = {
-            v["english"]: v["translated"]
-            for v in texttags
-            if v["translated"] # Ignore empty string == untranslated
-        }
+        # Read patterns index
+        self.ifpatterns = read_ifpattern_index(lang)
+        self.texttags = read_texttag_index(lang)
         # Compile regexes
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._text = get_text_content_regex()

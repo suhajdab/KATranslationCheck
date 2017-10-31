@@ -78,17 +78,21 @@ class IgnoreFormulaPatternIndexer(object):
         self.index = Counter()
         self.translated_index = defaultdict(Counter)
         self._formula_re = re.compile(r"\$[^\$]+\$")
-        self._text = get_text_regex()
+        self._text = get_text_content_regex()
+        # NOTE: Need to run indexer TWO TIMES to get accurate results
+        # as the text tags first need to be updated to get an accurate IF index
+        self.texttags = read_texttag_index(lang)
         # Ignore specific whitelisted texts which are not translated
 
     def add(self, engl, translated=None, filename=None):
         normalized_engl = self._formula_re.sub("<formula>", engl)
-
-        has_text = self._text.search(engl)
-        if has_text: # Currently ignore
-            # TODO Maybe we have a translation for the text?
-            return
-
+        # Index pattern if it contains TRANSLATABLE text tags ONLY.
+        # The translation itself will be perfomed in the autotranslator,
+        # while the text tag content itself is indexed in the texttag indexer
+        for text_hit in self._text.finditer(engl):
+            content = text_hit.group(2).strip()
+            if content not in self.texttags: # Untranslatable tag
+                return # String not translatable, do not index
         # Count also if translated
         self.index[normalized_engl] += 1
         # Track translation for majority selection later
