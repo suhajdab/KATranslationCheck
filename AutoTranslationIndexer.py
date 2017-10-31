@@ -7,6 +7,7 @@ from AutoTranslationTranslator import RuleAutotranslator
 from Utils import *
 import os
 import json
+from AutoTranslateCommon import *
 
 class CompositeIndexer(object):
     """
@@ -54,6 +55,26 @@ class TextTagIndexer(object):
                 # engl,translated(or ""),count
                 outfile.write("\"{}\",\"{}\",{}\n".format(hit, transl, count))
 
+    def exportJSON(self):
+        ifpatterns = []
+        for (hit, count) in self.index.most_common():
+            # Get the most common pattern
+            transl_list = self.translated_index[hit]
+            transl = majority_vote(transl_list) if transl_list else ""
+            if count >= 2:  # Ignore non-patterns
+                ifpatterns.append({"english": hit, "translated": transl, "count": count, "type": "ifpattern"})
+
+        # Export main patterns file
+        with open(os.path.join("transmap", self.lang + ".ifpatterns.json"), "w") as outfile:
+            json.dump(ifpatterns, outfile, indent=4, sort_keys=True)
+
+        # export file of untranslated patterns
+        with open(os.path.join("transmap", self.lang + ".ifpatterns.untranslated.json"), "w") as outfile:
+            json.dump(list(filter(lambda p: not p["translated"], ifpatterns)),
+                outfile, indent=4, sort_keys=True)
+
+
+
 class IgnoreFormulaPatternIndexer(object):
     """
     Indexes patterns with only the text as key, replacing all formulas with <formula>
@@ -65,20 +86,19 @@ class IgnoreFormulaPatternIndexer(object):
         self.translated_index = defaultdict(list)
         self._formula_re = re.compile(r"\$[^\$]+\$")
         # Ignore specific whitelisted texts which are not translated
-        self._text = re.compile(r"\\text\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
-    
-    def add(self, engl, translated=None, filename=None):
-        # Ignore if auto-translatable using universal string rules
-        if self.autotrans.translate(engl) is not None:
-            return
 
+    def add(self, engl, translated=None, filename=None):
         normalized_engl = self._formula_re.sub("<formula>", engl)
+
         has_text = self._text.search(engl)
         if has_text: # Currently ignore
             # TODO Maybe we have a translation for the text?
             return
 
-        self.index[normalized_engl] += 1
+        # Count only if untranslated
+        if translated is None:
+            self.index[normalized_engl] += 1
+        # Track translation for majority selection later
         if translated is not None:
             normalized_trans = self._formula_re.sub("<formula>", translated)
             self.translated_index[normalized_engl].append(normalized_trans)
@@ -90,39 +110,15 @@ class IgnoreFormulaPatternIndexer(object):
             transl_list = self.translated_index[hit]
             transl = majority_vote(transl_list) if transl_list else ""
             if count >= 2:  # Ignore non-patterns
-                ifpatterns.append({"english": hit, "translated": transl, "count": count})
+                ifpatterns.append({"english": hit, "translated": transl, "count": count, "type": "ifpattern"})
 
+        # Export main patterns file
         with open(os.path.join("transmap", self.lang + ".ifpatterns.json"), "w") as outfile:
             json.dump(ifpatterns, outfile, indent=4, sort_keys=True)
 
-
-class SimplePatternIndexer(object):
-    """
-    Indexes simple patterns with known form:
-    Tries to find translated forms of given patterns
-    """
-    def __init__(self, lang):
-        self.lang = lang
-        self._re1 = re.compile(r"(\$[^\$]+\$)\s+([\w\s]+)\s+(\$[^\$]+\$\s*)")
-        self._trans1 = defaultdict(list)
-
-    def add(self, engl, translated=None, filename=None):
-        if translated is not None:
-            m1e = self._re1.match(engl)
-            m1t = self._re1.match(translated)
-            if m1e and m1t:
-                # Uncomment to debug source of strange patterns.
-                #if m1e.group(2) == m1t.group(2):
-                #    print("{} ===> {} ({})".format(engl, translated, filename))
-                self._trans1[m1e.group(2)].append(m1t.group(2))
-
-    def majority_voted_map(self, src, min_confidence=2):
-        return valmap(lambda v: majority_vote(v), src)
-
-
-    def exportCSV(self):
-        with open(os.path.join("transmap", self.lang + ".1.json"), "w") as outfile:
-            json.dump(self.majority_voted_map(self._trans1),
+        # export file of untranslated patterns
+        with open(os.path.join("transmap", self.lang + ".ifpatterns.untranslated.json"), "w") as outfile:
+            json.dump(list(filter(lambda p: not p["translated"], ifpatterns)),
                 outfile, indent=4, sort_keys=True)
 
 class GenericPatternIndexer(object):

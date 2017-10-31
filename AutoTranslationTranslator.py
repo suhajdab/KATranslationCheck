@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from ansicolor import red
 import os.path
 import json
+from AutoTranslateCommon import *
 
 class CompositeAutoTranslator(object):
     """
@@ -34,7 +35,7 @@ class RuleAutotranslator(object):
         #   \text{ cm}
         #   \text{ m}
         #   \text{ g}
-        self._contains_text = re.compile(r"\\(text|mathrm)\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
+        self._contains_text = get_text_regex()
         # URLs:
         #   ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/...)
         #   web+graphie://ka-perseus-graphie.s3.amazonaws.com/...
@@ -77,7 +78,7 @@ class IFPatternAutotranslator(object):
         }
         # Compile regexes
         self._formula_re = re.compile(r"\$[^\$]+\$")
-        self._text = re.compile(r"\\(text|mathrm)\s*\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})(?! ?h\})");
+        self._text = get_text_regex()
 
     def translate(self, engl):
         # Normalize and filter out formulae with translatable text
@@ -184,35 +185,3 @@ class NameAutotranslator(object):
             rest = m6.group(3)
             return self.transmap[5].replace("<name1>", name1).replace("<name2>", name2) + rest
 
-
-class SimplePatternAutotranslator(object):
-    """
-    Auto-translates based on simple patterns with known form
-    Will mostly auto-translate formula-only etc
-    """
-    def __init__(self, lang):
-        self.lang = lang
-        self._contains_text = re.compile(r"\\text\{(?! ?cm\})(?! ?m\})(?! ?g\})(?! ?kg\})(?! ?s\})(?! ?min\})");
-        self._re1 = re.compile(r"^(\$[^\$]+\$)\s+(\w+)\s+(\$[^\$]+\$\s*)$")
-        self._trans1 = defaultdict(list)
-        with open(os.path.join("transmap", lang + ".1.json")) as infile:
-            self.transmap1 = json.load(infile)
-
-    def replace_name(self, lang, name):
-        """
-        Get the localized replacement name
-        """
-        # TODO not implemented
-        return name
-
-    def translate(self, engl):
-        m1 = self._re1.match(engl)
-        if m1: # $...$ <text> $...$
-            # \\text might contain separate translatable text, so ignore
-            if self._contains_text.match(engl) is not None:
-                return None
-            word = m1.group(2)
-            if word not in self.transmap1[word]:
-                return None # Dont know how to translate
-            transWord = self.transmap1[word]
-            return engl.replace(word, transWord)
