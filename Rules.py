@@ -135,7 +135,7 @@ class Rule(object):
             return self.severity < other.severity
         return self.name < other.name
 
-    def apply_to_xliff_entry(self, entry, filename, ignore_untranslated=False):
+    def apply_to_xliff_entry(self, entry, filename, ignore_untranslated=True):
         """
         Apply to a dictionary of parsed PO files.
         Yields tuples entry, hit, filename
@@ -151,7 +151,7 @@ class Rule(object):
             translatedImages = [h[0] for h in _extractImgRegex.findall(translated)]
             yield (entry, hit, filename, origImages, translatedImages)
 
-    def apply_to_po(self, po, filename="[unknown file]", ignore_untranslated=False):
+    def apply_to_po(self, po, filename="[unknown file]", ignore_untranslated=True):
         """
         Apply to a dictionary of parsed PO files.
         Yields tuples entry, hit, filename
