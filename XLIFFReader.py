@@ -12,9 +12,11 @@ from XLIFFUpload import *
 import concurrent.futures
 import gc
 
-def findXLIFFFiles(directory):
+def findXLIFFFiles(directory, filt=[]):
     """
     Get a list of PO files (.po / .pot) which are present in the directory.
+
+    filter is a nested list from argparse which defined
     """
     transFilemap = getTranslationFilemapCache()
     if os.path.isfile(directory): #Single file>=
@@ -28,7 +30,15 @@ def findXLIFFFiles(directory):
                 #Add to list of files to process
                 filename = os.path.join(curdir, f)
                 basename = os.path.basename(filename)
-                xliffFiles[filename] = transFilemap[basename.replace(".xliff", ".pot")]["id"]
+                # Filter based on custom filter
+                filtered = False # true => ignore this file
+                # Ignore files not in filter, if any
+                for subfilt1 in (filt or []):
+                    for subfilt2 in subfilt1: # argparse creates nested list
+                        if subfilt2 not in filename and subfilt2 not in filename.replace(".xliff", ".pot"):
+                            filtered = True
+                if not filtered: # passed filter
+                    xliffFiles[filename] = transFilemap[basename.replace(".xliff", ".pot")]["id"]
     return xliffFiles
 
 def parse_xliff_file(filename):
@@ -149,21 +159,13 @@ def autotranslate_xliffs(args):
     # Process in parallel
     # Cant use process pool as indexers currently cant be merged
     executor = concurrent.futures.ThreadPoolExecutor(args.num_processes)
-    futures = []
 
-    xliffs = findXLIFFFiles("cache/{}".format(args.language))
-    for filepath, fileid in xliffs.items():
-        filtered = False # true => ignore this file
-        # Ignore files not in filter, if any
-        for filt in (args.filter or []):
-            for subfilt in filt: # argparse creates nested list
-                if subfilt not in filepath and subfilt not in filepath.replace(".xliff", ".pot"):
-                    filtered = True
-        if filtered:
-            continue
-        # Run in background
-        future = executor.submit(readAndProcessXLIFFRunner, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
-        futures.append(future)
+    xliffs = findXLIFFFiles("cache/{}".format(args.language), filt=args.filter)
+    # Run XLIFF parser in 
+    futures = [
+        executor.submit(readAndProcessXLIFFRunner, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
+        for filepath, fileid in xliffs.items()
+    ]
     # stats
     kwargs = {
         'total': len(futures),

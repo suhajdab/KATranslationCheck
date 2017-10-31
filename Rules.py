@@ -135,22 +135,21 @@ class Rule(object):
             return self.severity < other.severity
         return self.name < other.name
 
-    def apply_to_xliff_entry(self, msgid, msgstr, is_untranslated, filename, ignore_untranslated=False):
+    def apply_to_xliff_entry(self, entry, filename, ignore_untranslated=False):
         """
         Apply to a dictionary of parsed PO files.
         Yields tuples entry, hit, filename
         """
-        for entry in po:
-            if ignore_untranslated and is_untranslated:
-                continue
-            # Translated string cleanup
-            msgstr = cleanupTranslatedString(msgstr)
-            # Apply the rule
-            for hit in self(msgstr, msgid, "", filename=filename):
-                #Find images in both original and new string
-                origImages = [h[0] for h in _extractImgRegex.findall(msgid)]
-                translatedImages = [h[0] for h in _extractImgRegex.findall(msgstr)]
-                yield (entry, hit, filename, origImages, translatedImages)
+        if ignore_untranslated and entry.is_untranslated:
+            return
+        # Translated string cleanup
+        translated = cleanupTranslatedString(entry.translated)
+        # Apply the rule
+        for hit in self(entry.translated, entry.english, "", filename=filename):
+            #Find images in both original and new string
+            origImages = [h[0] for h in _extractImgRegex.findall(entry.english)]
+            translatedImages = [h[0] for h in _extractImgRegex.findall(translated)]
+            yield (entry, hit, filename, origImages, translatedImages)
 
     def apply_to_po(self, po, filename="[unknown file]", ignore_untranslated=False):
         """

@@ -38,14 +38,15 @@ if __name__ == "__main__":
 
     render = subparsers.add_parser('render')
     render.add_argument('-d', '--download', action='store_true', help='Download or update the directory')
+    render.add_argument('-f', '--filter', nargs="*", action="append", help='Ignore file paths that do not contain this string, e.g. exercises or 2_high_priority. Can use multiple ones which are ANDed')
     render.add_argument('--only-lint', action='store_true', help='Only render the lint hierarchy')
     render.add_argument('--no-lint', action='store_true', help='Do not render the lint hierarchy')
     render.add_argument('outdir', nargs='?', default=None, help='The output directory to use (default: output-<lang>)')
     render.set_defaults(func=performRender)
 
-    render = subparsers.add_parser('index')
-    render.add_argument('-t', '--table', type=int, default=1, help='Table offset (where to store the data in YakDB. 1 => production setup)')
-    render.set_defaults(func=buildPolyglottIndex)
+    index = subparsers.add_parser('index')
+    index.add_argument('-t', '--table', type=int, default=1, help='Table offset (where to store the data in YakDB. 1 => production setup)')
+    index.set_defaults(func=buildPolyglottIndex)
 
     args = parser.parse_args()
 

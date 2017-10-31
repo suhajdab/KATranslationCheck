@@ -34,6 +34,8 @@ from UpdateAllFiles import getTranslationFilemapCache
 from Rules import Severity, importRulesForLanguage
 from LintReport import readAndMapLintEntries, NoResultException
 
+XLIFFEntry = collections.namedtuple("XLIFFEntry", ["english", "translated", "is_untranslated"])
+
 def writeToFile(filename, s):
     "Utility function to write a string to a file identified by its filename"
     with open(filename, "w") as outfile:
@@ -116,7 +118,8 @@ class JSONHitRenderer(object):
         soup = parse_xliff_file(filename)
         body = soup.xliff.file.body
         # Iterate over all translatable strings and apply rule
-        ruleHits = defaultdict(list)
+        rule_hits = defaultdict(list)
+        print(filename)
         for trans_unit in body.find_all("trans-unit"):
             # Extract info
             source = trans_unit.source
@@ -126,13 +129,15 @@ class JSONHitRenderer(object):
                 continue
             #note = trans_unit.note
             is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
+            entry = XLIFFEntry(source.text, target.text, is_untranslated)
             # Apply to rules
             for rule in self.rules:
-                rule_hits[rule] += list(rule.apply_to_xliff_entry(po, filename=filename))
+                rule_hits[rule] += list(rule.apply_to_xliff_entry(entry, basename))
         # Convert to list which is easier to process down the chain
+        gc.collect()
         return [
             (basename, rule, hits)
-            for rule, hits in ruleHits.items()
+            for rule, hits in rule_hits.items()
         ]
 
     def computeRuleHitsForFileSet(self, poFiles):
@@ -155,8 +160,8 @@ class JSONHitRenderer(object):
         raw_results = collections.defaultdict(dict) # filename -> {rule: result}
         for future in concurrent.futures.as_completed(futures):
             # Extract result
-            filename, rule, result = future.result()
-            self.fileRuleHits[filename][rule] = result
+            for filename, rule, result in future.result():
+                self.fileRuleHits[filename][rule] = result
             # Track progress
             n_finished += 1
             if n_finished % 1000 == 0:
@@ -320,7 +325,7 @@ def performRender(args):
 
     # Import
     potDir = os.path.join("cache", args.language)
-    xliffFiles = findXLIFFFiles(potDir)
+    xliffFiles = findXLIFFFiles(potDir, filt=args.filter)
     print(black("Reading {} files from {} folder...".format(len(xliffFiles), potDir), bold=True))
     # Compute hits
     print(black("Computing rules...", bold=True))
