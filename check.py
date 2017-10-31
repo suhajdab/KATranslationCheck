@@ -16,7 +16,6 @@ import operator
 import simplejson as json
 import itertools
 import os
-import queue
 import os.path
 import glob
 import urllib
@@ -85,9 +84,6 @@ class JSONHitRenderer(object):
         os.makedirs(self.outdir, exist_ok=True)
         # Async executor
         self.executor = concurrent.futures.ThreadPoolExecutor(os.cpu_count() * 2)
-        # Modified queue behaviour so new rules are run before reading new PO files,
-        # in effect saving a ton of RAM
-        self.executor._work_queue = queue.LifoQueue(512)
         # Load rules for language
         rules, rule_errors = importRulesForLanguage(lang)
         self.rules = sorted(rules, reverse=True)
@@ -104,12 +100,15 @@ class JSONHitRenderer(object):
         # Initialize translation ID/URL map
         self.translationURLs = get_translation_urls(lang)
 
+    def file_relpath(self, filename):
+        return os.path.relpath(filename, os.path.join("cache", self.lang))
+
     def computeRuleHits(self, filename):
         """
         Compute all rule hits for a single parsed PO file and return a list of hits
         """
         # Compute relative path (which is how Crowin refers to the file)
-        relpath = os.path.relpath(filename, os.path.join("cache", self.lang))
+        relpath = self.file_relpath(filename)
         # Read XLIFF
         basename = os.path.basename(filename)
         soup = parse_xliff_file(filename)
@@ -136,7 +135,7 @@ class JSONHitRenderer(object):
             for rule, hits in rule_hits.items()
         ]
 
-    def computeRuleHitsForFileSet(self, poFiles):
+    def computeRuleHitsForFileSet(self, xliffs):
         """
         For each file in the given filename -> PO object dictionary,
         compute the Rule -> Hits dictonary.
@@ -145,10 +144,10 @@ class JSONHitRenderer(object):
         Does not return anything
         """
         # Compute dict with sorted & prettified filenames
-        self.files = sorted(poFiles.keys())
+        self.files = sorted(xliffs.keys())
         # Add all futures to the executor
         futures = [self.executor.submit(self.computeRuleHits, filename)
-            for filename in poFiles.keys()]
+            for filename in xliffs.keys()]
         # Process the results in first-received order. Also keep track of rule performance
         self.fileRuleHits = collections.defaultdict(dict)
         n_finished = 0
