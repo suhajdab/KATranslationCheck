@@ -48,6 +48,7 @@ export class LanguageService {
                 { name: "Polski (PL)", code: "pl" },
                 { name: "Nederlands (NL)", code: "nl" },
                 { name: "български (BG)", code: "bg" }]
+                { name: "Svenska (sv-SE)", code: "sv-SE" }]
     }
 
     getLanguageByCode(code: string): string {
