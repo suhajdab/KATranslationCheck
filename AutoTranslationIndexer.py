@@ -6,6 +6,8 @@ from toolz.dicttoolz import valmap
 from AutoTranslationTranslator import RuleAutotranslator
 import os
 import json
+from bs4 import BeautifulSoup
+from UpdateAllFiles import getTranslationFilemapCache
 from AutoTranslateCommon import *
 
 class CompositeIndexer(object):
@@ -55,14 +57,18 @@ class TextTagIndexer(object):
     def __len__(self):
         return len(self.index)
 
-    def exportJSON(self):
+    def _convert_to_json(self):
         texttags = []
         for (hit, count) in self.index.most_common():
             # Get the most common translation for that tag
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
             texttags.append({"english": hit, "translated": transl, "count": count, "type": "texttag"})
+        return texttags
 
+
+    def exportJSON(self):
+        texttags = self._convert_to_json()
         # Export main patterns file
         with open(transmap_filename(self.lang, "texttags"), "w") as outfile:
             json.dump(texttags, outfile, indent=4, sort_keys=True)
@@ -72,9 +78,15 @@ class TextTagIndexer(object):
             json.dump(list(filter(lambda p: not p["translated"], texttags)),
                 outfile, indent=4, sort_keys=True)
 
+    def exportXLIFF(self):
+        texttags = self._convert_to_json()
+        soup = pattern_list_to_xliff(texttags)
+        with open(transmap_filename(self.lang, "texttags", "xliff"), "w") as outfile:
+            outfile.write(str(soup))
+
 class IgnoreFormulaPatternIndexer(object):
     """
-    Indexes patterns with only the text as key, replacing all formulas with <formula>
+    Indexes patterns with only the text as key, replacing all formulas with §formula§
     """
     def __init__(self, lang):
         self.lang = lang
@@ -83,13 +95,14 @@ class IgnoreFormulaPatternIndexer(object):
         self.translated_index = defaultdict(Counter)
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._text = get_text_content_regex()
+        self.tfc = getTranslationFilemapCache()
         # NOTE: Need to run indexer TWO TIMES to get accurate results
         # as the text tags first need to be updated to get an accurate IF index
         self.texttags = read_texttag_index(lang)
         # Ignore specific whitelisted texts which are not translated
 
     def add(self, engl, translated=None, filename=None):
-        normalized_engl = self._formula_re.sub("<formula>", engl)
+        normalized_engl = self._formula_re.sub("§formula§", engl)
         # Index pattern if it contains TRANSLATABLE text tags ONLY.
         # The translation itself will be perfomed in the autotranslator,
         # while the text tag content itself is indexed in the texttag indexer
@@ -101,10 +114,10 @@ class IgnoreFormulaPatternIndexer(object):
         self.index[normalized_engl] += 1
         # Track translation for majority selection later
         if translated is not None:
-            normalized_trans = self._formula_re.sub("<formula>", translated)
+            normalized_trans = self._formula_re.sub("§formula§", translated)
             self.translated_index[normalized_engl][normalized_trans] += 1
 
-    def exportJSON(self):
+    def _convert_to_json(self):
         ifpatterns = []
         for (hit, count) in self.index.most_common():
             # Get the most common pattern
@@ -112,7 +125,11 @@ class IgnoreFormulaPatternIndexer(object):
                 else self.translated_index[hit].most_common(1)[0][0]
             if count >= 2:  # Ignore non-patterns
                 ifpatterns.append({"english": hit, "translated": transl, "count": count, "type": "ifpattern"})
+        return ifpatterns
 
+
+    def exportJSON(self):
+        ifpatterns = self._convert_to_json()
         # Export main patterns file
         with open(transmap_filename(self.lang, "ifpatterns"), "w") as outfile:
             json.dump(ifpatterns, outfile, indent=4, sort_keys=True)
@@ -121,6 +138,12 @@ class IgnoreFormulaPatternIndexer(object):
         with open(transmap_filename(self.lang, "ifpatterns.untranslated"), "w") as outfile:
             json.dump(list(filter(lambda p: not p["translated"], ifpatterns)),
                 outfile, indent=4, sort_keys=True)
+
+    def exportXLIFF(self):
+        ifpatterns = self._convert_to_json()
+        soup = pattern_list_to_xliff(ifpatterns)
+        with open(transmap_filename(self.lang, "ifpatterns", "xliff"), "w") as outfile:
+            outfile.write(str(soup))
 
 class GenericPatternIndexer(object):
     """

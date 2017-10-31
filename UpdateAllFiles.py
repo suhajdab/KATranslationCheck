@@ -88,23 +88,23 @@ def downloadTranslationFilemap(lang="de"):
 
 
 @retry(tries=8, delay=5.0)
-def performPOTDownload(lang, argtuple):
+def performPOTDownload(lang, argtuple, project="khanacademy"):
     # Extract argument tuple
     fileid, filepath = argtuple
-    exportTranslationFile(lang, fileid, filepath, asXLIFF=False)
+    exportTranslationFile(lang, fileid, filepath, asXLIFF=False, project=project)
 
 @retry(tries=8, delay=5.0)
-def performXLIFFDownload(lang, argtuple):
+def performXLIFFDownload(lang, argtuple, project="khanacademy"):
     # Extract argument tuple
     fileid, filepath = argtuple
-    exportTranslationFile(lang, fileid, filepath, asXLIFF=True)
+    exportTranslationFile(lang, fileid, filepath, asXLIFF=True, project=project)
 
-def exportTranslationFile(lang, fileid, filepath, asXLIFF=True):
+def exportTranslationFile(lang, fileid, filepath, asXLIFF=True, project="khanacademy"):
     """
     Explicitly uncurried function that downloads a single Crowdin file
     to a filesystem file. fileid, filepath
     """
-    urlPrefix = "https://crowdin.com/project/khanacademy/{}/{}/export".format(lang, fileid)
+    urlPrefix = "https://crowdin.com/project/{}/{}/{}/export".format(project, lang, fileid)
     # Initialize session
     s = getCrowdinSession()
     # Trigger export

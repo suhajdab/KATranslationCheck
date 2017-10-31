@@ -76,7 +76,7 @@ class IFPatternAutotranslator(object):
 
     def translate(self, engl):
         # Normalize and filter out formulae with translatable text
-        normalized = self._formula_re.sub("<formula>", engl)
+        normalized = self._formula_re.sub("§formula§", engl)
         # Mathrm is a rare alternative to \\text which is unhanled at the moment
         if "mathrm" in engl:
             return None
@@ -97,9 +97,9 @@ class IFPatternAutotranslator(object):
         # Find formulae in english text
         src_formulae = self._formula_re.findall(engl)
         # Replace one-by-one
-        while "<formula>" in transl:
+        while "§formula§" in transl:
             next_formula = src_formulae.pop(0) # Next "source formula"
-            transl = transl.replace("<formula>", next_formula, 1)
+            transl = transl.replace("§formula§", next_formula, 1)
         # Translate text-tags, if any
         for src, repl in texttag_replace.items():
             # Safety: If there is nothing to replace, fail instead of

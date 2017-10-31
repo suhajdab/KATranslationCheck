@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from bs4 import BeautifulSoup
 from AutoTranslationIndexer import *
 from AutoTranslationTranslator import *
 import os.path
@@ -184,5 +183,13 @@ def autotranslate_xliffs(args):
         print("Exporting indices...")
         name_indexer.printTranslationPattern(args.language)
         text_tag_indexer.exportJSON()
+        text_tag_indexer.exportXLIFF()
         ignore_formula_pattern_idxer.exportJSON()
+        ignore_formula_pattern_idxer.exportXLIFF()
         pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
+
+    if args.update_index_source:
+        update_crowdin_index_files(args.language)
+
+    if args.update_index:
+        pass
