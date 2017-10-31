@@ -34,7 +34,7 @@ from UpdateAllFiles import get_translation_urls
 from Rules import Severity, importRulesForLanguage
 from LintReport import readAndMapLintEntries, NoResultException
 
-XLIFFEntry = collections.namedtuple("XLIFFEntry", ["english", "translated", "is_untranslated"])
+XLIFFEntry = collections.namedtuple("XLIFFEntry", ["english", "translated", "is_untranslated", "note"])
 
 def writeToFile(filename, s):
     "Utility function to write a string to a file identified by its filename"
@@ -66,7 +66,7 @@ def findPOFiles(directory):
 _multiSpace = re.compile(r"\s+")
 
 def genCrowdinSearchString(entry):
-    s = entry.msgstr[:100].replace('*', ' ')
+    s = entry.translated[:100].replace('*', ' ')
     s = s.replace('$', ' ').replace('\\', ' ').replace(',', ' ')
     s = s.replace('.', ' ').replace('?', ' ').replace('!', ' ')
     s = s.replace("-", " ").replace(":", " ")
@@ -122,9 +122,8 @@ class JSONHitRenderer(object):
             # Broken XLIFF entry
             if target is None:
                 continue
-            #note = trans_unit.note
             is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
-            entry = XLIFFEntry(source.text, target.text, is_untranslated)
+            entry = XLIFFEntry(source.text, target.text, is_untranslated, trans_unit.note.text)
             # Apply to rules
             for rule in self.rules:
                 rule_hits[rule] += list(rule.apply_to_xliff_entry(entry, basename))
@@ -223,9 +222,10 @@ class JSONHitRenderer(object):
                     "timestamp": self.timestamp,
                     "downloadTimestamp": self.downloadTimestamp,
                     "rule": rule.meta_dict,
-                    "hits": [valfilter(bool, {"msgstr": entry.msgstr, # valfilter: remove empty values for smaller JSON
-                                              "msgid": entry.msgid,
-                                              "tcomment": entry.tcomment,
+                    # valfilter: remove empty values for smaller JSON
+                    "hits": [valfilter(bool, {"msgstr": entry.translated,
+                                              "msgid": entry.english,
+                                              "tcomment": entry.note,
                                               "hit": hit,
                                               "origImages": origImages,
                                               "translatedImages": translatedImages,
