@@ -67,7 +67,7 @@ class IFPatternAutotranslator(object):
     """
     def __init__(self, lang):
         self.lang = lang
-        with open(os.path.join("transmap", lang + ".ifpatterns.json")) as infile:
+        with open(transmap_filename(self.lang, "ifpatterns")) as infile:
             ifpatterns = json.load(infile)
         # Remove
         self.patterns = {
