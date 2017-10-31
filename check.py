@@ -124,11 +124,12 @@ class JSONHitRenderer(object):
             source = trans_unit.source
             target = trans_unit.target
             # Broken XLIFF entry
-            if source is None or target is None:
+            if source is None or target is None or:
                 continue
+            note = "" if trans_unit.note is None  else trans_unit.note.texts
             # Convert to XLIFF entry
             is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
-            entry = XLIFFEntry(source.text, target.text, is_untranslated, trans_unit.note.text)
+            entry = XLIFFEntry(source.text, target.text, is_untranslated, note)
             # Apply to rules
             for rule in self.rules:
                 rule_hits[rule] += list(rule.apply_to_xliff_entry(entry, relpath))
