@@ -45,6 +45,10 @@ class TextTagIndexer(object):
                 # If untranslated, do not index translions
                 if transl_hit:
                     self.translated_index[engl_hit][transl_hit] += 1
+        else: # Not translated, just index to collect stats
+            for engl_hit in engl_hits:
+                engl_hit = engl_hit.group(2).strip()
+                self.index[engl_hit] += 1
         #except Exception as ex:
         #    print(red("Failed to index '{}' --> {}: {}".format(engl, translated, ex) bold=True))
 
