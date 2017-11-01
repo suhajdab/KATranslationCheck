@@ -100,6 +100,7 @@ class IgnoreFormulaPatternIndexer(object):
         self.index = Counter()
         self.translated_index = defaultdict(Counter)
         self._formula_re = re.compile(r"\$[^\$]+\$")
+        self._img_re = get_image_regex()
         self._text = get_text_content_regex()
         self._transURLs = {} # Translation URL examples
         # NOTE: Need to run indexer TWO TIMES to get accurate results
@@ -109,6 +110,7 @@ class IgnoreFormulaPatternIndexer(object):
 
     def add(self, engl, translated=None, filename=None):
         normalized_engl = self._formula_re.sub("§formula§", engl)
+        normalized_engl = self._img_re.sub("§image§", normalized_engl)
         # Index pattern if it contains TRANSLATABLE text tags ONLY.
         # The translation itself will be perfomed in the autotranslator,
         # while the text tag content itself is indexed in the texttag indexer
@@ -124,6 +126,7 @@ class IgnoreFormulaPatternIndexer(object):
         # Track translation for majority selection later
         if translated is not None:
             normalized_trans = self._formula_re.sub("§formula§", translated)
+            normalized_trans = self._img_re.sub("§image§", normalized_trans)
             self.translated_index[normalized_engl][normalized_trans] += 1
 
     def _convert_to_json(self):

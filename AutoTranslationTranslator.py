@@ -40,7 +40,7 @@ class RuleAutotranslator(object):
         #   ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/...)
         #   web+graphie://ka-perseus-graphie.s3.amazonaws.com/...
         #   https://ka-perseus-graphie.s3.amazonaws.com/...png
-        self._is_perseus_img_url = re.compile(r"^(!\[\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)?\s*$")
+        self._is_perseus_img_url = get_image_regex() 
 
         self._is_formula_plus_img = re.compile(r"^>?[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+(!\[\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)?\s*$")
         self._is_input = re.compile(r"^\[\[\s*☃\s*[a-z-]+\s*\d*\s*\]\](\s|\\n)*$", re.UNICODE)
@@ -72,11 +72,13 @@ class IFPatternAutotranslator(object):
         self.texttags = read_texttag_index(lang)
         # Compile regexes
         self._formula_re = re.compile(r"\$[^\$]+\$")
+        self._img_re = get_image_regex()
         self._text = get_text_content_regex()
 
     def translate(self, engl):
         # Normalize and filter out formulae with translatable text
         normalized = self._formula_re.sub("§formula§", engl)
+        normalized = self._img_re.sub("§image§", normalized)
         # Mathrm is a rare alternative to \\text which is unhanled at the moment
         if "mathrm" in engl:
             return None
@@ -95,11 +97,18 @@ class IFPatternAutotranslator(object):
             return None # Do not have pattern
         transl = self.ifpatterns[normalized]
         # Find formulae in english text
-        src_formulae = self._formula_re.findall(engl)
+        #
         # Replace one-by-one
+        #
+        src_formulae = self._formula_re.findall(engl)
         while "§formula§" in transl:
             next_formula = src_formulae.pop(0) # Next "source formula"
             transl = transl.replace("§formula§", next_formula, 1)
+        
+        src_images = self._img_re.findall(engl)
+        while "§image§" in transl:
+            next_image = src_images.pop(0)[0] # Next "source image"
+            transl = transl.replace("§image§", next_image, 1)
         # Translate text-tags, if any
         for src, repl in texttag_replace.items():
             # Safety: If there is nothing to replace, fail instead of

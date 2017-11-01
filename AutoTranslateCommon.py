@@ -16,6 +16,9 @@ def get_text_regex():
 def get_text_content_regex():
     return re.compile(r"(\\text\s*\{\s*)([^\}]+?)(\s*\})") 
 
+def get_image_regex():
+    return re.compile(r"((!\[(graph)?\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)?)")
+
 def transmap_filename(lang, identifier, extension="json"):
     return os.path.join("transmap", "{}.{}.{}".format(
         lang, identifier, extension))
