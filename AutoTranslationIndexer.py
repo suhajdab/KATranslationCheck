@@ -95,7 +95,8 @@ class IgnoreFormulaPatternIndexer(object):
         self.translated_index = defaultdict(Counter)
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._text = get_text_content_regex()
-        self.tfc = getTranslationFilemapCache()
+        self._transURLs = {} # Translation URL examples
+        self.tfc = get_translation_urls(lang)
         # NOTE: Need to run indexer TWO TIMES to get accurate results
         # as the text tags first need to be updated to get an accurate IF index
         self.texttags = read_texttag_index(lang)
@@ -112,6 +113,9 @@ class IgnoreFormulaPatternIndexer(object):
                 return # String not translatable, do not index
         # Count also if translated
         self.index[normalized_engl] += 1
+        # Add example link
+        print(filename)
+        "{}#q={}".format(self.translationURLs[filename], to_crowdin_search_string(entry))
         # Track translation for majority selection later
         if translated is not None:
             normalized_trans = self._formula_re.sub("§formula§", translated)

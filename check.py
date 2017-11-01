@@ -31,8 +31,9 @@ from ansicolor import red, black, blue
 from UpdateAllFiles import get_translation_urls
 from Rules import Severity, importRulesForLanguage
 from LintReport import readAndMapLintEntries, NoResultException
+from AutoTranslateCommon import to_crowdin_search_string
 
-XLIFFEntry = collections.namedtuple("XLIFFEntry", ["english", "translated", "is_untranslated", "note"])
+XLIFFEntry = collections.namedtuple("XLIFFEntry", ["id", "english", "translated", "is_untranslated", "note"])
 
 def writeToFile(filename, s):
     "Utility function to write a string to a file identified by its filename"
@@ -62,15 +63,6 @@ def findPOFiles(directory):
     return poFilenames
 
 _multiSpace = re.compile(r"\s+")
-
-def genCrowdinSearchString(entry):
-    s = entry.translated[:100].replace('*', ' ')
-    s = s.replace('$', ' ').replace('\\', ' ').replace(',', ' ')
-    s = s.replace('.', ' ').replace('?', ' ').replace('!', ' ')
-    s = s.replace("-", " ").replace(":", " ")
-    #Remove consecutive spaces
-    s = _multiSpace.sub(" ", s)
-    return urllib.parse.quote(s.replace('☃', ' ').replace("|", " "))
 
 class JSONHitRenderer(object):
     """
@@ -129,7 +121,7 @@ class JSONHitRenderer(object):
             note = "" if trans_unit.note is None  else trans_unit.note.texts
             # Convert to XLIFF entry
             is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
-            entry = XLIFFEntry(source.text,
+            entry = XLIFFEntry(trans_unit["id"], source.text,
                 "" if is_untranslated else target.text,
                 is_untranslated, note)
             # Apply to rules
@@ -237,7 +229,7 @@ class JSONHitRenderer(object):
                                               "hit": hit,
                                               "origImages": origImages,
                                               "translatedImages": translatedImages,
-                                              "crowdinLink": "{0}#q={1}".format(self.translationURLs[filename], genCrowdinSearchString(entry))
+                                              "crowdinLink": "{}#{}".format(self.translationURLs[filename], entry.id)
                                               })
                              for entry, hit, filename, origImages, translatedImages in hits]
                 }

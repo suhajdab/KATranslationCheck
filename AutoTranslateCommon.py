@@ -3,6 +3,7 @@ import re
 import json
 import os
 from bs4 import BeautifulSoup
+import urllib.parse
 
 def get_text_regex():
     exceptions = ["cm", "m", "g", "kg", "s", "min", "max", "h", "cm"]
@@ -69,3 +70,12 @@ def pattern_list_to_xliff(patterns):
         trans.append(target)
         body.append(trans)
     return soup
+
+def to_crowdin_search_string(entry):
+    s = entry.translated[:100].replace('*', ' ')
+    s = s.replace('$', ' ').replace('\\', ' ').replace(',', ' ')
+    s = s.replace('.', ' ').replace('?', ' ').replace('!', ' ')
+    s = s.replace("-", " ").replace(":", " ")
+    #Remove consecutive spaces
+    s = _multiSpace.sub(" ", s)
+    return urllib.parse.quote(s.replace('☃', ' ').replace("|", " "))
