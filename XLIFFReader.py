@@ -182,7 +182,9 @@ def autotranslate_xliffs(args):
         print("Exporting indices...")
         text_tag_indexer.exportJSON()
         text_tag_indexer.exportXLIFF()
+        text_tag_indexer.exportXLSX()
         ignore_formula_pattern_idxer.exportJSON()
+        ignore_formula_pattern_idxer.exportXLSX()
         ignore_formula_pattern_idxer.exportXLIFF()
         pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
 

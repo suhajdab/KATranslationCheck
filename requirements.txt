@@ -12,3 +12,4 @@ toolz
 git+https://github.com/ulikoehler/cffi_re2.git
 simplejson
 tqdm
+xlsxwriter

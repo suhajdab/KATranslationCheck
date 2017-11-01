@@ -84,6 +84,12 @@ class TextTagIndexer(object):
         with open(transmap_filename(self.lang, "texttags", "xliff"), "w") as outfile:
             outfile.write(str(soup))
 
+    def exportXLSX(self):
+        texttags = self._convert_to_json()
+        filename = transmap_filename(self.lang, "ifpatterns", "xlsx")
+        to_xlsx(texttags, filename)
+
+
 class IgnoreFormulaPatternIndexer(object):
     """
     Indexes patterns with only the text as key, replacing all formulas with §formula§
@@ -96,7 +102,6 @@ class IgnoreFormulaPatternIndexer(object):
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._text = get_text_content_regex()
         self._transURLs = {} # Translation URL examples
-        self.tfc = get_translation_urls(lang)
         # NOTE: Need to run indexer TWO TIMES to get accurate results
         # as the text tags first need to be updated to get an accurate IF index
         self.texttags = read_texttag_index(lang)
@@ -114,8 +119,8 @@ class IgnoreFormulaPatternIndexer(object):
         # Count also if translated
         self.index[normalized_engl] += 1
         # Add example link
-        print(filename)
-        "{}#q={}".format(self.translationURLs[filename], to_crowdin_search_string(entry))
+        # print(filename)
+        #"{}#q={}".format(self.translationURLs[filename], to_crowdin_search_string(entry))
         # Track translation for majority selection later
         if translated is not None:
             normalized_trans = self._formula_re.sub("§formula§", translated)
@@ -148,6 +153,12 @@ class IgnoreFormulaPatternIndexer(object):
         soup = pattern_list_to_xliff(ifpatterns)
         with open(transmap_filename(self.lang, "ifpatterns", "xliff"), "w") as outfile:
             outfile.write(str(soup))
+
+    def exportXLSX(self):
+        iftags = self._convert_to_json()
+        filename = transmap_filename(self.lang, "ifpatterns", "xlsx")
+        to_xlsx(iftags, filename)
+
 
 class GenericPatternIndexer(object):
     """
