@@ -188,6 +188,15 @@ def updateTranslation(args):
             else:
                 raise
         fileid = fileinfo["id"]
+        # Apply filter
+        filtered = False
+        for subfilt1 in (args.filter or []):
+            for subfilt2 in subfilt1: # argparse creates nested list
+                if subfilt2 not in filepath and subfilt2 not in filepath.replace(".xliff", ".pot"):
+                    filtered = True
+        if filtered:
+            continue
+        # Add to list
         fileinfos.append((fileid, filepath))
     # Curry the function with the language
     performDownload = functools.partial(performPOTDownload if args.po else performXLIFFDownload, args.language)
@@ -197,6 +206,7 @@ def updateTranslation(args):
         pool.map(performDownload, fileinfos)
     else:
         for t in fileinfos:
+            # Perform download
             performDownload(t)
     #Set download timestamp
     timestamp = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")

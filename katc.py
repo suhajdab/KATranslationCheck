@@ -14,8 +14,9 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--language', default="de", help='The language directory to use/extract (e.g. de, es)')
 
     updateTranslationsCmd = subparsers.add_parser('update-translations')
+    updateTranslationsCmd.add_argument('-f', '--filter', nargs="*", action="append", help='Ignore file paths that do not contain this string, e.g. exercises or 2_high_priority. Can use multiple ones which are ANDed')
     updateTranslationsCmd.add_argument('-j', '--num-processes', default=16, type=int, help='Number of processes to use for parallel download')
-    updateTranslationsCmd.add_argument('-f', '--force-filemap-update', action="store_true", help='Force updating the filemap')
+    updateTranslationsCmd.add_argument('-m', '--force-filemap-update', action="store_true", help='Force updating the filemap')
     updateTranslationsCmd.add_argument('-a', '--all-languages', action="store_true", help='Download all languages')
     updateTranslationsCmd.add_argument('-p', '--po', action="store_true", help='Download as PO instead of XLIFF')
     updateTranslationsCmd.set_defaults(func=updateTranslations)

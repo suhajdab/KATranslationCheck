@@ -97,3 +97,20 @@ def to_xlsx(tags, filename):
         worksheet.write(i + 1, 2, tag["translated"])
 
     workbook.close()
+
+def from_xlsx(tags, filename):
+    workbook = xlsxwriter.Workbook(filename)
+    worksheet = workbook.add_worksheet()
+
+    # Header
+    worksheet.write(0, 0, "Count")
+    worksheet.write(0, 1, "English")
+    worksheet.write(0, 2, "Translated")
+
+    # Content
+    for i, tag in enumerate(tags):
+        worksheet.write(i + 1, 0, tag["count"])
+        worksheet.write(i + 1, 1, tag["english"])
+        worksheet.write(i + 1, 2, tag["translated"])
+
+    workbook.close()
