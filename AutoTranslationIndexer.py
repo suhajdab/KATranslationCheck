@@ -86,7 +86,7 @@ class TextTagIndexer(object):
 
     def exportXLSX(self):
         texttags = self._convert_to_json()
-        filename = transmap_filename(self.lang, "ifpatterns", "xlsx")
+        filename = transmap_filename(self.lang, "texttags", "xlsx")
         to_xlsx(texttags, filename)
 
 
