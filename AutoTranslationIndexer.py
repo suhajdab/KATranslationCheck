@@ -128,8 +128,9 @@ class IgnoreFormulaPatternIndexer(object):
         if translated is not None:
             normalized_trans = self._formula_re.sub("§formula§", translated)
             normalized_trans = self._img_re.sub("§image§", normalized_trans)
-            self.untranslated_index[normalized_engl] += 1
             self.translated_index[normalized_engl][normalized_trans] += 1
+        else: # untranslated
+            self.untranslated_index[normalized_engl] += 1
 
     def _convert_to_json(self):
         ifpatterns = []
