@@ -244,17 +244,23 @@ class FullAutoTranslator(object):
     Google translate based full auto translator
     """
     def __init__(self, lang):
-        self.lang = lang
+        self.lang = lang if lang != "lol" else "de" # LOL => translate to DE
         self._formula_re = re.compile(r"\$[^\$]+\$")
+        self.dbgout = open("fullauto-dbg.txt", "w")
+
+    def __del__(self):
+        self.dbgout.close()
 
     def placeholder(self, n):
-        return "XXXYYY{}YYYXXX".format(n)
+        return "31353163{}163331235".format(n)
 
     def can_be_translated(self, s):
         if "\\text" in s:
             return False
         if "\\$" in s:
             return False
+        if "ka-perseus-" in s:
+            return False # Images
         if "\\mathrm" in s:
             return False
         if "*" in s:
@@ -283,6 +289,10 @@ class FullAutoTranslator(object):
         Back-replce placeholders
         """
         for placeholder, rep in fmap.items():
+            # Check if it got mis-translated...
+            if placeholder not in s:
+                print(red("{} not found in '{}'".format(placeholder, s), bold=True))
+                return None
             s = s.replace(placeholder, rep)
         return s
 
@@ -304,8 +314,15 @@ class FullAutoTranslator(object):
         # Check validity of placeholders (should yield original string)
         assert self.postproc(engl_proc, formula_map) == engl
         # Perform translation
-        translated = self.google_translate(engl)
+        translated = self.google_translate(engl_proc)
         # Back-replace placeholders
         txt2 = self.postproc(translated, formula_map)
-        print(engl, "=>", txt2)
+        # Emit debug data
+        print("{", file=self.dbgout)
+        print("\tEngl:",engl, file=self.dbgout)
+        print("\tFMap:",formula_map, file=self.dbgout)
+        print("\tPreproc:", engl_proc, file=self.dbgout)
+        print("\tTranslated:", translated, file=self.dbgout)
+        print("\tResult:", txt2, file=self.dbgout)
+        print("}", file=self.dbgout)
         return txt2

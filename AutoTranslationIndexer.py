@@ -98,6 +98,7 @@ class IgnoreFormulaPatternIndexer(object):
         self.lang = lang
         self.autotrans = RuleAutotranslator()
         self.index = Counter()
+        self.untranslated_index = Counter()
         self.translated_index = defaultdict(Counter)
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._img_re = get_image_regex()
@@ -127,16 +128,21 @@ class IgnoreFormulaPatternIndexer(object):
         if translated is not None:
             normalized_trans = self._formula_re.sub("§formula§", translated)
             normalized_trans = self._img_re.sub("§image§", normalized_trans)
+            self.untranslated_index[normalized_engl] += 1
             self.translated_index[normalized_engl][normalized_trans] += 1
 
     def _convert_to_json(self):
         ifpatterns = []
         for (hit, count) in self.index.most_common():
+            untransl_count = self.untranslated_index[hit]
             # Get the most common pattern
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
             if count >= 2:  # Ignore non-patterns
-                ifpatterns.append({"english": hit, "translated": transl, "count": count, "type": "ifpattern"})
+                ifpatterns.append({"english": hit,
+                    "translated": transl, "count": count,
+                    "untranslated_count": untransl_count,
+                    "type": "ifpattern"})
         return ifpatterns
 
 
