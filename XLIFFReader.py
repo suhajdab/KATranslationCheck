@@ -142,6 +142,8 @@ def readAndProcessXLIFFRunner(*args, **kwargs):
 def autotranslate_xliffs(args):
     os.makedirs("output-{}".format(args.language), exist_ok=True)
 
+    ignore_alltranslated = args.index_ignore_translated
+
     # Initialize pattern indexers
     text_tag_indexer = TextTagIndexer(args.language) if args.index else None
     pattern_indexer = GenericPatternIndexer() if args.index else None
@@ -185,9 +187,9 @@ def autotranslate_xliffs(args):
         text_tag_indexer.exportJSON()
         text_tag_indexer.exportXLIFF()
         text_tag_indexer.exportXLSX()
-        ignore_formula_pattern_idxer.exportJSON()
-        ignore_formula_pattern_idxer.exportXLSX()
-        ignore_formula_pattern_idxer.exportXLIFF()
+        ignore_formula_pattern_idxer.exportJSON(ignore_alltranslated)
+        ignore_formula_pattern_idxer.exportXLSX(ignore_alltranslated)
+        ignore_formula_pattern_idxer.exportXLIFF(ignore_alltranslated)
         pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
 
     if args.update_index_source:

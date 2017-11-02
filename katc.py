@@ -30,6 +30,7 @@ if __name__ == "__main__":
     autotranslate.add_argument('-a', '--approve', action="store_true", help='For --upload, auto-approve the strings')
     autotranslate.add_argument('-f', '--filter', nargs="*", action="append", help='Ignore file paths that do not contain this string, e.g. exercises or 2_high_priority. Can use multiple ones which are ANDed')
     autotranslate.add_argument('-i', '--index', action="store_true", help='Recognize and export patterns of different types')
+    autotranslate.add_argument('--index-ignore-translated', action="store_true", help='Ignore fully translated patterns')
     autotranslate.add_argument('--full-auto', action="store_true", help='Full-auto translation. USE SPARINGLY')
     autotranslate.add_argument('--update-index-source', action="store_true", help='Update crowdin ka-babelfish source file for the index.')
     autotranslate.add_argument('--update-index', action="store_true", help='Update crowdin ka-babelfish autotranslation')

@@ -132,10 +132,12 @@ class IgnoreFormulaPatternIndexer(object):
         else: # untranslated
             self.untranslated_index[normalized_engl] += 1
 
-    def _convert_to_json(self):
+    def _convert_to_json(self, ignore_alltranslated=False):
         ifpatterns = []
         for (hit, count) in self.index.most_common():
             untransl_count = self.untranslated_index[hit]
+            if untransl_count == 0 and ignore_alltranslated:
+                continue
             # Get the most common pattern
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
@@ -147,8 +149,8 @@ class IgnoreFormulaPatternIndexer(object):
         return ifpatterns
 
 
-    def exportJSON(self):
-        ifpatterns = self._convert_to_json()
+    def exportJSON(self, ignore_alltranslated=False):
+        ifpatterns = self._convert_to_json(ignore_alltranslated)
         # Export main patterns file
         with open(transmap_filename(self.lang, "ifpatterns"), "w") as outfile:
             json.dump(ifpatterns, outfile, indent=4, sort_keys=True)
@@ -158,14 +160,14 @@ class IgnoreFormulaPatternIndexer(object):
             json.dump(list(filter(lambda p: not p["translated"], ifpatterns)),
                 outfile, indent=4, sort_keys=True)
 
-    def exportXLIFF(self):
-        ifpatterns = self._convert_to_json()
+    def exportXLIFF(self, ignore_alltranslated=False):
+        ifpatterns = self._convert_to_json(ignore_alltranslated)
         soup = pattern_list_to_xliff(ifpatterns)
         with open(transmap_filename(self.lang, "ifpatterns", "xliff"), "w") as outfile:
             outfile.write(str(soup))
 
-    def exportXLSX(self):
-        iftags = self._convert_to_json()
+    def exportXLSX(self, ignore_alltranslated=False):
+        iftags = self._convert_to_json(ignore_alltranslated)
         filename = transmap_filename(self.lang, "ifpatterns", "xlsx")
         to_xlsx(iftags, filename)
 
