@@ -68,7 +68,10 @@ class TextTagIndexer(object):
             # Get the most common translation for that tag
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
-            texttags.append({"english": hit, "translated": transl, "count": count, "type": "texttag"})
+            texttags.append({"english": hit,
+                "translated": transl, "count": count,
+                "untranslated_count": untransl_count,
+                "type": "texttag"})
         return texttags
 
 
