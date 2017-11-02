@@ -28,6 +28,7 @@ class TextTagIndexer(object):
     def __init__(self, lang):
         self.lang = lang
         self.index = Counter() # UNTRANSLATED count for each text tag
+        self.untranslated_index = Counter()
         self.translated_index = defaultdict(Counter)
         self._re = get_text_content_regex()
 
@@ -51,15 +52,19 @@ class TextTagIndexer(object):
             for engl_hit in engl_hits:
                 engl_hit = engl_hit.group(2).strip()
                 self.index[engl_hit] += 1
+                self.untranslated_index[engl_hit] += 1
         #except Exception as ex:
         #    print(red("Failed to index '{}' --> {}: {}".format(engl, translated, ex) bold=True))
 
     def __len__(self):
         return len(self.index)
 
-    def _convert_to_json(self):
+    def _convert_to_json(self, ignore_alltranslated=False):
         texttags = []
         for (hit, count) in self.index.most_common():
+            untransl_count = self.untranslated_index[hit]
+            if untransl_count == 0 and ignore_alltranslated:
+                continue
             # Get the most common translation for that tag
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
@@ -67,8 +72,8 @@ class TextTagIndexer(object):
         return texttags
 
 
-    def exportJSON(self):
-        texttags = self._convert_to_json()
+    def exportJSON(self, ignore_alltranslated=False):
+        texttags = self._convert_to_json(ignore_alltranslated)
         # Export main patterns file
         with open(transmap_filename(self.lang, "texttags"), "w") as outfile:
             json.dump(texttags, outfile, indent=4, sort_keys=True)
@@ -78,14 +83,14 @@ class TextTagIndexer(object):
             json.dump(list(filter(lambda p: not p["translated"], texttags)),
                 outfile, indent=4, sort_keys=True)
 
-    def exportXLIFF(self):
-        texttags = self._convert_to_json()
+    def exportXLIFF(self, ignore_alltranslated=False):
+        texttags = self._convert_to_json(ignore_alltranslated)
         soup = pattern_list_to_xliff(texttags)
         with open(transmap_filename(self.lang, "texttags", "xliff"), "w") as outfile:
             outfile.write(str(soup))
 
-    def exportXLSX(self):
-        texttags = self._convert_to_json()
+    def exportXLSX(self, ignore_alltranslated=False):
+        texttags = self._convert_to_json(ignore_alltranslated)
         filename = transmap_filename(self.lang, "texttags", "xlsx")
         to_xlsx(texttags, filename)
 
