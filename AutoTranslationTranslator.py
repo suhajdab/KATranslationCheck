@@ -5,6 +5,7 @@ from ansicolor import red
 import os.path
 import json
 from AutoTranslateCommon import *
+from googletrans import Translator
 
 class CompositeAutoTranslator(object):
     """
@@ -237,3 +238,74 @@ class NameAutotranslator(object):
             return self._translate_match_one_name(m9, self.transmap[8])
         elif m10:
             return self._translate_match_one_name(m10, self.transmap[9])
+
+class FullAutoTranslator(object):
+    """
+    Google translate based full auto translator
+    """
+    def __init__(self, lang):
+        self.lang = lang
+        self._formula_re = re.compile(r"\$[^\$]+\$")
+
+    def placeholder(self, n):
+        return "XXXYYY{}YYYXXX".format(n)
+
+    def can_be_translated(self, s):
+        if "\\text" in s:
+            return False
+        if "\\$" in s:
+            return False
+        if "\\mathrm" in s:
+            return False
+        if "*" in s:
+            return False
+        if "\\n" in s:
+            return False
+        return True
+
+    def preproc(self, s):
+        """Forward-replace"""
+        n = 0
+        formulaMap = {}
+        while True:
+            match = self._formula_re.search(s)
+            if match is None: # No more formulas
+                break
+            formula = match.group(0)
+            current_placeholder = self.placeholder(n)
+            formulaMap[current_placeholder] = formula
+            s = self._formula_re.sub(current_placeholder, s, count=1)
+            n += 1
+        return s, formulaMap
+
+    def postproc(self, s, fmap):
+        """
+        Back-replce placeholders
+        """
+        for placeholder, rep in fmap.items():
+            s = s.replace(placeholder, rep)
+        return s
+
+    def google_translate(self, txt):
+        translator = Translator()
+        #translate_client = translate.Client()
+        #translation = translate_client.translate( txt, target_language=lang)
+        #return translation['translatedText']
+        # partition: sv-SE => sv
+        result = translator.translate(txt, src="en", dest=self.lang.partition("-")[0])
+        return result.text
+
+    def translate(self, engl):
+        # Ignore currently unhandled cases
+        if not self.can_be_translated(engl):
+            return None
+        # Replace formulas etc. by placeholders
+        engl_proc, formula_map = self.preproc(engl)
+        # Check validity of placeholders (should yield original string)
+        assert self.postproc(engl_proc, formula_map) == engl
+        # Perform translation
+        translated = self.google_translate(engl)
+        # Back-replace placeholders
+        txt2 = self.postproc(translated, formula_map)
+        print(engl, "=>", txt2)
+        return txt2

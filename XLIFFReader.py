@@ -150,9 +150,11 @@ def autotranslate_xliffs(args):
 
     # Initialize autotranslators
     rule_autotranslator = RuleAutotranslator()
+    full_autotranslator = FullAutoTranslator(args.language) if args.full_auto else None
     ifpattern_autotranslator = IFPatternAutotranslator(args.language) if args.patterns else None
     name_autotranslator = NameAutotranslator(args.language) if args.name_autotranslate else None
-    autotranslator = CompositeAutoTranslator(rule_autotranslator, name_autotranslator, ifpattern_autotranslator)
+    autotranslator = CompositeAutoTranslator(rule_autotranslator,
+        full_autotranslator, name_autotranslator, ifpattern_autotranslator)
 
     # Process in parallel
     # Cant use process pool as indexers currently cant be merged
