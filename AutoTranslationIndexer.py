@@ -27,7 +27,7 @@ class CompositeIndexer(object):
 class TextTagIndexer(object):
     def __init__(self, lang):
         self.lang = lang
-        self.index = Counter() # UNTRANSLATED count for each text tag
+        self.index = Counter() # TOTAL count for each text tag
         self.untranslated_index = Counter()
         self.translated_index = defaultdict(Counter)
         self._re = get_text_content_regex()
