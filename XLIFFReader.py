@@ -38,7 +38,12 @@ def findXLIFFFiles(directory, filt=[]):
                         if subfilt2 not in filename and subfilt2 not in filename.replace(".xliff", ".pot"):
                             filtered = True
                 if not filtered: # passed filter
-                    xliffFiles[filename] = transFilemap[basename.replace(".xliff", ".pot")]["id"]
+                    key = basename.replace(".xliff", ".pot")
+                    # For some reason sometimes mapping does not work correctly
+                    if key in transFilemap:
+                        xliffFiles[filename] = transFilemap[key]["id"]
+                    else:
+                        print(red("Can't find {} in filemap - ignoring file".format(key), bold=True))
     return xliffFiles
 
 def parse_xliff_file(filename):
