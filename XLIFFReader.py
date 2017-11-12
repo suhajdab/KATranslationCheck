@@ -10,6 +10,7 @@ from UpdateAllFiles import *
 from XLIFFUpload import *
 import concurrent.futures
 import gc
+import bs4
 
 def findXLIFFFiles(directory, filt=[]):
     """
@@ -102,6 +103,8 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
 
     # Remove empty text content of the body to conserve spce
     # TODO
+    tags = [elem.extract() for elem in body.children if isinstance(elem, bs4.element.Tag)]
+    body.contents = tags
 
     # Print stats
     print(black("Autotranslated {} of {} untranslated strings ({} total) in {}".format(
