@@ -14,7 +14,7 @@ def readImageAliases(ssid):
 
 def downloadGDocsCSV(ssid):
     "Download CSV for a google docs spreadsheet"
-    url = "https://docs.google.com/spreadsheets/d/{0}/export?format=csv&id={0}".format(ssid)
+    url = "https://docs.google.com/spreadsheets/d/{0}/export?format=csv".format(ssid)
     r = requests.get(url)
     r.encoding = "utf-8" # ISO-8859-1 is autodetected
     return r.text
