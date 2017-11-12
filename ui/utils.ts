@@ -50,6 +50,8 @@ export class LanguageService {
                 { name: "български (BG)", code: "bg" },
                 { name: "čeština (CS)", code: "cs" },
                 { name: "Magyar (HU)", code: "hu" },
+                { name: "日本語 (JA)", code: "ja" },
+                { name: "ქართული ენა (KA)", code: "ka" },
                 { name: "Svenska (sv-SE)", code: "sv-SE" }]
     }
 
