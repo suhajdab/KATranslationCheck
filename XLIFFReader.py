@@ -102,7 +102,6 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
             autotranslated_count += 1
 
     # Remove empty text content of the body to conserve spce
-    # TODO
     tags = [elem.extract() for elem in body.children if isinstance(elem, bs4.element.Tag)]
     body.contents = tags
 
