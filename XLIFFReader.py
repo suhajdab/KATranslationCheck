@@ -165,7 +165,7 @@ def autotranslate_xliffs(args):
     executor = concurrent.futures.ThreadPoolExecutor(args.num_processes)
 
     xliffs = findXLIFFFiles("cache/{}".format(args.language), filt=args.filter)
-    # Run XLIFF parser in 
+    # Run XLIFF parser in parallel
     futures = [
         executor.submit(readAndProcessXLIFFRunner, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
         for filepath, fileid in xliffs.items()
