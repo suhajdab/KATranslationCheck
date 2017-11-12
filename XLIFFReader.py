@@ -79,14 +79,14 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
 
         # Remove entire tag if translated (or suggested)
         if not is_untranslated:
-            trans_unit.extract()
+            trans_unit.decompose()
             translated_count += 1
             continue  # Dont try to autotranslate etc
 
         untranslated_count += 1
         # Remove HUGE note text to save space
         if note:
-            note.extract()
+            note.decompose()
         # Remove empty text inside the <trans-unit> element to save space
         [c.extract() for c in trans_unit.contents]
 
@@ -94,7 +94,7 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
         autotrans = autotranslator.translate(engl)
         if autotrans is None:  # Could not translate
             # Remove from output file to conserve space
-            trans_unit.extract()
+            trans_unit.decompose()
         else:  # Could autotranslate
             # Store autotranslation in XML
             target["state"] = "translated"
