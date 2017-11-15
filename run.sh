@@ -7,6 +7,8 @@ git pull
 ./katc.py -l sv-SE update-translations -j 32
 ./katc.py -l ja update-translations -j 32
 ./katc.py -l ka update-translations -j 32
+./katc.py -l hu update-translations -j 32
+./katc.py -l cs update-translations -j 32
 
 # Render
 ./katc.py -l de render -f 2_hig
