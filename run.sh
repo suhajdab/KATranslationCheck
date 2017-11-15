@@ -1,0 +1,16 @@
+#!/bin/sh
+# Download
+./katc.py -l de update-translations -j 32
+./katc.py -l pt-BR update-translations -j 32
+./katc.py -l bg update-translations -j 32
+./katc.py -l sv-SE update-translations -j 32
+./katc.py -l ja update-translations -j 32
+./katc.py -l ka update-translations -j 32
+
+# Render
+./katc.py -l de render -f 2_hig
+#./katc.py -l pt-BR render -f 2_high
+./katc.py -l bg render -f 2_high
+./katc.py -l sv-SE render -f 2_high
+./katc.py -l ja render -f 2_high
+./katc.py -l ka render -f 2_high
