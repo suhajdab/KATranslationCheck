@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+while true ; do
 # Download
 ./katc.py -l de update-translations -j 32
 ./katc.py -l pt-BR update-translations -j 32
@@ -14,3 +15,4 @@
 ./katc.py -l sv-SE render -f 2_high
 ./katc.py -l ja render -f 2_high
 ./katc.py -l ka render -f 2_high
+done
