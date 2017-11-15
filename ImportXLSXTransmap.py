@@ -10,7 +10,7 @@ def get_transmap(filename):
     tmap = {}
     for row in sheet.rows:
         engl, transl = row
-        tmap[engl.value] = transl.value
+        tmap[str(engl.value)] = str(transl.value)
     return [{"english": engl, "translated": transl} for engl,transl in tmap.items()]
 
 if __name__ == "__main__":
