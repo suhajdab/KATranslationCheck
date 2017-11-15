@@ -65,7 +65,10 @@ def fetchEMail(credentials):
             date = date[:-len("(CEST)")].strip()
         if date.endswith("(EST)"):
             date = date[:-len("(EST)")].strip()
-        date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
+        try:
+            date = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %z")
+        except ValueError:
+            date = datetime.strptime(date, "%d %b %Y %H:%M:%S %z")
         #
         match = rgx.match(subject)
         if not match: # Delete message
