@@ -143,7 +143,8 @@ class IgnoreFormulaPatternIndexer(object):
 
     def _convert_to_json(self, ignore_alltranslated=False):
         ifpatterns = []
-        for (hit, count) in self.index.most_common():
+        for (hit, count) in self.untranslated_index.most_common():
+            total_count = self.index[hit]
             untransl_count = self.untranslated_index[hit]
             if untransl_count == 0 and ignore_alltranslated:
                 continue
@@ -152,7 +153,7 @@ class IgnoreFormulaPatternIndexer(object):
                 else self.translated_index[hit].most_common(1)[0][0]
             if count >= 2:  # Ignore non-patterns
                 ifpatterns.append({"english": hit,
-                    "translated": transl, "count": count,
+                    "translated": transl, "count": total_count,
                     "untranslated_count": untransl_count,
                     "type": "ifpattern"})
         return ifpatterns
