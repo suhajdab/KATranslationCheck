@@ -50,7 +50,8 @@ def read_texttag_index(lang):
         return {
             v["english"]: v["translated"]
             for v in texttags
-            if v["translated"] # Ignore empty string == untranslated
+             # Ignore empty string == untranslated
+            if (v["translated"] or (v["english"] == "" and v["translated"] == ""))
         }
     except FileNotFoundError:
         return {}
