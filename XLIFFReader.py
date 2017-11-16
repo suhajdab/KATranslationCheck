@@ -54,7 +54,7 @@ def export_xliff_file(soup, filename):
     with open(filename, "w") as outfile:
         outfile.write(str(soup))
 
-def process_xliff_soup(filename, soup, autotranslator, indexer):
+def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=True):
     """
     Remove both untranslated and notes from the given soup.
     For the untranslated elements, in
@@ -65,7 +65,20 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
     autotranslated_count = 0
     # Iterate over all translatable strings
     body = soup.xliff.file.body
-    for trans_unit in body.find_all("trans-unit"):
+
+    # Resulting elements
+    results = []
+
+    for trans_unit in body.children: #body.find_all("trans-unit"):
+        # Ignore strings
+        if not isinstance(trans_unit, bs4.element.Tag):
+            continue
+
+        # Ignore other tags
+        if trans_unit.name != "trans-unit":
+            print("Encountered wrong tag: {}".format(trans_unit.name))
+            continue
+
         overall_count += 1
         source = trans_unit.source
         target = trans_unit.target
@@ -82,6 +95,11 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
         # This is done even if they are translated
         indexer.add(engl, None if is_untranslated else translated, filename=filename)
 
+        # For indexing run, ignore autotranslator altogether
+        if not autotranslate:
+            trans_unit.decompose()
+            continue
+
         # Remove entire tag if translated (or suggested)
         if not is_untranslated:
             trans_unit.decompose()
@@ -93,7 +111,8 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
         if note:
             note.decompose()
         # Remove empty text inside the <trans-unit> element to save space
-        [c.extract() for c in trans_unit.contents]
+        for c in trans_unit.contents:
+            c.extract()
 
         # Now we can try to autotranslate
         autotrans = autotranslator.translate(engl)
@@ -105,20 +124,29 @@ def process_xliff_soup(filename, soup, autotranslator, indexer):
             target["state"] = "translated"
             target.string = autotrans
             autotranslated_count += 1
+            # Add to result list
+            results.append(trans_unit.extract())
 
     # Remove empty text content of the body to conserve spce
-    tags = [elem.extract() for elem in body.children if isinstance(elem, bs4.element.Tag)]
-    body.contents = tags
+    body.contents = results
 
     # Print stats
-    print(black("Autotranslated {} of {} untranslated strings ({} total) in {}".format(
-        autotranslated_count, untranslated_count, overall_count, os.path.basename(filename))))
+    if autotranslate:
+        print(black("Autotranslated {} of {} untranslated strings ({} total) in {}".format(
+            autotranslated_count, untranslated_count, overall_count, os.path.basename(filename))))
+    else:
+        print(black("Indexed {} strings in {}".format(
+            overall_count, os.path.basename(filename))))
+
 
     return autotranslated_count
 
-def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False):
+def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False, autotranslate=True):
     soup = parse_xliff_file(filename)
-    autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer)
+    autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate)
+    # If we are not autotranslating, stop here, no need to export
+    if not autotranslate:
+        return 0
     # Export XLIFF
     outdir = "output-{}".format(lang)
     outfilename = filename.replace("cache/{}".format(lang), outdir)
@@ -153,17 +181,20 @@ def autotranslate_xliffs(args):
 
     # Initialize pattern indexers
     text_tag_indexer = TextTagIndexer(args.language) if args.index else None
-    pattern_indexer = GenericPatternIndexer() if args.index else None
+    pattern_indexer = None #GenericPatternIndexer() if args.index else None
     ignore_formula_pattern_idxer = IgnoreFormulaPatternIndexer(args.language) if args.index else None
     indexer = CompositeIndexer(text_tag_indexer, pattern_indexer, ignore_formula_pattern_idxer)
 
     # Initialize autotranslators
-    rule_autotranslator = RuleAutotranslator()
-    full_autotranslator = FullAutoTranslator(args.language) if args.full_auto else None
-    ifpattern_autotranslator = IFPatternAutotranslator(args.language) if args.patterns else None
-    name_autotranslator = NameAutotranslator(args.language) if args.name_autotranslate else None
-    autotranslator = CompositeAutoTranslator(rule_autotranslator,
-        full_autotranslator, name_autotranslator, ifpattern_autotranslator)
+    if not args.index: # Autotranslate if not indexing
+        rule_autotranslator = RuleAutotranslator() if not args.patterns else None
+        full_autotranslator = FullAutoTranslator(args.language) if args.full_auto else None
+        ifpattern_autotranslator = IFPatternAutotranslator(args.language) if args.patterns else None
+        name_autotranslator = NameAutotranslator(args.language) if args.name_autotranslate else None
+        autotranslator = CompositeAutoTranslator(rule_autotranslator,
+            full_autotranslator, name_autotranslator, ifpattern_autotranslator)
+    else: # Index, not autotranslate
+        autotranslator = CompositeAutoTranslator()
 
     # Process in parallel
     # Cant use process pool as indexers currently cant be merged
@@ -172,7 +203,7 @@ def autotranslate_xliffs(args):
     xliffs = findXLIFFFiles("cache/{}".format(args.language), filt=args.filter)
     # Run XLIFF parser in parallel
     futures = [
-        executor.submit(readAndProcessXLIFFRunner, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve)
+        executor.submit(readAndProcessXLIFFRunner, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve, autotranslate=not args.index)
         for filepath, fileid in xliffs.items()
     ]
     # stats
@@ -197,7 +228,7 @@ def autotranslate_xliffs(args):
         ignore_formula_pattern_idxer.exportJSON(ignore_alltranslated)
         ignore_formula_pattern_idxer.exportXLSX(ignore_alltranslated)
         ignore_formula_pattern_idxer.exportXLIFF(ignore_alltranslated)
-        pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
+        #pattern_indexer.exportCSV(os.path.join("output-" + args.language, "patterns.csv"))
 
     if args.update_index_source:
         update_crowdin_index_files(args.language)

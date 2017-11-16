@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import re as re
+import cffi_re2 as re
 from collections import Counter, defaultdict
 from ansicolor import red
 from toolz.dicttoolz import valmap
