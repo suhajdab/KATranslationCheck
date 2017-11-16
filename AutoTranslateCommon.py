@@ -16,7 +16,7 @@ def get_text_regex():
 def hash_string(s):
     m = hashlib.md5() 
     m.update(s.encode("utf-8"))
-    return m.digest()[:8] # need to be short, not secure => take only the first half = 64 bits
+    return m.digest()[:4] # need to be short, not secure => take only the first half = 64 bits
 
 def get_text_content_regex():
     return re.compile(r"(\\text\s*\{\s*)([^\}]+?)(\s*\})") 
