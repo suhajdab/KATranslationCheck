@@ -39,6 +39,7 @@ class TextTagIndexer(object):
         self.index = Counter() # TOTAL count for each text tag
         self.untranslated_index = Counter()
         self.translated_index = defaultdict(Counter)
+        self.filename_index = defaultdict(Counter) # norm_engl => {filename: count}
         self._re = get_text_content_regex()
 
     def add(self, engl, translated=None, filename=None):
@@ -62,6 +63,8 @@ class TextTagIndexer(object):
                 engl_hit = engl_hit.group(2).strip()
                 self.index[engl_hit] += 1
                 self.untranslated_index[engl_hit] += 1
+                # Count occurrences in files
+                self.filename_index[engl_hit][filename] += 1
         #except Exception as ex:
         #    print(red("Failed to index '{}' --> {}: {}".format(engl, translated, ex) bold=True))
 
@@ -82,6 +85,7 @@ class TextTagIndexer(object):
             texttags.append({"english": hit,
                 "translated": transl, "count": total_count,
                 "untranslated_count": untransl_count,
+                    "files": self.filename_index[hit],
                 "type": "texttag"})
         return texttags
 
@@ -128,7 +132,8 @@ class IgnoreFormulaPatternIndexer(object):
 
         self.index = Counter() # norm engl => count
         self.untranslated_index = Counter() # norm engl => count
-        self.translated_index = defaultdict(Counter) # 
+        self.translated_index = defaultdict(Counter) # norm engl => translation => count
+        self.filename_index = defaultdict(Counter) # norm_engl => {filename: count}
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._img_re = get_image_regex()
         self._text = get_text_content_regex()
@@ -196,12 +201,13 @@ class IgnoreFormulaPatternIndexer(object):
         # print(filename)
         #"{}#q={}".format(self.translationURLs[filename], to_crowdin_search_string(entry))
         # Track translation for majority selection later
-        if translated is not None:
+        if translated is not None: # translated
             normalized_trans = self._formula_re.sub("§formula§", translated)
             normalized_trans = self._img_re.sub("§image§", normalized_trans)
             self.translated_index[normalized_engl][normalized_trans] += 1
         else: # untranslated
             self.untranslated_index[normalized_engl] += 1
+            self.filename_index[normalized_engl][filename] += 1
 
     def _convert_to_json(self, ignore_alltranslated=False):
         ifpatterns = []
@@ -218,6 +224,7 @@ class IgnoreFormulaPatternIndexer(object):
                 ifpatterns.append({"english": hit,
                     "translated": transl, "count": total_count,
                     "untranslated_count": untransl_count,
+                    "files": self.filename_index[hit],
                     "type": "ifpattern"})
         return ifpatterns
 
