@@ -127,7 +127,7 @@ class IgnoreFormulaPatternIndexer(object):
         # Preindex filter
         # Used to avoid indexing patterns with one instance
         self.preindex_ctr = Counter() # norm engl hash => count
-        self.preindex_min_count = 3 # minimum instances to be considered a pattern
+        self.preindex_min_count = 2 # minimum instances to be considered a pattern
         self.preindex_set = set() # Compiled from preindex_ctr in clean_preindex()
 
         self.index = Counter() # norm engl => count
@@ -220,7 +220,7 @@ class IgnoreFormulaPatternIndexer(object):
             # Get the most common pattern
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
-            if count >= self.preindex_min_count:  # Ignore non-patterns
+            if total_count >= self.preindex_min_count:  # Ignore non-patterns
                 ifpatterns.append({"english": hit,
                     "translated": transl, "count": total_count,
                     "untranslated_count": untransl_count,
