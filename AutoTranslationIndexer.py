@@ -181,7 +181,7 @@ class IgnoreFormulaPatternIndexer(object):
         normalized_engl = self._normalize(engl)
         # Check if present in preindex. If not, its not worth investigating this string any more
         h = hash_string(normalized_engl)
-        if normalized_engl not in self.preindex_set:
+        if h not in self.preindex_set:
             return None
         # Index pattern if it contains TRANSLATABLE text tags ONLY.
         # The translation itself will be perfomed in the autotranslator,
@@ -214,7 +214,7 @@ class IgnoreFormulaPatternIndexer(object):
             # Get the most common pattern
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
-            if count >= 2:  # Ignore non-patterns
+            if count >= self.preindex_min_count:  # Ignore non-patterns
                 ifpatterns.append({"english": hit,
                     "translated": transl, "count": total_count,
                     "untranslated_count": untransl_count,
