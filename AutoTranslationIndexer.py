@@ -61,7 +61,8 @@ class TextTagIndexer(object):
 
     def _convert_to_json(self, ignore_alltranslated=False):
         texttags = []
-        for (hit, count) in self.index.most_common():
+        for (hit, count) in self.untranslated_index.most_common():
+            total_count = self.index[hit]
             untransl_count = self.untranslated_index[hit]
             if untransl_count == 0 and ignore_alltranslated:
                 continue
@@ -69,7 +70,7 @@ class TextTagIndexer(object):
             transl = "" if len(self.translated_index[hit]) == 0 \
                 else self.translated_index[hit].most_common(1)[0][0]
             texttags.append({"english": hit,
-                "translated": transl, "count": count,
+                "translated": transl, "count": total_count,
                 "untranslated_count": untransl_count,
                 "type": "texttag"})
         return texttags

@@ -90,14 +90,16 @@ def to_xlsx(tags, filename):
 
     # Header
     worksheet.write(0, 0, "Count")
-    worksheet.write(0, 1, "English")
-    worksheet.write(0, 2, "Translated")
+    worksheet.write(0, 1, "Untranslated count")
+    worksheet.write(0, 2, "English")
+    worksheet.write(0, 3, "Translated")
 
     # Content
     for i, tag in enumerate(tags):
         worksheet.write(i + 1, 0, tag["count"])
-        worksheet.write(i + 1, 1, tag["english"])
-        worksheet.write(i + 1, 2, tag["translated"])
+        worksheet.write(i + 1, 1, tag["untranslated_count"])
+        worksheet.write(i + 1, 2, tag["english"])
+        worksheet.write(i + 1, 3, tag["translated"])
 
     workbook.close()
 
