@@ -5,6 +5,7 @@ import os
 import xlsxwriter
 from bs4 import BeautifulSoup
 import urllib.parse
+import hashlib
 
 def get_text_regex():
     exceptions = ["cm", "m", "g", "kg", "s", "min", "max", "h", "cm"]
@@ -12,6 +13,10 @@ def get_text_regex():
     regex = r"(\\(text|mathrm)\s*\{" + exc_clause + r")"
     return re.compile(regex)
 
+def hash_string(s):
+    m = hashlib.md5() 
+    m.update(s.encode("utf-8"))
+    return m.digest()[:8] # need to be short, not secure => take only the first half = 64 bits
 
 def get_text_content_regex():
     return re.compile(r"(\\text\s*\{\s*)([^\}]+?)(\s*\})") 

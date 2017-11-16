@@ -24,6 +24,15 @@ class CompositeIndexer(object):
         for child in self.children:
             child.add(*args, **kwargs)
 
+    def preindex(self, *args, **kwargs):
+        for child in self.children:
+            child.preindex(*args, **kwargs)
+
+    def clean_preindex(self, *args, **kwargs):
+        for child in self.children:
+            child.clean_preindex(*args, **kwargs)
+
+
 class TextTagIndexer(object):
     def __init__(self, lang):
         self.lang = lang
@@ -61,6 +70,7 @@ class TextTagIndexer(object):
 
     def _convert_to_json(self, ignore_alltranslated=False):
         texttags = []
+        # Sort by most untranslated
         for (hit, count) in self.untranslated_index.most_common():
             total_count = self.index[hit]
             untransl_count = self.untranslated_index[hit]
@@ -75,6 +85,11 @@ class TextTagIndexer(object):
                 "type": "texttag"})
         return texttags
 
+    def preindex(self, *args, **kwargs):
+        pass
+
+    def clean_preindex(self, *args, **kwargs):
+        pass
 
     def exportJSON(self, ignore_alltranslated=False):
         texttags = self._convert_to_json(ignore_alltranslated)
@@ -98,7 +113,6 @@ class TextTagIndexer(object):
         filename = transmap_filename(self.lang, "texttags", "xlsx")
         to_xlsx(texttags, filename)
 
-
 class IgnoreFormulaPatternIndexer(object):
     """
     Indexes patterns with only the text as key, replacing all formulas with §formula§
@@ -106,9 +120,15 @@ class IgnoreFormulaPatternIndexer(object):
     def __init__(self, lang):
         self.lang = lang
         self.autotrans = RuleAutotranslator()
-        self.index = Counter()
-        self.untranslated_index = Counter()
-        self.translated_index = defaultdict(Counter)
+        # Preindex filter
+        # Used to avoid indexing patterns with one instance
+        self.preindex_ctr = Counter() # norm engl hash => count
+        self.preindex_min_count = 3 # minimum instances to be considered a pattern
+        self.preindex_set = set() # Compiled from preindex_ctr in clean_preindex()
+
+        self.index = Counter() # norm engl => count
+        self.untranslated_index = Counter() # norm engl => count
+        self.translated_index = defaultdict(Counter) # 
         self._formula_re = re.compile(r"\$[^\$]+\$")
         self._img_re = get_image_regex()
         self._text = get_text_content_regex()
@@ -118,9 +138,51 @@ class IgnoreFormulaPatternIndexer(object):
         self.texttags = read_texttag_index(lang)
         # Ignore specific whitelisted texts which are not translated
 
-    def add(self, engl, translated=None, filename=None):
+    def _normalize(self, engl):
         normalized_engl = self._formula_re.sub("§formula§", engl)
         normalized_engl = self._img_re.sub("§image§", normalized_engl)
+        return normalized_engl
+
+    def preindex(self, engl, translated=None, filename=None):
+        """
+        Index
+        Kind of similar to a bloom filter, but not strictly probabilistic
+        (only regarding hash collision)
+        and also maintains an exact count of strings by
+        """
+        normalized_engl = self._normalize(engl)
+        h = hash_string(normalized_engl)
+        self.preindex_ctr[h] += 1
+
+    def clean_preindex(self):
+        """
+        Remove patterns with too few instances from the preindex, 
+        compiling:
+
+        - preindex_ctr with a minimum number of hits
+        - preindex_set: A set of hashes, which is fast to check for "x in set"
+        """
+        todelete = []
+        # Find hits to delete
+        for (hit, count) in self.preindex_ctr.most_common():
+            if count < self.preindex_min_count:
+                todelete.append(hit)
+            else: # Will keep - add to fast set
+                self.preindex_set.add(hit)
+        # Log
+        print("Cleaning preindex: Removing {} of {} entries - {} left".format(
+            len(todelete), len(self.preindex_ctr), len(self.preindex_set)))
+        # Delete all
+        for todel in todelete:
+            del self.preindex_ctr[todel]
+        
+
+    def add(self, engl, translated=None, filename=None):
+        normalized_engl = self._normalize(engl)
+        # Check if present in preindex. If not, its not worth investigating this string any more
+        h = hash_string(normalized_engl)
+        if normalized_engl not in self.preindex_set:
+            return None
         # Index pattern if it contains TRANSLATABLE text tags ONLY.
         # The translation itself will be perfomed in the autotranslator,
         # while the text tag content itself is indexed in the texttag indexer
@@ -143,6 +205,7 @@ class IgnoreFormulaPatternIndexer(object):
 
     def _convert_to_json(self, ignore_alltranslated=False):
         ifpatterns = []
+        # Sort by most untranslated
         for (hit, count) in self.untranslated_index.most_common():
             total_count = self.index[hit]
             untransl_count = self.untranslated_index[hit]

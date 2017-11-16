@@ -54,7 +54,7 @@ def export_xliff_file(soup, filename):
     with open(filename, "w") as outfile:
         outfile.write(str(soup))
 
-def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=True):
+def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=True, preindex=False):
     """
     Remove both untranslated and notes from the given soup.
     For the untranslated elements, in
@@ -68,6 +68,8 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
 
     # Resulting elements
     results = []
+
+    indexFN = indexer.preindex if preindex else indexer.add
 
     for trans_unit in body.children: #body.find_all("trans-unit"):
         # Ignore strings
@@ -93,7 +95,8 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
         translated = target.text
         # Index tags in the indexer (e.g. to extract text tags)
         # This is done even if they are translated
-        indexer.add(engl, None if is_untranslated else translated, filename=filename)
+        # NOTE: This does index or preindex (chosen outside of the loop)
+        indexFN(engl, None if is_untranslated else translated, filename=filename)
 
         # For indexing run, ignore autotranslator altogether
         if not autotranslate:
@@ -135,15 +138,16 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
         print(black("Autotranslated {} of {} untranslated strings ({} total) in {}".format(
             autotranslated_count, untranslated_count, overall_count, os.path.basename(filename))))
     else:
-        print(black("Indexed {} strings in {}".format(
+        print(black("{} {} strings in {}".format(
+            "Preindexed" if preindex else "Indexed",
             overall_count, os.path.basename(filename))))
 
 
     return autotranslated_count
 
-def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False, autotranslate=True):
+def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False, autotranslate=True, preindex=False):
     soup = parse_xliff_file(filename)
-    autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate)
+    autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=autotranslate, preindex=preindex)
     # If we are not autotranslating, stop here, no need to export
     if not autotranslate:
         return 0
@@ -173,6 +177,23 @@ def readAndProcessXLIFFRunner(*args, **kwargs):
     gc.collect()
     return result
 
+def run(executor, xliffs, *args, **kwargs):
+
+    # Run XLIFF parser in parallel
+    futures = [
+        executor.submit(readAndProcessXLIFFRunner, *args, filename=filepath, fileid=fileid, **kwargs)
+        for filepath, fileid in xliffs.items()
+    ]
+    # stats
+    kwargs = {
+        'total': len(futures),
+        'unit': 'it',
+        'unit_scale': True,
+        'leave': True
+    }
+    autotranslated_count = 0
+    for future in tqdm(concurrent.futures.as_completed(futures), **kwargs):
+        autotranslated_count += future.result()
 
 def autotranslate_xliffs(args):
     os.makedirs("output-{}".format(args.language), exist_ok=True)
@@ -201,23 +222,23 @@ def autotranslate_xliffs(args):
     executor = concurrent.futures.ThreadPoolExecutor(args.num_processes)
 
     xliffs = findXLIFFFiles("cache/{}".format(args.language), filt=args.filter)
-    # Run XLIFF parser in parallel
-    futures = [
-        executor.submit(readAndProcessXLIFFRunner, args.language, filepath, fileid, indexer, autotranslator, upload=args.upload, approve=args.approve, autotranslate=not args.index)
-        for filepath, fileid in xliffs.items()
-    ]
-    # stats
-    kwargs = {
-        'total': len(futures),
-        'unit': 'it',
-        'unit_scale': True,
-        'leave': True
-    }
-    autotranslated_count = 0
-    for future in tqdm(concurrent.futures.as_completed(futures), **kwargs):
-        autotranslated_count += future.result()
 
-    print("\nAuto-translated {} strings !\n".format(autotranslated_count))
+    if args.index:
+        # Two pass: First preindex then
+        # See IgnoreFormulaPatternIndex for reason
+        # 1st pass
+        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=True)
+        print("------------------------------")
+        print("Preindex finished. Indexing run")
+        print("------------------------------\n")
+        indexer.clean_preindex()
+        print()
+        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=False)
+    else: # translation run. Simple single pas
+        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=True)
+
+    if not args.index:
+        print("\nAuto-translated {} strings !\n".format(autotranslated_count))
 
     # Export indexed
     if args.index:
