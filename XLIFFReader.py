@@ -195,6 +195,8 @@ def run(executor, xliffs, *args, **kwargs):
     for future in tqdm(concurrent.futures.as_completed(futures), **kwargs):
         autotranslated_count += future.result()
 
+    return autotranslated_count
+
 def autotranslate_xliffs(args):
     os.makedirs("output-{}".format(args.language), exist_ok=True)
 
@@ -235,9 +237,8 @@ def autotranslate_xliffs(args):
         print()
         run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=False)
     else: # translation run. Simple single pas
-        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=True)
-
-    if not args.index:
+        autotranslated_count = run(executor, xliffs,
+            lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=True)
         print("\nAuto-translated {} strings !\n".format(autotranslated_count))
 
     # Export indexed
