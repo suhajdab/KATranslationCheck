@@ -262,7 +262,13 @@ class FullAutoTranslator(object):
             return False
         if "\\$" in s:
             return False
+        if "☃" in s:
+            return False
         if "+" in s:
+            return False
+        if "](" in s:
+            return False
+        if "![" in s:
             return False
         if "{" in s or "}" in s:
             return False
