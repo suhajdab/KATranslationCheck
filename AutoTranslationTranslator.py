@@ -258,6 +258,8 @@ class FullAutoTranslator(object):
     def can_be_translated(self, s):
         if "\\text" in s:
             return False
+        if "\\textit" in s:
+            return False
         if "\\$" in s:
             return False
         if "+" in s:
