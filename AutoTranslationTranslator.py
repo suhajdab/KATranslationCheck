@@ -260,13 +260,19 @@ class FullAutoTranslator(object):
             return False
         if "\\$" in s:
             return False
+        if "+" in s:
+            return False
+        if "{" in s or "}" in s:
+            return False
         if "ka-perseus-" in s:
-            return False # Images
+            return False  # Images
         if "\\mathrm" in s:
             return False
         if "*" in s:
             return False
         if "\\n" in s:
+            return False
+        if "`" in s:
             return False
         return True
 
