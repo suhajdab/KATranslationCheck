@@ -198,6 +198,12 @@ def run(executor, xliffs, *args, **kwargs):
     return autotranslated_count
 
 def autotranslate_xliffs(args):
+    # Plausibility checks
+    if args.full_auto and args.approve:
+        print(red("Must not use --approve together with --full-auto, too dangerous!", bold=True))
+        sys.exit(1)
+
+
     os.makedirs("output-{}".format(args.language), exist_ok=True)
 
     ignore_alltranslated = args.index_ignore_translated
