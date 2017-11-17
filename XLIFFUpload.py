@@ -4,13 +4,13 @@ import os.path
 import subprocess
 from UpdateAllFiles import getCrowdinSession
 
-def upload_file(filename, fileid, auto_approve=False, lang="lol"):
+def upload_file(filename, fileid, auto_approve=False, lang="lol", fullauto_account=False):
     auto_approve = 1 if auto_approve else 0
     basename = os.path.basename(filename)
     url = "https://crowdin.com/project/khanacademy/{}/{}/upload?import_eq_suggestions=1&{}qqfile={}".format(
         lang, fileid, "auto_approve_imported=1&" if auto_approve else "", basename)
 
-    s = getCrowdinSession()
+    s = getCrowdinSession(fullauto_account=fullauto_account)
     with open(filename, "rb") as infile:
         response = s.post(url, data=infile)
     if response.json()["success"] != True:
@@ -37,4 +37,3 @@ def update_crowdin_index_files(lang):
         "-F", "files[ifpatterns.xliff]=@transmap/{}.ifpatterns.xliff".format(lang),
         "https://api.crowdin.com/api/project/ka-babelfish/update-file?key={}".format(apikey)])
     print(out)
-  

@@ -145,7 +145,7 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
 
     return autotranslated_count
 
-def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False, autotranslate=True, preindex=False):
+def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False, autotranslate=True, preindex=False, fullauto_account=False):
     soup = parse_xliff_file(filename)
     autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=autotranslate, preindex=preindex)
     # If we are not autotranslating, stop here, no need to export
@@ -161,10 +161,10 @@ def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=
         export_xliff_file(soup, outfilename)
     # Upload if enabled
     if upload and autotranslated_count > 0:
-            basename = os.path.basename(filename)
-            print(blue("Uploading {} (approve={})...".format(basename, approve)))
-            upload_file(outfilename, fileid, auto_approve=approve, lang=lang)
-            print(green("Uploaded {}".format(basename)))
+        basename = os.path.basename(filename)
+        print(blue("Uploading {} (approve={})...".format(basename, approve)))
+        upload_file(outfilename, fileid, auto_approve=approve, lang=lang, fullauto_account=fullauto_account)
+        print(green("Uploaded {}".format(basename)))
     return autotranslated_count
 
 
@@ -235,16 +235,16 @@ def autotranslate_xliffs(args):
         # Two pass: First preindex then
         # See IgnoreFormulaPatternIndex for reason
         # 1st pass
-        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=True)
+        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=True, fullauto_account=args.full_auto)
         print("------------------------------")
         print("Preindex finished. Indexing run")
         print("------------------------------\n")
         indexer.clean_preindex()
         print()
-        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=False)
+        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=False, fullauto_account=args.full_auto)
     else: # translation run. Simple single pas
         autotranslated_count = run(executor, xliffs,
-            lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=True)
+            lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=True, fullauto_account=args.full_auto)
         print("\nAuto-translated {} strings !\n".format(autotranslated_count))
 
     # Export indexed

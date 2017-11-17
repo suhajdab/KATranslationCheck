@@ -37,11 +37,13 @@ def loadUsernamePassword():
 # Globally load credentials
 
 # Perform login
-def getCrowdinSession(credentials=None, domain="https://crowdin.com"):
+def getCrowdinSession(credentials=None, domain="https://crowdin.com", fullauto_account=False):
     s = requests.Session()
     if credentials is None:
         credentials = loadUsernamePassword()
     username, password = credentials
+    if fullauto_account:
+        username = "Babelfish2"
     s.cookies["csrf_token"] = "79ywqnyhig"
     s.headers["X-Csrf-Token"] = "79ywqnyhig"
     s.headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36"
