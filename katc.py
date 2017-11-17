@@ -32,6 +32,7 @@ if __name__ == "__main__":
     autotranslate.add_argument('-i', '--index', action="store_true", help='Recognize and export patterns of different types')
     autotranslate.add_argument('--index-ignore-translated', action="store_true", help='Ignore fully translated patterns')
     autotranslate.add_argument('--full-auto', action="store_true", help='Full-auto translation. USE SPARINGLY')
+    autotranslate.add_argument('-l','--limit', type=int, default=100, help='Number of string to translate using full auto mode')
     autotranslate.add_argument('--update-index-source', action="store_true", help='Update crowdin ka-babelfish source file for the index.')
     autotranslate.add_argument('--update-index', action="store_true", help='Update crowdin ka-babelfish autotranslation')
     autotranslate.add_argument('-p', '--patterns', action="store_true", help='Translate patterns')

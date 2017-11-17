@@ -217,7 +217,7 @@ def autotranslate_xliffs(args):
     # Initialize autotranslators
     if not args.index: # Autotranslate if not indexing
         rule_autotranslator = RuleAutotranslator() if not args.patterns else None
-        full_autotranslator = FullAutoTranslator(args.language) if args.full_auto else None
+        full_autotranslator = FullAutoTranslator(args.language, args.limit) if args.full_auto else None
         ifpattern_autotranslator = IFPatternAutotranslator(args.language) if args.patterns else None
         name_autotranslator = NameAutotranslator(args.language) if args.name_autotranslate else None
         autotranslator = CompositeAutoTranslator(rule_autotranslator,

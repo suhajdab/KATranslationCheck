@@ -243,10 +243,10 @@ class FullAutoTranslator(object):
     """
     Google translate based full auto translator
     """
-    def __init__(self, lang):
+    def __init__(self, lang, limit=25):
         self.lang = lang if lang != "lol" else "de" # LOL => translate to DE
         self._formula_re = re.compile(r"\$[^\$]+\$")
-        self.nlimit = 25
+        self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
 
     def __del__(self):
@@ -308,9 +308,9 @@ class FullAutoTranslator(object):
 
     def translate(self, engl):
         # Use limit on how much to translate at once
-        if self.nlimit <= 0:
+        if self.limit <= 0:
             return None # dont translate
-        self.nlimit -= 1
+        self.limit -= 1
         # Ignore currently unhandled cases
         if not self.can_be_translated(engl):
             return None
