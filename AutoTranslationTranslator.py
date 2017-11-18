@@ -4,7 +4,7 @@ from collections import Counter, defaultdict, namedtuple
 from ansicolor import red
 import os.path
 import json
-from toolz.dicttoolz import valmap
+from toolz.dicttoolz import merge
 from AutoTranslateCommon import *
 from googletrans import Translator
 
@@ -241,7 +241,7 @@ class NameAutotranslator(object):
             return self._translate_match_one_name(m10, self.transmap[9])
 
 PlaceholderInfo = namedtuple("PlaceholderInfo", [
-    "nPlaceholders", "formulaMap", "asteriskMap", "inputMap", "newlineMap", "nAsterisks", "nNewlines"])
+    "nPlaceholders", "replaceMap", "nAsterisks", "nNewlines"])
 
 class FullAutoTranslator(object):
     """
@@ -253,6 +253,7 @@ class FullAutoTranslator(object):
         self._asterisk_re = re.compile(r"\s*\*+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
+        self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -278,14 +279,6 @@ class FullAutoTranslator(object):
             return False
         if "%(" in s:
             return False
-        if "](" in s:
-            return False
-        if "![" in s:
-            return False
-        if "§" in s:
-            return False
-        if "ka-perseus-" in s:
-            return False  # Images
         if "\\mathrm" in s:
             return False
         if "`" in s:
@@ -350,23 +343,24 @@ class FullAutoTranslator(object):
         added before and after which are not touched.
         """
         n = 0
-        s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
-        # Count asterisk combinations
+
+        # \\n or might be directly followed by a word character and might be screwed up
+        # We count their number of newline combos now to check restoration later.
         nAsterisks = self.combo_count(s, "*")
-        s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
-
-        # \\n might be directly followed by a word character and might be screwed up
-        # We count the number of newline combos now to check restoration later.
         nNewlines = self.combo_count(s, "\\n")
-        s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
 
-        # Inputs
+        s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
+        s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
+        s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
         s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
+        s, imgMap, n = self.placeholder_replace(s, n, self._image_re)
+
+        repmap = merge(formulaMap, asteriskMap, newlineMap, inputMap, imgMap)
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
 
-        return s, PlaceholderInfo(n, formulaMap, asteriskMap, inputMap, newlineMap, nAsterisks, nNewlines)
+        return s, PlaceholderInfo(n, repmap, nAsterisks, nNewlines)
 
     def postproc(self, engl, s, info):
         """
@@ -378,11 +372,8 @@ class FullAutoTranslator(object):
         if s is None:
             return None
 
-        # Replace placeholders
-        s = self.back_replace(s, info.formulaMap)
-        s = self.back_replace(s, info.asteriskMap)
-        s = self.back_replace(s, info.newlineMap)
-        s = self.back_replace(s, info.inputMap)
+        # Replace unicode placeholders by their original value
+        s = self.back_replace(s, info.replaceMap)
 
         #
         # Check if combinations match
@@ -429,9 +420,7 @@ class FullAutoTranslator(object):
         # Emit debug data
         print("{", file=self.dbgout)
         print("\tEngl:",engl, file=self.dbgout)
-        print("\tFMap:",info.formulaMap, file=self.dbgout)
-        print("\tAMap:",info.asteriskMap, file=self.dbgout)
-        print("\tNMap:",info.newlineMap, file=self.dbgout)
+        print("\tMap:",info.replaceMap, file=self.dbgout)
         print("\tPreproc:", engl_proc, file=self.dbgout)
         print("\tTranslated:", translated, file=self.dbgout)
         print("\tResult:", txt2, file=self.dbgout)
