@@ -90,6 +90,7 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
             continue
         note = trans_unit.note
         is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
+        is_approved = ("approved" in trans_unit.attrs and trans_unit["approved"] == "yes")
 
         engl = source.text
         translated = target.text
