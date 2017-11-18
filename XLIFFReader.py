@@ -135,8 +135,9 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
 
     # Print stats
     if autotranslate:
-        print(black("Autotranslated {} of {} untranslated strings ({} total) in {}".format(
-            autotranslated_count, untranslated_count, overall_count, os.path.basename(filename))))
+        if untranslated_count != 0:  # Don't print "0 of 0 strings"
+            print(black("Autotranslated {} of {} untranslated strings ({} total) in {}".format(
+                autotranslated_count, untranslated_count, overall_count, os.path.basename(filename))))
     else:
         print(black("{} {} strings in {}".format(
             "Preindexed" if preindex else "Indexed",
