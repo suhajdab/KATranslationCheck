@@ -255,7 +255,7 @@ class FullAutoTranslator(object):
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
         self._tag_re = re.compile(r"\s*</?\s*[a-z-]+\s*([a-z-]+=\"[^\"]+\")*\s*/?>\s*")
-        self._suburl_re = re.compile(r"\s*\[([^\]]+)\]\s*\(\s*[0-9a-zA-Z-/_]+\s*\)\s*")
+        self._suburl_re = re.compile(r"\s*\[\**([^\]\*]+)\**\]\s*\(\s*[0-9a-zA-Z-/_]+\s*\)\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -318,7 +318,6 @@ class FullAutoTranslator(object):
         """
         Replace proto placeholders by final placeholders
         """
-
         for i in range(n):
             placeholder = self.placeholder(i)
             # Check if it got mis-translated...
@@ -366,15 +365,16 @@ class FullAutoTranslator(object):
         nAsterisks = self.combo_count(s, "*")
         nNewlines = self.combo_count(s, "\\n")
 
+        # Subtranslate URL title
+        s, sublurlMap, n = self.placeholder_replace(s, n, self._suburl_re,
+            subtrans_groupno=1 if subtranslate else None)
+
         s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
         s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
         s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
         s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
         s, imgMap, n = self.placeholder_replace(s, n, self._image_re)
         s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
-        # Subtranslate URL title
-        s, sublurlMap, n = self.placeholder_replace(s, n, self._suburl_re,
-            subtrans_groupno=1 if subtranslate else None)
 
         repmap = merge(formulaMap, asteriskMap, newlineMap, inputMap, imgMap, tagMap, sublurlMap)
 
