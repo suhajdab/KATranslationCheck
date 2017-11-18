@@ -381,12 +381,12 @@ class FullAutoTranslator(object):
         #
         nAsterisksNew = self.combo_count(s, "*")
         if nAsterisksNew != info.nAsterisks:
-            print(red("* not reconstructible in '{}' engl '{}'".format(s, engl), bold=True))
+            print(red("* not reconstructed in '{}' engl '{}'".format(s, engl), bold=True))
             return None
 
         nNewlinesNew = self.combo_count(s, "\\n")
         if nNewlinesNew != info.nNewlines:
-            print(red("\\n not reconstructible in '{}' engl '{}'".format(s, engl), bold=True))
+            print(red("\\n not reconstructed in '{}' engl '{}'".format(s, engl), bold=True))
             return None
         return s
 
