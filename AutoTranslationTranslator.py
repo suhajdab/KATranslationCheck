@@ -424,8 +424,8 @@ class FullAutoTranslator(object):
         return result.text
 
     def check_regex_equal(self, regex, s1, s2, desc):
-        m1 = [m.group(0) for m in regex.finditer(s1)]
-        m2 = [m.group(0) for m in regex.finditer(s2)]
+        m1 = [m.group(0).strip() for m in regex.finditer(s1)]
+        m2 = [m.group(0).strip() for m in regex.finditer(s2)]
         if m1 != m2:
             print(red("Syntax comparison failed for {} regex:\n\t{}\n\t{}".format(
                 desc, str(m1), str(m2)), bold=True))
@@ -464,7 +464,8 @@ class FullAutoTranslator(object):
         print("\tTranslated:", translated, file=self.dbgout)
         print("\tResult:", txt2, file=self.dbgout)
         print("}", file=self.dbgout)
-        # Syntax equivalence check
+        # Syntax equivalence check.
+        # Ignores whitespace as it will happen for various languages due to grammatics
         if txt2 is None:
             return None
         if not self.check_regex_equal(self._formula_re, engl, txt2, "formula"):
