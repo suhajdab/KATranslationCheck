@@ -254,6 +254,7 @@ class FullAutoTranslator(object):
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
+        self._tag_re = re.compile(r"\s*<[a-z-]+\s*/?>\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -285,17 +286,17 @@ class FullAutoTranslator(object):
             return False
         return True
 
-    def placeholder_replace(self, s, n, re):
+    def placeholder_replace(self, s, n, regex):
         repmap = {}
         while True:
-            match = re.search(s)
+            match = regex.search(s)
             if match is None: # No more formulas
                 break
             formula = match.group(0)
             current_placeholder = self.proto_placeholder(n)
             repmap[current_placeholder] = formula
             # Add spaces before and after placeholder to separate from other elements of text
-            s = re.sub(current_placeholder, s, count=1)
+            s = regex.sub(current_placeholder, s, count=1)
             n += 1
         return s, repmap, n
 
@@ -328,8 +329,8 @@ class FullAutoTranslator(object):
         for c in self.uchars:
             if c in s:
                 print(red("Found placeholder {} in '{}'".format(c, s), bold=True))
-                return True
-        return False
+                return False
+        return True
 
     def combo_count(self, s, char):
         return [s.count(char * n) for n in range(1, 10)]
@@ -362,8 +363,9 @@ class FullAutoTranslator(object):
         s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
         s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
         s, imgMap, n = self.placeholder_replace(s, n, self._image_re)
+        s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
 
-        repmap = merge(formulaMap, asteriskMap, newlineMap, inputMap, imgMap)
+        repmap = merge(formulaMap, asteriskMap, newlineMap, inputMap, imgMap, tagMap)
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
@@ -384,7 +386,7 @@ class FullAutoTranslator(object):
         s = self.back_replace(s, info.replaceMap)
 
         # Now no placeholders should be left
-        if self.check_no_placeholders_left(s):
+        if not self.check_no_placeholders_left(s):
             return None
 
         #
@@ -409,6 +411,15 @@ class FullAutoTranslator(object):
         # partition: sv-SE => sv
         result = translator.translate(txt, src="en", dest=self.lang.partition("-")[0])
         return result.text
+
+    def check_regex_equal(self, regex, s1, s2, desc):
+        m1 = [m.group(0) for m in regex.finditer(s1)]
+        m2 = [m.group(0) for m in regex.finditer(s2)]
+        if m1 != m2:
+            print(red("Syntax comparison failed for {} regex:\n{}\n{}".format(
+                desc, str(m1), str(m2)), bold=True))
+            return False
+        return True
 
     def translate(self, engl):
         # Use limit on how much to translate at once
@@ -437,6 +448,22 @@ class FullAutoTranslator(object):
         print("\tTranslated:", translated, file=self.dbgout)
         print("\tResult:", txt2, file=self.dbgout)
         print("}", file=self.dbgout)
+        # Syntax equivalence check
+        if txt2 is None:
+            return None
+        if not self.check_regex_equal(self._formula_re, engl, txt2, "formula"):
+            return None
+        if not self.check_regex_equal(self._asterisk_re, engl, txt2, "asterisk"):
+            return None
+        if not self.check_regex_equal(self._newline_re, engl, txt2, "newline"):
+            return None
+        if not self.check_regex_equal(self._input_re, engl, txt2, "input"):
+            return None
+        if not self.check_regex_equal(self._image_re, engl, txt2, "image"):
+            return None
+        if not self.check_regex_equal(self._tag_re, engl, txt2, "tag"):
+            return None
+        # Finished
         return txt2
 
 if __name__ == "__main__":
