@@ -21,6 +21,26 @@ def upload_file(filename, fileid, auto_approve=False, lang="lol", fullauto_accou
     # x-file-name:test.xliff
     # x-requested-with:XMLHttpRequest
 
+def approve_string(filename, fileid, lang, engl, translated):
+    """
+
+    """
+    xml = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+      <file id="38164" original="/2_high_priority_content/learn.math.calculus-home.articles.pot" source-language="en-US" target-language="sv-SE" datatype="plaintext">
+        <body>
+          <trans-unit id="3884148" identifier="a3d044bd643c30033b53e924a5a8e6da" approved="yes">
+            <source>Because part of the region is below the x-axis, we subtract the area of that region from the definite integral.</source>
+            <target state="translated">Eftersom en del av regionen ligger under x-axeln subtraherar vi området i den regionen från det bestämda integralet.</target>
+          </trans-unit>
+        </body>
+      </file>
+    </xliff>
+    """
+    # TODO
+
+
 def update_crowdin_index_files(lang):
     """
     Update the ka-babelfish files on Crowdin
