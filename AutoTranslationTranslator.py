@@ -255,7 +255,7 @@ class FullAutoTranslator(object):
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
         self._tag_re = re.compile(r"\s*</?\s*[a-z-]+\s*([a-z-]+=\"[^\"]+\")*\s*/?>\s*")
-        self._suburl_re = re.compile(r"\s*\[\**([^\]\*]+)\**\]\s*\(\s*[0-9a-zA-Z-/_]+\s*\)\s*")
+        self._suburl_re = re.compile(r"\s*\[\**([^\]\*]+)\**\]\s*\(\s*[^\)]+\s*\)\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
