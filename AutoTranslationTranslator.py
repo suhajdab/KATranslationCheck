@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import re as re
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, namedtuple
 from ansicolor import red
 import os.path
 import json
+from toolz.dicttoolz import valmap
 from AutoTranslateCommon import *
 from googletrans import Translator
 
@@ -239,21 +240,31 @@ class NameAutotranslator(object):
         elif m10:
             return self._translate_match_one_name(m10, self.transmap[9])
 
+PlaceholderInfo = namedtuple("PlaceholderInfo", [
+    "formulaMap", "asteriskMap", "newlineMap", "nAsterisks", "nNewlines"])
+
 class FullAutoTranslator(object):
     """
     Google translate based full auto translator
     """
     def __init__(self, lang, limit=25):
         self.lang = lang if lang != "lol" else "de" # LOL => translate to DE
-        self._formula_re = re.compile(r"\$[^\$]+\$")
+        self._formula_re = re.compile(r"\s*\$[^\$]+\$\s*")
+        self._asterisk_re = re.compile(r"\s*\*+\s*")
+        self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
+        self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
 
     def __del__(self):
         self.dbgout.close()
 
+    def proto_placeholder(self, n):
+        return self.uchars[n]
+
     def placeholder(self, n):
-        return "31353163{}163331235".format(n)
+        #return self.uchars[n]
+        return "52472451633{}13742".format(n)
 
     def can_be_translated(self, s):
         if "\\text" in s:
@@ -272,45 +283,113 @@ class FullAutoTranslator(object):
             return False
         if "![" in s:
             return False
+        if "§" in s:
+            return False
         if "{" in s or "}" in s:
             return False
         if "ka-perseus-" in s:
             return False  # Images
         if "\\mathrm" in s:
             return False
-        if "*" in s:
-            return False
-        if "\\n" in s:
-            return False
         if "`" in s:
             return False
         return True
 
-    def preproc(self, s):
-        """Forward-replace"""
-        n = 0
-        formulaMap = {}
+    def placeholder_replace(self, s, n, re):
+        repmap = {}
         while True:
-            match = self._formula_re.search(s)
+            match = re.search(s)
             if match is None: # No more formulas
                 break
             formula = match.group(0)
-            current_placeholder = self.placeholder(n)
-            formulaMap[current_placeholder] = formula
-            s = self._formula_re.sub(current_placeholder, s, count=1)
+            current_placeholder = self.proto_placeholder(n)
+            repmap[current_placeholder] = formula
+            # Add spaces before and after placeholder to separate from other elements of text
+            s = re.sub(current_placeholder, s, count=1)
             n += 1
-        return s, formulaMap
+        return s, repmap, n
 
-    def postproc(self, s, fmap):
+    def final_replace(self, s, n):
         """
-        Back-replce placeholders
+        Replace proto placeholders by final placeholders
         """
-        for placeholder, rep in fmap.items():
+        for i in range(n):
+            s = s.replace(self.proto_placeholder(n), " {} ".format(self.placeholder(n)))
+        return s
+
+    def combo_count(self, s, char):
+        return [s.count(char * n) for n in range(1, 10)]
+
+    def back_replace(self, s, repmap):
+        """
+        Like simple_replace, but replaces
+        """
+        for placeholder, rep in repmap.items():
             # Check if it got mis-translated...
             if placeholder not in s:
                 print(red("{} not found in '{}'".format(placeholder, s), bold=True))
                 return None
-            s = s.replace(placeholder, rep)
+            # Replace fixing whitespace
+            s = re.sub(r"\s*" + placeholder + r"\s*", rep, s)
+        return s
+
+    def preproc(self, s):
+        """
+        Forward-replace first with proto-placeholders to avoid impacting
+
+        As proto-placeholders are unicode chars and will often be touched by the translator,
+        we then replace them by final numeric code placeholders with whitespace
+        added before and after which are not touched.
+        """
+        n = 0
+        s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
+        # Count asterisk combinations
+        nAsterisks = self.combo_count(s, "*")
+
+        s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
+
+        # \\n might be directly followed by a word character and might be screwed up
+        # We count the number of newline combos now to check restoration later.
+        nNewlines = self.combo_count(s, "\\n")
+
+        s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
+        # Fix some re.sub() issues with escaping in postproc()
+        newlineMap = valmap(lambda v: v.replace("\\", "\\\\"), newlineMap)
+
+        # Final placeholder replacement
+        s = self.final_replace(s, n)
+
+        return s, PlaceholderInfo(formulaMap, asteriskMap, newlineMap, nAsterisks, nNewlines)
+
+    def postproc(self, engl, s, info):
+        """
+        Back-replace placeholders
+        """
+        # Replace placeholders
+        s = self.back_replace(s, info.formulaMap)
+        if s is None:
+            return None
+    
+        s = self.back_replace(s, info.asteriskMap)
+        if s is None:
+            return None
+
+        s = self.back_replace(s, info.newlineMap)
+        if s is None:
+            return None
+
+        #
+        # Check if combinations match
+        #
+        nAsterisksNew = self.combo_count(s, "*")
+        if nAsterisksNew != info.nAsterisks:
+            print(red("* not kept in '{}' engl '{}'".format(s, engl), bold=True))
+            return None
+
+        nNewlinesNew = self.combo_count(s, "\\n")
+        if nNewlinesNew != info.nNewlines:
+            print(red("\\n not kept in '{}' engl '{}'".format(s, engl), bold=True))
+            return None
         return s
 
     def google_translate(self, txt):
@@ -331,19 +410,33 @@ class FullAutoTranslator(object):
         if not self.can_be_translated(engl):
             return None
         # Replace formulas etc. by placeholders
-        engl_proc, formula_map = self.preproc(engl)
+        engl_proc, info = self.preproc(engl)
         # Check validity of placeholders (should yield original string)
-        assert self.postproc(engl_proc, formula_map) == engl
+        test_postproc = self.postproc(engl, engl_proc, info)
+        if test_postproc != engl:
+            print(red("Test reproc failed: '{}' instead of '{}'".format(test_postproc, engl)))
+            return None
         # Perform translation
         translated = self.google_translate(engl_proc)
         # Back-replace placeholders
-        txt2 = self.postproc(translated, formula_map)
+        txt2 = self.postproc(engl, translated, info)
         # Emit debug data
         print("{", file=self.dbgout)
         print("\tEngl:",engl, file=self.dbgout)
-        print("\tFMap:",formula_map, file=self.dbgout)
+        print("\tFMap:",info.formulaMap, file=self.dbgout)
+        print("\tAMap:",info.asteriskMap, file=self.dbgout)
+        print("\tNMap:",info.newlineMap, file=self.dbgout)
         print("\tPreproc:", engl_proc, file=self.dbgout)
         print("\tTranslated:", translated, file=self.dbgout)
         print("\tResult:", txt2, file=self.dbgout)
         print("}", file=self.dbgout)
         return txt2
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('string', help='The string to translate')
+    args = parser.parse_args()
+
+    fa = FullAutoTranslator("de")
+    print(fa.translate(args.string))
