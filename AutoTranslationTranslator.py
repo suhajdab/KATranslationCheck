@@ -450,7 +450,7 @@ class FullAutoTranslator(object):
         # Check validity of placeholders (should yield original string)
         test_postproc = self.postproc(engl, engl_proc, info)
         if test_postproc != engl:
-            print(red("Test reproc failed: '{}' instead of '{}'".format(test_postproc, engl)))
+            print(red("Validation reproduction failed: '{}' instead of '{}'".format(test_postproc, engl)))
             return None
         # Do actual preprocessing with possible subtranslation
         engl_proc, info = self.preproc(engl, subtranslate=True)
