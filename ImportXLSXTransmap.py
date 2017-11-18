@@ -9,7 +9,12 @@ def get_transmap(filename):
     sheet = wb[wb.sheetnames[0]]
     tmap = {}
     for row in sheet.rows:
-        engl, transl = row
+        engl = row[2]
+        transl = row[3]
+        if transl.value is None:
+            continue
+        print(engl.value,"==>",transl.value)
+
         tmap[str(engl.value)] = str(transl.value)
     return [{"english": engl, "translated": transl} for engl,transl in tmap.items()]
 
