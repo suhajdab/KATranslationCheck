@@ -42,7 +42,7 @@ class RuleAutotranslator(object):
         #   ![](web+graphie://ka-perseus-graphie.s3.amazonaws.com/...)
         #   web+graphie://ka-perseus-graphie.s3.amazonaws.com/...
         #   https://ka-perseus-graphie.s3.amazonaws.com/...png
-        self._is_perseus_img_url = re.compile(r"^(!\[\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)?\s*$")
+        self._is_perseus_img_url = re.compile(r"^(!\[\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)?\s*$")
 
         self._is_formula_plus_img = re.compile(r"^>?[\s\*]*(\$[^\$]+\$(\s|\\n|\*)*)+(!\[\]\()?\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)?\s*$")
         self._is_input = re.compile(r"^\[\[\s*☃\s*[a-z-]+\s*\d*\s*\]\](\s|\\n)*$", re.UNICODE)
@@ -253,7 +253,7 @@ class FullAutoTranslator(object):
         self._asterisk_re = re.compile(r"\s*\*+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
-        self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg))?\)\s*")
+        self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -319,6 +319,7 @@ class FullAutoTranslator(object):
             if placeholder not in s:
                 print(red("{} not found in '{}'".format(placeholder, s), bold=True))
                 return None
+            # Replace by proto-placeholder which is a unicode char
             s = re.sub(r"\s*" + placeholder + r"\s*",
                 self.proto_placeholder(i), s, flags=re.UNICODE)
         return s
@@ -369,7 +370,7 @@ class FullAutoTranslator(object):
         # Replace numeric placeholders by unicode placeholders
         # This prevents spaces between placeholders cross-affecting each other
         s = self.first_stage_backreplace(s, info.nPlaceholders)
-        if s is None:
+        if s is None:  # Placeholder missing or changed
             return None
 
         # Replace unicode placeholders by their original value
@@ -380,12 +381,12 @@ class FullAutoTranslator(object):
         #
         nAsterisksNew = self.combo_count(s, "*")
         if nAsterisksNew != info.nAsterisks:
-            print(red("* not kept in '{}' engl '{}'".format(s, engl), bold=True))
+            print(red("* not reconstructible in '{}' engl '{}'".format(s, engl), bold=True))
             return None
 
         nNewlinesNew = self.combo_count(s, "\\n")
         if nNewlinesNew != info.nNewlines:
-            print(red("\\n not kept in '{}' engl '{}'".format(s, engl), bold=True))
+            print(red("\\n not reconstructible in '{}' engl '{}'".format(s, engl), bold=True))
             return None
         return s
 
