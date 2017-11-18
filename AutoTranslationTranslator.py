@@ -241,7 +241,7 @@ class NameAutotranslator(object):
             return self._translate_match_one_name(m10, self.transmap[9])
 
 PlaceholderInfo = namedtuple("PlaceholderInfo", [
-    "nPlaceholders", "replaceMap", "nAsterisks", "nNewlines"])
+    "nPlaceholders", "replaceMap", "nAsterisks", "nNewlines", "nHashs"])
 
 class FullAutoTranslator(object):
     """
@@ -255,6 +255,7 @@ class FullAutoTranslator(object):
         # <g id="continue">%1$s</g> or <g id="get_help_link">%2$s</g> misrecognized as 
         self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$[^\$]+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
+        self._hash_re = re.compile(r"\s*#+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
@@ -370,6 +371,7 @@ class FullAutoTranslator(object):
         # We count their number of newline combos now to check restoration later.
         nAsterisks = self.combo_count(s, "*")
         nNewlines = self.combo_count(s, "\\n")
+        nHashs = self.combo_count(s, "#")
 
         # Subtranslate URL title
         s, sublurlMap, n = self.placeholder_replace(s, n, self._suburl_re,
@@ -379,6 +381,7 @@ class FullAutoTranslator(object):
         s, mobilePlaceholderMap, n = self.placeholder_replace(s, n, self._mobile_placeholder_re)
         s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
         s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
+        s, hashMap, n = self.placeholder_replace(s, n, self._hash_re)
         s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
         s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
         s, imgMap, n = self.placeholder_replace(s, n, self._image_re)
@@ -387,12 +390,12 @@ class FullAutoTranslator(object):
         s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
 
         repmap = merge(formulaMap, asteriskMap, newlineMap, mobilePlaceholderMap,
-            inputMap, imgMap, tagMap, sublurlMap, codeMap, kaPlaceholderMap)
+            inputMap, imgMap, tagMap, sublurlMap, codeMap, kaPlaceholderMap, hashMap)
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
 
-        return s, PlaceholderInfo(n, repmap, nAsterisks, nNewlines)
+        return s, PlaceholderInfo(n, repmap, nAsterisks, nNewlines, nHashs)
 
     def postproc(self, engl, s, info):
         """
@@ -422,6 +425,11 @@ class FullAutoTranslator(object):
         nNewlinesNew = self.combo_count(s, "\\n")
         if nNewlinesNew != info.nNewlines:
             print(red("\\n not reconstructed in '{}' engl '{}'".format(s, engl), bold=True))
+            return None
+
+        nHashsNew = self.combo_count(s, "#")
+        if nHashsNew != info.nHashs:
+            print(red("# not reconstructed in '{}' engl '{}'".format(s, engl), bold=True))
             return None
         return s
 
