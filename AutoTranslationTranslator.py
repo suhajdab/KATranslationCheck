@@ -255,6 +255,7 @@ class FullAutoTranslator(object):
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
         self._tag_re = re.compile(r"\s*</?\s*[a-z-]+\s*/?>\s*")
+        self._suburl_re = re.compile(r"\s*\[([^\]]+)\]\s*\(\s*[0-9a-zA-Z-/_]+\s*\)\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -285,7 +286,7 @@ class FullAutoTranslator(object):
             return False
         return True
 
-    def placeholder_replace(self, s, n, regex):
+    def placeholder_replace(self, s, n, regex, subtrans_groupno=None):
         repmap = {}
         while True:
             match = regex.search(s)
@@ -293,6 +294,13 @@ class FullAutoTranslator(object):
                 break
             formula = match.group(0)
             current_placeholder = self.proto_placeholder(n)
+            # Subtranslate
+            if subtrans_groupno is not None:
+                subgroup = match.group(subtrans_groupno)
+                trans = self.google_translate(subgroup)
+                formula = formula.replace(subgroup, trans)
+                #print("Subgroup translation: {} --> {}".format(match.group(0), formula))
+            # Add into map
             repmap[current_placeholder] = formula
             # Add spaces before and after placeholder to separate from other elements of text
             s = regex.sub(current_placeholder, s, count=1)
@@ -345,7 +353,7 @@ class FullAutoTranslator(object):
             s = s.replace(placeholder, rep)
         return s
 
-    def preproc(self, s):
+    def preproc(self, s, subtranslate=True):
         """
         Forward-replace first with proto-placeholders to avoid impacting
 
@@ -366,8 +374,11 @@ class FullAutoTranslator(object):
         s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
         s, imgMap, n = self.placeholder_replace(s, n, self._image_re)
         s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
+        # Subtranslate URL title
+        s, sublurlMap, n = self.placeholder_replace(s, n, self._suburl_re,
+            subtrans_groupno=1 if subtranslate else None)
 
-        repmap = merge(formulaMap, asteriskMap, newlineMap, inputMap, imgMap, tagMap)
+        repmap = merge(formulaMap, asteriskMap, newlineMap, inputMap, imgMap, tagMap, sublurlMap)
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
@@ -433,13 +444,16 @@ class FullAutoTranslator(object):
         # Ignore currently unhandled cases
         if not self.can_be_translated(engl):
             return None
-        # Replace formulas etc. by placeholders
-        engl_proc, info = self.preproc(engl)
+        # Replace formulas etc. by placeholders.
+        # Subtranslation will fail back verification so we'll do it later
+        engl_proc, info = self.preproc(engl, subtranslate=False)
         # Check validity of placeholders (should yield original string)
         test_postproc = self.postproc(engl, engl_proc, info)
         if test_postproc != engl:
             print(red("Test reproc failed: '{}' instead of '{}'".format(test_postproc, engl)))
             return None
+        # Do actual preprocessing with possible subtranslation
+        engl_proc, info = self.preproc(engl, subtranslate=True)
         # Perform translation
         translated = self.google_translate(engl_proc)
         # Back-replace placeholders
