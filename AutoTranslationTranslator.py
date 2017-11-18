@@ -266,7 +266,7 @@ class FullAutoTranslator(object):
 
     def placeholder(self, n):
         #return self.uchars[n]
-        return "52472451633{}13742".format(n)
+        return "52472451639{}13742".format(n)
 
     def can_be_translated(self, s):
         if "\\text" in s:
