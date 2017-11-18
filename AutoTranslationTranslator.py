@@ -324,6 +324,13 @@ class FullAutoTranslator(object):
                 self.proto_placeholder(i), s, flags=re.UNICODE)
         return s
 
+    def check_no_placeholders_left(self, s):
+        for c in self.uchars:
+            if c in s:
+                print(red("Found placeholder {} in '{}'".format(c, s), bold=True))
+                return True
+        return False
+
     def combo_count(self, s, char):
         return [s.count(char * n) for n in range(1, 10)]
 
@@ -375,6 +382,10 @@ class FullAutoTranslator(object):
 
         # Replace unicode placeholders by their original value
         s = self.back_replace(s, info.replaceMap)
+
+        # Now no placeholders should be left
+        if self.check_no_placeholders_left(s):
+            return None
 
         #
         # Check if combinations match
