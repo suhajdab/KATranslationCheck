@@ -241,7 +241,7 @@ class NameAutotranslator(object):
             return self._translate_match_one_name(m10, self.transmap[9])
 
 PlaceholderInfo = namedtuple("PlaceholderInfo", [
-    "formulaMap", "asteriskMap", "newlineMap", "nAsterisks", "nNewlines"])
+    "nPlaceholders", "formulaMap", "asteriskMap", "inputMap", "newlineMap", "nAsterisks", "nNewlines"])
 
 class FullAutoTranslator(object):
     """
@@ -252,6 +252,7 @@ class FullAutoTranslator(object):
         self._formula_re = re.compile(r"\s*\$[^\$]+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
+        self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -272,8 +273,6 @@ class FullAutoTranslator(object):
         if "\\textit" in s:
             return False
         if "\\$" in s:
-            return False
-        if "☃" in s:
             return False
         if "+" in s:
             return False
@@ -314,7 +313,23 @@ class FullAutoTranslator(object):
         Replace proto placeholders by final placeholders
         """
         for i in range(n):
-            s = s.replace(self.proto_placeholder(n), " {} ".format(self.placeholder(n)))
+            s = s.replace(self.proto_placeholder(i), " {} ".format(self.placeholder(i)))
+        return s
+
+
+    def first_stage_backreplace(self, s, n):
+        """
+        Replace proto placeholders by final placeholders
+        """
+
+        for i in range(n):
+            placeholder = self.placeholder(i)
+            # Check if it got mis-translated...
+            if placeholder not in s:
+                print(red("{} not found in '{}'".format(placeholder, s), bold=True))
+                return None
+            s = re.sub(r"\s*" + placeholder + r"\s*",
+                self.proto_placeholder(i), s, flags=re.UNICODE)
         return s
 
     def combo_count(self, s, char):
@@ -325,12 +340,7 @@ class FullAutoTranslator(object):
         Like simple_replace, but replaces
         """
         for placeholder, rep in repmap.items():
-            # Check if it got mis-translated...
-            if placeholder not in s:
-                print(red("{} not found in '{}'".format(placeholder, s), bold=True))
-                return None
-            # Replace fixing whitespace
-            s = re.sub(r"\s*" + placeholder + r"\s*", rep, s)
+            s = s.replace(placeholder, rep)
         return s
 
     def preproc(self, s):
@@ -345,38 +355,36 @@ class FullAutoTranslator(object):
         s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
         # Count asterisk combinations
         nAsterisks = self.combo_count(s, "*")
-
         s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
 
         # \\n might be directly followed by a word character and might be screwed up
         # We count the number of newline combos now to check restoration later.
         nNewlines = self.combo_count(s, "\\n")
-
         s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
-        # Fix some re.sub() issues with escaping in postproc()
-        newlineMap = valmap(lambda v: v.replace("\\", "\\\\"), newlineMap)
+
+        # Inputs
+        s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
 
-        return s, PlaceholderInfo(formulaMap, asteriskMap, newlineMap, nAsterisks, nNewlines)
+        return s, PlaceholderInfo(n, formulaMap, asteriskMap, inputMap, newlineMap, nAsterisks, nNewlines)
 
     def postproc(self, engl, s, info):
         """
         Back-replace placeholders
         """
-        # Replace placeholders
-        s = self.back_replace(s, info.formulaMap)
-        if s is None:
-            return None
-    
-        s = self.back_replace(s, info.asteriskMap)
+        # Replace numeric placeholders by unicode placeholders
+        # This prevents spaces between placeholders cross-affecting each other
+        s = self.first_stage_backreplace(s, info.nPlaceholders)
         if s is None:
             return None
 
+        # Replace placeholders
+        s = self.back_replace(s, info.formulaMap)
+        s = self.back_replace(s, info.asteriskMap)
         s = self.back_replace(s, info.newlineMap)
-        if s is None:
-            return None
+        s = self.back_replace(s, info.inputMap)
 
         #
         # Check if combinations match
