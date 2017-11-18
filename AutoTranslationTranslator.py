@@ -249,6 +249,9 @@ class FullAutoTranslator(object):
     """
     def __init__(self, lang, limit=25):
         self.lang = lang if lang != "lol" else "de" # LOL => translate to DE
+        #
+        # Pattern regexes
+        #
         # <g id="continue">%1$s</g> or <g id="get_help_link">%2$s</g> misrecognized as 
         self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$[^\$]+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
@@ -260,6 +263,11 @@ class FullAutoTranslator(object):
         self._code_re = re.compile(r"\s*```[^`]+```\s*")
         self._kaplaceholder_re = re.compile(r"\s*\%\([^\)]+\)[a-zA-Z]\s*")
         self._mobile_placeholder_re = re.compile(r"\s*\%[\dA-Za-z](\$[\dA-Za-z])?\s*")
+        #
+        # Blacklist regexes
+        #
+        self._text_regex = re.compile(r"\\\\text(it)?\s*\{")
+
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -274,9 +282,7 @@ class FullAutoTranslator(object):
         return "52472451639{}13742".format(n)
 
     def can_be_translated(self, s):
-        if "\\text" in s:
-            return False
-        if "\\textit" in s:
+        if self._text_regex.search(s) is not None:
             return False
         if "\\$" in s:
             return False
