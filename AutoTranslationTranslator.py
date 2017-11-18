@@ -254,11 +254,10 @@ class FullAutoTranslator(object):
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
-        self._tag_re = re.compile(r"\s*<[a-z-]+\s*/?>\s*")
+        self._tag_re = re.compile(r"\s*</?\s*[a-z-]+\s*/?>\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
-
     def __del__(self):
         self.dbgout.close()
 
