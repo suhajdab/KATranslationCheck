@@ -320,6 +320,9 @@ class FullAutoTranslator(object):
             if placeholder not in s:
                 print(red("{} not found in '{}'".format(placeholder, s), bold=True))
                 return None
+            if s.count(placeholder) != 1:
+                print(red("Placeholder {} was duplicated in '{}'".format(placeholder, s), bold=True))
+                return None
             # Replace by proto-placeholder which is a unicode char
             s = re.sub(r"\s*" + placeholder + r"\s*",
                 self.proto_placeholder(i), s, flags=re.UNICODE)
@@ -416,8 +419,10 @@ class FullAutoTranslator(object):
         m1 = [m.group(0) for m in regex.finditer(s1)]
         m2 = [m.group(0) for m in regex.finditer(s2)]
         if m1 != m2:
-            print(red("Syntax comparison failed for {} regex:\n{}\n{}".format(
+            print(red("Syntax comparison failed for {} regex:\n\t{}\n\t{}".format(
                 desc, str(m1), str(m2)), bold=True))
+            print(red("Original: {}".format(s1), bold=True))
+            print(red("Translated: {}".format(s2), bold=True))
             return False
         return True
 
