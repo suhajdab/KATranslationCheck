@@ -487,8 +487,9 @@ class FullAutoTranslator(object):
             return None
         if not self.check_regex_equal(self._input_re, engl, txt2, "input"):
             return None
-        if not self.check_regex_equal(self._image_re, engl, txt2, "image"):
-            return None
+        # disabled as URL subtrans will cause it to fail
+        #if not self.check_regex_equal(self._image_re, engl, txt2, "image"):
+        #    return None
         if not self.check_regex_equal(self._tag_re, engl, txt2, "tag"):
             return None
         if not self.check_regex_equal(self._code_re, engl, txt2, "code"):
