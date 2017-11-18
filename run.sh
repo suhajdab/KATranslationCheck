@@ -2,8 +2,8 @@
 git pull
 # Download
 ./katc.py -l de update-translations -j 32
-./katc.py -l pt-BR update-translations -j 32
-./katc.py -l bg update-translations -j 32
+#./katc.py -l pt-BR update-translations -j 32
+#./katc.py -l bg update-translations -j 32
 ./katc.py -l sv-SE update-translations -j 32
 ./katc.py -l ja update-translations -j 32
 ./katc.py -l ka update-translations -j 32
