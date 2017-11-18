@@ -256,6 +256,7 @@ class FullAutoTranslator(object):
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
         self._tag_re = re.compile(r"\s*</?\s*[a-z-]+\s*([a-z-]+=\"[^\"]+\")*\s*/?>\s*")
         self._suburl_re = re.compile(r"\s*\[\**([^\]\*]+)\**\]\s*\(\s*[^\)]+\s*\)\s*")
+        self._code_re = re.compile(r"\s*```[^`]+```\s*")
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -279,8 +280,6 @@ class FullAutoTranslator(object):
         if "%(" in s:
             return False
         if "\\mathrm" in s:
-            return False
-        if "`" in s:
             return False
         return True
 
@@ -374,9 +373,12 @@ class FullAutoTranslator(object):
         s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
         s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
         s, imgMap, n = self.placeholder_replace(s, n, self._image_re)
+        # Code before tag as code might contain tag
+        s, codeMap, n = self.placeholder_replace(s, n, self._code_re)
         s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
 
-        repmap = merge(formulaMap, asteriskMap, newlineMap, inputMap, imgMap, tagMap, sublurlMap)
+        repmap = merge(formulaMap, asteriskMap, newlineMap,
+            inputMap, imgMap, tagMap, sublurlMap, codeMap)
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
@@ -479,6 +481,8 @@ class FullAutoTranslator(object):
         if not self.check_regex_equal(self._image_re, engl, txt2, "image"):
             return None
         if not self.check_regex_equal(self._tag_re, engl, txt2, "tag"):
+            return None
+        if not self.check_regex_equal(self._code_re, engl, txt2, "code"):
             return None
         # Finished
         return txt2
