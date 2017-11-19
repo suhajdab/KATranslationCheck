@@ -120,11 +120,10 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
             c.extract()
 
         # Now we can try to autotranslate
-
         try:
             autotrans = autotranslator.translate(engl)
-        except json.decoder.JSONDecodeError:
-            print(black("API fail for string '{}'".format(source), bold=True))
+        except:
+            print(black("Autotranslate fail for string '{}'".format(source), bold=True))
             traceback.print_exception(*sys.exc_info())
             autotrans = None
         
