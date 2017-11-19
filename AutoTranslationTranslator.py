@@ -262,6 +262,7 @@ class FullAutoTranslator(object):
         self._tag_re = re.compile(r"\s*</?\s*[a-z-]+\s*([a-z-]+=\"[^\"]+\")*\s*/?>\s*")
         self._suburl_re = re.compile(r"\s*\[\**([^\]\*]+)\**\]\s*\(\s*[^\)]+\s*\)\s*")
         self._code_re = re.compile(r"\s*```[^`]+```\s*")
+        self._entity_re = re.compile(r"\s*&[#0-9a-z]+;\s*")
         self._kaplaceholder_re = re.compile(r"\s*\%\([^\)]+\)[a-zA-Z]\s*")
         self._mobile_placeholder_re = re.compile(r"\s*\%[\dA-Za-z](\$[\dA-Za-z])?\s*")
         #
@@ -379,6 +380,7 @@ class FullAutoTranslator(object):
             subtrans_groupno=1 if subtranslate else None)
 
         s, kaPlaceholderMap, n = self.placeholder_replace(s, n, self._kaplaceholder_re)
+        s, entityMap, n = self.placeholder_replace(s, n, self._entity_re)
         s, mobilePlaceholderMap, n = self.placeholder_replace(s, n, self._mobile_placeholder_re)
         s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
         s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
@@ -391,7 +393,8 @@ class FullAutoTranslator(object):
         s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
 
         repmap = merge(formulaMap, asteriskMap, newlineMap, mobilePlaceholderMap,
-            inputMap, imgMap, tagMap, sublurlMap, codeMap, kaPlaceholderMap, hashMap)
+            inputMap, imgMap, tagMap, sublurlMap, codeMap, kaPlaceholderMap, hashMap,
+            entityMap)
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
@@ -491,6 +494,8 @@ class FullAutoTranslator(object):
         if not self.check_regex_equal(self._formula_re, engl, txt2, "formula"):
             return None
         if not self.check_regex_equal(self._asterisk_re, engl, txt2, "asterisk"):
+            return None
+        if not self.check_regex_equal(self._entity_re, engl, txt2, "enttiy"):
             return None
         if not self.check_regex_equal(self._newline_re, engl, txt2, "newline"):
             return None
