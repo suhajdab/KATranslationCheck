@@ -159,6 +159,8 @@ function submit(yn) {
     console.log("Submitting", json);
     $.post("/api/submit", json, function(data) {
         $("#rank").text(data.rank);
+        count = data.count;
+        $("#count").text(data.count);
     })
     // Update count
     count++;

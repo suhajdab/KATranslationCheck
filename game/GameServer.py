@@ -94,7 +94,7 @@ def submitAPI():
         if client == cid:
             break
         rank += 1
-    return {"rank": rank}
+    return {"rank": rank, "count": clientVotes[cid]}
 
 @app.get('/api/db')
 def dbAPI():
