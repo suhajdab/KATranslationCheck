@@ -254,7 +254,7 @@ class FullAutoTranslator(object):
         # Pattern regexes
         #
         # <g id="continue">%1$s</g> or <g id="get_help_link">%2$s</g> misrecognized as 
-        self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$[^\$]+\$\s*")
+        self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$(\\\$|[^\$])+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
         self._hash_re = re.compile(r"\s*#+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
@@ -294,10 +294,6 @@ class FullAutoTranslator(object):
         return "52472451639{}13742".format(n)
 
     def can_be_translated(self, s):
-        if "\\$" in s:
-            return False
-        if "\\mathrm" in s:
-            return False
         return True
 
     def placeholder_replace(self, s, n, regex, subtrans_groupno=None):
@@ -508,6 +504,7 @@ class FullAutoTranslator(object):
         # Replace formulas etc. by placeholders.
         # Subtranslation will fail back verification so we'll do it later
         engl_proc, info = self.preproc(engl, subtranslate=False)
+        print(engl_proc)
         # Check validity of placeholders (should yield original string)
         test_postproc = self.postproc(engl, engl_proc, info)
         if test_postproc != engl:
