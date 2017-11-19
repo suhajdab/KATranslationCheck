@@ -508,7 +508,6 @@ class FullAutoTranslator(object):
         # Replace formulas etc. by placeholders.
         # Subtranslation will fail back verification so we'll do it later
         engl_proc, info = self.preproc(engl, subtranslate=False)
-        print(engl_proc)
         # Check validity of placeholders (should yield original string)
         test_postproc = self.postproc(engl, engl_proc, info)
         if test_postproc != engl:
