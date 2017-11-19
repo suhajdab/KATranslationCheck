@@ -153,7 +153,7 @@ def run_game_server(args):
     availableStrings = extract_strings_from_xliff_soup(args.file, soup)
     # Remap strings
     stringIDMap = {
-        ti.id: ti
+        int(ti.id): ti
         for ti in availableStrings
     }
 
