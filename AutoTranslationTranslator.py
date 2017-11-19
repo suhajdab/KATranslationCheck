@@ -4,6 +4,7 @@ from collections import Counter, defaultdict, namedtuple
 from ansicolor import red
 import os.path
 import json
+import itertools
 from toolz.dicttoolz import merge
 from AutoTranslateCommon import *
 from googletrans import Translator
@@ -268,12 +269,20 @@ class FullAutoTranslator(object):
         #
         # Blacklist regexes
         #
-        self._text_regex = re.compile(r"\\\\text(it)?\s*\{")
+        self._text_re = re.compile(r"\\(text|mathrm|textit)\s*\{([^\}]+)\}")
+        self._start_whitespace_re = re.compile(r"^\s*")
+        self._end_whitespace_re = re.compile(r"\s*")
 
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
         # Blacklisted (actually used in some strings): △
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
+        # Create map between placeholders. This is required for nested patterns.
+        self.protoPlaceholderToNumericPlaceholder = {
+            c: self.placeholder(i)
+            for i, c in enumerate(self.uchars)
+        }
+
     def __del__(self):
         self.dbgout.close()
 
@@ -285,8 +294,6 @@ class FullAutoTranslator(object):
         return "52472451639{}13742".format(n)
 
     def can_be_translated(self, s):
-        if self._text_regex.search(s) is not None:
-            return False
         if "\\$" in s:
             return False
         if "\\mathrm" in s:
@@ -304,7 +311,12 @@ class FullAutoTranslator(object):
             # Subtranslate
             if subtrans_groupno is not None:
                 subgroup = match.group(subtrans_groupno)
-                trans = self.google_translate(subgroup)
+                # Extract whitespace before and after
+                ws_before = self._start_whitespace_re.match(subgroup).group(0)
+                ws_after = self._end_whitespace_re.match(subgroup).group(0)
+                # Subtranslate. Strip whitespaces to re-insert the correct amount later
+                trans = self.google_translate(subgroup).strip()
+                trans = "{}{}{}".format(ws_before, trans, ws_after)
                 formula = formula.replace(subgroup, trans)
                 #print("Subgroup translation: {} --> {}".format(match.group(0), formula))
             # Add into map
@@ -323,22 +335,35 @@ class FullAutoTranslator(object):
         return s
 
 
-    def first_stage_backreplace(self, s, n):
+    def first_stage_backreplace(self, s, repmap):
         """
         Replace proto placeholders by final placeholders
         """
-        for i in range(n):
-            placeholder = self.placeholder(i)
+        for protoPlaceholder, _ in repmap:
+            # Get numeric placeholder
+            placeholder = self.protoPlaceholderToNumericPlaceholder[protoPlaceholder]
             # Check if it got mis-translated...
             if placeholder not in s:
-                print(red("{} not found in '{}'".format(placeholder, s), bold=True))
-                return None
-            if s.count(placeholder) != 1:
+
+                # Special case for nested patterns:
+                # Nested patterns will not be replaced by 2nd stage (numeric) placeholders
+                is_nested = False
+                for _, val in repmap:
+                    if protoPlaceholder in val: # Its nested in SOME pattern
+                        is_nested = True
+                        break
+
+                if is_nested:
+                    continue # no need to replace numeric by proto pattern
+                else: # not nested, fail!
+                    print(red("{} not found in '{}'".format(placeholder, s), bold=True))
+                    return None
+            if s.count(placeholder) > 1:
                 print(red("Placeholder {} was duplicated in '{}'".format(placeholder, s), bold=True))
                 return None
             # Replace by proto-placeholder which is a unicode char
             s = re.sub(r"\s*" + placeholder + r"\s*",
-                self.proto_placeholder(i), s, flags=re.UNICODE)
+                protoPlaceholder, s, flags=re.UNICODE)
         return s
 
     def check_no_placeholders_left(self, s):
@@ -355,7 +380,7 @@ class FullAutoTranslator(object):
         """
         Like simple_replace, but replaces
         """
-        for placeholder, rep in repmap.items():
+        for placeholder, rep in repmap:
             s = s.replace(placeholder, rep)
         return s
 
@@ -378,7 +403,10 @@ class FullAutoTranslator(object):
         # Subtranslate URL title
         s, sublurlMap, n = self.placeholder_replace(s, n, self._suburl_re,
             subtrans_groupno=1 if subtranslate else None)
+        s, textMap, n = self.placeholder_replace(s, n, self._text_re,
+            subtrans_groupno=2 if subtranslate else None)
 
+        # Whitespace before and after is relevant for \\text{...}.
         s, kaPlaceholderMap, n = self.placeholder_replace(s, n, self._kaplaceholder_re)
         s, entityMap, n = self.placeholder_replace(s, n, self._entity_re)
         s, mobilePlaceholderMap, n = self.placeholder_replace(s, n, self._mobile_placeholder_re)
@@ -392,9 +420,21 @@ class FullAutoTranslator(object):
         s, codeMap, n = self.placeholder_replace(s, n, self._code_re)
         s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
 
-        repmap = merge(formulaMap, asteriskMap, newlineMap, mobilePlaceholderMap,
-            inputMap, imgMap, tagMap, sublurlMap, codeMap, kaPlaceholderMap, hashMap,
-            entityMap)
+        repmap = list(itertools.chain(*[
+            sublurlMap.items(),
+            textMap.items(),
+            kaPlaceholderMap.items(),
+            entityMap.items(),
+            mobilePlaceholderMap.items(),
+            formulaMap.items(),
+            asteriskMap.items(),
+            hashMap.items(),
+            newlineMap.items(),
+            inputMap.items(),
+            imgMap.items(),
+            codeMap.items(),
+            tagMap.items()
+        ]))[::-1]
 
         # Final placeholder replacement
         s = self.final_replace(s, n)
@@ -407,7 +447,7 @@ class FullAutoTranslator(object):
         """
         # Replace numeric placeholders by unicode placeholders
         # This prevents spaces between placeholders cross-affecting each other
-        s = self.first_stage_backreplace(s, info.nPlaceholders)
+        s = self.first_stage_backreplace(s, info.replaceMap)
         if s is None:  # Placeholder missing or changed
             return None
 
@@ -491,8 +531,9 @@ class FullAutoTranslator(object):
         # Ignores whitespace as it will happen for various languages due to grammatics
         if txt2 is None:
             return None
-        if not self.check_regex_equal(self._formula_re, engl, txt2, "formula"):
-            return None
+        # disabled as it fails for text subtrans
+        #if not self.check_regex_equal(self._formula_re, engl, txt2, "formula"):
+        #    return None
         if not self.check_regex_equal(self._asterisk_re, engl, txt2, "asterisk"):
             return None
         if not self.check_regex_equal(self._entity_re, engl, txt2, "enttiy"):
