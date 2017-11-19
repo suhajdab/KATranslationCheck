@@ -93,6 +93,7 @@ def submitAPI():
     for client, _ in clientVotes.most_common():
         if client == cid:
             break
+        rank += 1
     return {"rank": rank}
 
 @app.get('/api/db')
