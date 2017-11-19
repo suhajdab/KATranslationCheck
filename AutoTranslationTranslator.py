@@ -5,6 +5,7 @@ from ansicolor import red
 import os.path
 import json
 import itertools
+import random
 from toolz.dicttoolz import merge
 from AutoTranslateCommon import *
 from googletrans import Translator
@@ -250,6 +251,9 @@ class FullAutoTranslator(object):
     """
     def __init__(self, lang, limit=25):
         self.lang = lang if lang != "lol" else "de" # LOL => translate to DE
+        # Generate nonce to fix some bad translations
+        self.nonce1 = random.randint(1000000, 9999999)
+        self.nonce2 = random.randint(1000, 9999)
         #
         # Pattern regexes
         #
@@ -291,7 +295,7 @@ class FullAutoTranslator(object):
 
     def placeholder(self, n):
         #return self.uchars[n]
-        return "52472451639{}13742".format(n)
+        return "{}{}{}".format(self.nonce1, n, self.nonce2)
 
     def can_be_translated(self, s):
         return True
