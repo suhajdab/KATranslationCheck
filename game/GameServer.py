@@ -102,12 +102,15 @@ def dbAPI():
     ctrPlus = Counter()
     ctrMinus = Counter()
     ctrVotes = Counter()
+    ctrSkip = Counter()
     for sid, score in db.items():
         string, _, cid = sid.decode("utf-8").partition(":")
         string = int(string) # Crowdin IDs are numeric
         score = int(score.decode("utf-8"))
         if score > 0:
             ctrPlus[string] += score
+        elif score == 0:
+            ctrSkip[string] += 1
         else:
             ctrMinus[string] += score
         ctrVotes[string] += 1
@@ -121,6 +124,7 @@ def dbAPI():
         "translated": stringIDMap[strid].target,
         "upvotes": ctrPlus[strid],
         "downvotes": ctrMinus[strid],
+        "skip": ctrSkip[strid],
         "votes": cnt
     } for strid, cnt in ctrVotes.most_common()])
 

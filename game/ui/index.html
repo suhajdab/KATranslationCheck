@@ -38,6 +38,9 @@
     #downAnimIcon {
         color: red;
     }
+    #skipAnimIcon {
+        color: blue;
+    }
     #textRow {
         margin-top:25px;margin-bottom:100px; position:relative;
     }
@@ -68,12 +71,17 @@
                 <i class="material-icons">thumb_up</i>
                 <i class="material-icons">chevron_right</i>
             </span>
+            <span style="color:blue;position:absolute;width:100%; text-align: center;left:0;top:0;" onclick="skip()">
+                <i class="material-icons">skip_next</i>
+                <i class="material-icons">arrow_downward</i>
+            </span>
         </div>
         <div class="row" id="textRow">
             <div id="animContainer">
                 <div style="position: relative">
                     <span class="material-icons animIcon" id="upAnimIcon">thumb_up</span>
                     <span class="material-icons animIcon" id="downAnimIcon">thumb_down</span>
+                    <span class="material-icons animIcon" id="skipAnimIcon">skip_next</span>
                 </div>
             </div>
             <h3 id="text"></h3>
@@ -151,11 +159,19 @@ function init() {
         console.log("Swipe right");
         thumbDown();
     });
+
+    hammer.on('swipedown', function(){
+        if(blocked) {
+            return;
+        }
+        console.log("Swipe down");
+        skip();
+    });
 }
 
-function submit(yn) {
+function submit(score) {
     // Send result to server
-    json = {"client": cid, "string": currentString.id, "score": yn ? 1 : -1}
+    json = {"client": cid, "string": currentString.id, "score": score}
     console.log("Submitting", json);
     $.post("/api/submit", json, function(data) {
         $("#rank").text(data.rank);
@@ -181,15 +197,22 @@ function doFade(elem) {
 
 function thumbUp() {
     doFade("#upAnimIcon");
-    submit(true);
+    submit(1);
     nextString();
 }
 
 function thumbDown() {
     doFade("#downAnimIcon");
-    submit(false);
+    submit(-1);
     nextString();
 }
+
+function skip() {
+    doFade("#skipAnimIcon");
+    submit(0);
+    nextString();
+}
+
 
 function fetchStrings() {
     $.getJSON("/api/strings?offset=" + count, function(data) {
