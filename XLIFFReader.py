@@ -123,7 +123,7 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
         try:
             autotrans = autotranslator.translate(engl)
         except:
-            print(black("Autotranslate fail for string '{}'".format(source), bold=True))
+            print(black("Autotranslate fail for string '{}'".format(engl), bold=True))
             traceback.print_exception(*sys.exc_info())
             autotrans = None
         
