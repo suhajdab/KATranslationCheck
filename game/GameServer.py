@@ -17,7 +17,9 @@ Translation = namedtuple("Translation", ["id", "source", "target"])
 availableStrings = None
 fileid = None
 targetlang = ""
-
+stringIDMap = {} # ID => string
+# Client vote counter
+clientVotes = Counter()
 
 def extract_strings_from_xliff_soup(filename, soup):
     """
@@ -73,37 +75,86 @@ def enable_cors():
 
 @app.route('/api/strings')
 def stringsAPI():
-    choices = [random.choice(availableStrings) for _ in range(25)]
+    ofs = int(request.query.offset)
+    choices = availableStrings[ofs:ofs+25]
     response.content_type = 'application/json'
     return json.dumps(choices)
 
 @app.post('/api/submit')
 def submitAPI():
-    cid = request.forms.get('client')
+    cid = int(request.forms.get('client'))
     string = request.forms.get('string')
     score = request.forms.get('score')
-    db[string + ":" + cid] = score
+    db["{}:{}".format(string, cid)] = score
+    # Update stats
+    clientVotes[cid] += 1
+    # Find rank of user
+    rank = 1
+    for client, _ in clientVotes.most_common():
+        if client == cid:
+            break
+    return {"rank": rank}
 
 @app.get('/api/db')
 def dbAPI():
-    ctr = Counter()
+    # Sort into separate upvotes and downvotes
+    ctrPlus = Counter()
+    ctrMinus = Counter()
+    ctrVotes = Counter()
     for sid, score in db.items():
         string, _, cid = sid.decode("utf-8").partition(":")
-        ctr[int(string)] += int(score.decode("utf-8"))
+        string = int(string) # Crowdin IDs are numeric
+        score = int(score.decode("utf-8"))
+        if score > 0:
+            ctrPlus[string] += score
+        else:
+            ctrMinus[string] += score
+        ctrVotes[string] += 1
+
     response.content_type = 'application/json'
+    # Reformat to list of objs
     return json.dumps([{
         "url": "https://crowdin.com/translate/khanacademy/{}/enus-{}#{}".format(fileid, targetlang, strid),
         "id": strid,
-        "score": cnt
-    } for strid, cnt in ctr.most_common()])
+        "english": stringIDMap[strid].source,
+        "translated": stringIDMap[strid].target,
+        "upvotes": ctrPlus[strid],
+        "downvotes": ctrMinus[strid],
+        "votes": cnt
+    } for strid, cnt in ctrVotes.most_common()])
 
 @app.get("/")
 def index():
     return static_file("index.html", root='./game/ui')
 
+def compute_client_vote_count():
+    """
+    from the db compute how many votes each client has taken
+    """
+    global clientVotes
+    clientVotes = Counter()
+    voteSum = 0
+    for sid, score in db.items():
+        cid = sid.decode("utf-8").partition(":")[2]
+        cid = int(cid) # IDs are numeric
+        clientVotes[cid] += 1
+        voteSum += 1
+    print("Total number of votes: {}".format(voteSum))
+
+
 def run_game_server(args):
     global availableStrings
+    global stringIDMap
+    compute_client_vote_count()
+    print()
+
     soup = parse_xliff_file(args.file)
     availableStrings = extract_strings_from_xliff_soup(args.file, soup)
+    # Remap strings
+    stringIDMap = {
+        ti.id: ti
+        for ti in availableStrings
+    }
+
     print("Found {} strings".format(len(availableStrings)))
     run(app, host='localhost', port=9922)

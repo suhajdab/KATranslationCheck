@@ -40,14 +40,22 @@
     #textRow {
         margin-top:25px;margin-bottom:100px; position:relative;
     }
+    #statsContainer {
+        text-align:center; font-size: 200%;margin-bottom:15px;color:blue;
+    }
     </style>
 </head>
 
 <body>
     <div class="container">
         <div class="row">
+            <div class="twelve columns" id="statsContainer">
+                <span id="count">0</span> rösta (#<span id="rank">99999</span>)
+            </div>
+        </div>
+        <div class="row">
             <div id="headline" class="twelve columns">
-                <h2>Är den här texten bra svenska?</h2>
+                <h3 style="text-align: center;">Är den här texten bra svenska?</h3>
             </div>
         </div>
         <div class="row">
@@ -89,6 +97,9 @@
 var cid = null;
 var currentString = null;
 var strings = [];
+var count = 0;
+var blocked = false; // Ignore events, e.g. when animation is still ongoing
+var animationOngoing
 
 $(document).ready(function() {
     init();
@@ -103,13 +114,18 @@ function nextString() {
     currentString = strings[0];
     $("#text").text(currentString.target);
     strings = strings.slice(1);
+    console.log(strings.length + " strings left");
 }
 
 function init() {
     if(Cookies.get("kaid") === undefined) {
         cid = ("" + Math.random()).slice(2) // long number
-        Cookies.set("id", cid);
+        Cookies.set("kaid", cid);
+        Cookies.set("count", 0);
     }
+    cid = Cookies.get("kaid");
+    count = Cookies.get("count");
+    // Fetch first set of strings
     fetchStrings();
     // Swipe event
     var body = document.getElementsByTagName("body")[0]
@@ -119,31 +135,46 @@ function init() {
     hammer.add(swipe);
 
     hammer.on('swipeleft', function(){
+        if(blocked) {
+            return;
+        }
         console.log("Swipe left");
         thumbUp();
     });
 
     hammer.on('swiperight', function(){
+        if(blocked) {
+            return;
+        }
         console.log("Swipe right");
         thumbDown();
     });
 }
 
 function submit(yn) {
+    // Send result to server
     json = {"client": cid, "string": currentString.id, "score": yn ? 1 : -1}
+    console.log("Submitting", json);
     $.post("/api/submit", json, function(data) {
-        console.log("Submitted", json);
+        $("#rank").text(data.rank);
     })
+    // Update count
+    count++;
+    Cookies.set("count", count);
+    $("#count").text(count);
 }
 
 function doFade(elem) {
+    blocked = true;
     $("#text").fadeOut(0);
     $(elem).fadeIn(200, function() {
         $(elem).fadeOut(200, function() {
             $("#text").fadeIn(200);
+            blocked = false;
         });
     })
 }
+
 function thumbUp() {
     doFade("#upAnimIcon");
     submit(true);
@@ -157,9 +188,8 @@ function thumbDown() {
 }
 
 function fetchStrings() {
-    $.getJSON("/api/strings", function(data) {
+    $.getJSON("/api/strings?offset=" + count, function(data) {
         strings = data;
-        console.info(strings)
         if(currentString == null) {
             nextString();
         }
