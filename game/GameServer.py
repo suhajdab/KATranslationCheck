@@ -76,7 +76,8 @@ def enable_cors():
 @app.route('/api/strings')
 def stringsAPI():
     ofs = int(request.query.offset)
-    choices = availableStrings[ofs:ofs+25]
+    #choices = availableStrings[ofs:ofs+25]
+    choices = [random.choice(availableStrings) for i in range(25)]
     response.content_type = 'application/json'
     return json.dumps(choices)
 
