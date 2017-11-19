@@ -4,6 +4,7 @@ from AutoTranslationTranslator import *
 import os.path
 import os
 import sys
+import traceback
 from tqdm import tqdm
 from ansicolor import black, blue, green
 from UpdateAllFiles import *
@@ -175,7 +176,7 @@ def readAndProcessXLIFFRunner(*args, **kwargs):
     try:
         result = readAndProcessXLIFF(*args, **kwargs)
     except:
-        print(sys.exc_info())
+        traceback.print_exception(*sys.exc_info())
     gc.collect()
     return result
 
