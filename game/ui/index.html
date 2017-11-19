@@ -144,19 +144,19 @@ function init() {
 
     hammer.add(swipe);
 
-    hammer.on('swipeleft', function(){
-        if(blocked) {
-            return;
-        }
-        console.log("Swipe left");
-        thumbUp();
-    });
-
     hammer.on('swiperight', function(){
         if(blocked) {
             return;
         }
         console.log("Swipe right");
+        thumbUp();
+    });
+
+    hammer.on('swipeleft', function(){
+        if(blocked) {
+            return;
+        }
+        console.log("Swipe left");
         thumbDown();
     });
 
