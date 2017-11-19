@@ -50,7 +50,7 @@
     <div class="container">
         <div class="row">
             <div class="twelve columns" id="statsContainer">
-                <span id="count">0</span> rösta (#<span id="rank">99999</span>)
+                <span id="count">0</span> rösta (#<span id="rank">?</span>)
             </div>
         </div>
         <div class="row">
@@ -125,6 +125,7 @@ function init() {
     }
     cid = Cookies.get("kaid");
     count = Cookies.get("count");
+    $("#count").text(count);
     // Fetch first set of strings
     fetchStrings();
     // Swipe event
