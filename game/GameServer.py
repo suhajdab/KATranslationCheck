@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from bottle import run, request, response, Bottle
+from bottle import run, request, response, Bottle, static_file
 import simplejson as json
 import random
 import bs4
@@ -14,7 +14,7 @@ app = Bottle()
 
 Translation = namedtuple("Translation", ["id", "source", "target"])
 
-strings = None
+availableStrings = None
 fileid = None
 targetlang = ""
 
@@ -72,20 +72,20 @@ def enable_cors():
     response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
 @app.route('/api/strings')
-def strings():
-    choices = [random.choice(strings) for _ in range(10)]
+def stringsAPI():
+    choices = [random.choice(availableStrings) for _ in range(25)]
     response.content_type = 'application/json'
     return json.dumps(choices)
 
 @app.post('/api/submit')
-def submit():
+def submitAPI():
     cid = request.forms.get('client')
     string = request.forms.get('string')
     score = request.forms.get('score')
     db[string + ":" + cid] = score
 
 @app.get('/api/db')
-def submit():
+def dbAPI():
     ctr = Counter()
     for sid, score in db.items():
         string, _, cid = sid.decode("utf-8").partition(":")
@@ -97,12 +97,13 @@ def submit():
         "score": cnt
     } for strid, cnt in ctr.most_common()])
 
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file', help='The file to read')
-    args = parser.parse_args()
+@app.get("/")
+def index():
+    return static_file("index.html", root='./game/ui')
 
+def run_game_server(args):
+    global availableStrings
     soup = parse_xliff_file(args.file)
-    strings = extract_strings_from_xliff_soup(args.file, soup)
+    availableStrings = extract_strings_from_xliff_soup(args.file, soup)
+    print("Found {} strings".format(len(availableStrings)))
     run(app, host='localhost', port=9922)

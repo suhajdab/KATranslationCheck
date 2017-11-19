@@ -1,13 +1,13 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
     #headline {color: #999;}
     #thumbUpBtn {
-        background-color: #00f300;
+        background-color: #0fea00;
     }
     #thumbDnBtn {
         background-color: red;
@@ -20,6 +20,26 @@
     #text {
 
     }
+    #animContainer {
+        padding-top: 25px;
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    }
+    .animIcon {
+        font-size: 800%;
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        display: none;
+    }
+    #upAnimIcon {
+        color:#0fea00;
+    }
+    #downAnimIcon {
+        color: red;
+    }
+    #textRow {
+        margin-top:25px;margin-bottom:100px; position:relative;
+    }
     </style>
 </head>
 
@@ -30,13 +50,28 @@
                 <h2>Är den här texten bra svenska?</h2>
             </div>
         </div>
-        <div class="row" style="margin-bottom:200px;">
+        <div class="row">
+            <span style="color:red;float:left;" onclick="thumbDown()">
+                <i class="material-icons">chevron_left</i>
+                <i class="material-icons">thumb_down</i>
+            </span>
+            <span style="color:#0fea00;float:right;" onclick="thumbUp()">
+                <i class="material-icons">thumb_up</i>
+                <i class="material-icons">chevron_right</i>
+            </span>
+        </div>
+        <div class="row" id="textRow">
+            <div id="animContainer">
+                <div style="position: relative">
+                    <span class="material-icons animIcon" id="upAnimIcon">thumb_up</span>
+                    <span class="material-icons animIcon" id="downAnimIcon">thumb_down</span>
+                </div>
+            </div>
             <h3 id="text"></h3>
         </div>
-
     </div>
 
-    <div class="container" style="position: fixed; bottom: 0; background-color: white;">
+    <!--<div class="container" style="position: fixed; bottom: 0; background-color: white;">
         <div class="row">
             <button id="thumbUpBtn" class="button button-primary twelve columns" onclick="thumbUp()">
                 <i class="material-icons">thumb_up</i>
@@ -45,11 +80,92 @@
                 <i class="material-icons">thumb_down</i>
             </button>
         </div>
-    </div>
+    </div>-->
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
-    <script type="text/javascript" src="kag.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script type="text/javascript">
+var cid = null;
+var currentString = null;
+var strings = [];
+
+$(document).ready(function() {
+    init();
+})
+
+function nextString() {
+    if(strings == null || strings.length == 0) {
+        currentString = null;
+        fetchStrings();
+        return;
+    }
+    currentString = strings[0];
+    $("#text").text(currentString.target);
+    strings = strings.slice(1);
+}
+
+function init() {
+    if(Cookies.get("kaid") === undefined) {
+        cid = ("" + Math.random()).slice(2) // long number
+        Cookies.set("id", cid);
+    }
+    fetchStrings();
+    // Swipe event
+    var body = document.getElementsByTagName("body")[0]
+    var hammer    = new Hammer.Manager(body);
+    var swipe     = new Hammer.Swipe();
+
+    hammer.add(swipe);
+
+    hammer.on('swipeleft', function(){
+        console.log("Swipe left");
+        thumbUp();
+    });
+
+    hammer.on('swiperight', function(){
+        console.log("Swipe right");
+        thumbDown();
+    });
+}
+
+function submit(yn) {
+    json = {"client": cid, "string": currentString.id, "score": yn ? 1 : -1}
+    $.post("/api/submit", json, function(data) {
+        console.log("Submitted", json);
+    })
+}
+
+function doFade(elem) {
+    $("#text").fadeOut(0);
+    $(elem).fadeIn(200, function() {
+        $(elem).fadeOut(200, function() {
+            $("#text").fadeIn(200);
+        });
+    })
+}
+function thumbUp() {
+    doFade("#upAnimIcon");
+    submit(true);
+    nextString();
+}
+
+function thumbDown() {
+    doFade("#downAnimIcon");
+    submit(false);
+    nextString();
+}
+
+function fetchStrings() {
+    $.getJSON("/api/strings", function(data) {
+        strings = data;
+        console.info(strings)
+        if(currentString == null) {
+            nextString();
+        }
+    })
+}
+</script>
 </body>
 
 </html>

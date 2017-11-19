@@ -5,6 +5,7 @@ from IMAPLint import updateLintIMAPHandler
 from VideoTranslations import updateVideoMap
 from PolyglottIndexer import buildPolyglottIndex
 from XLIFFReader import autotranslate_xliffs
+from game.GameServer import run_game_server
 
 if __name__ == "__main__":
     import argparse
@@ -41,6 +42,10 @@ if __name__ == "__main__":
 
     renderLint = subparsers.add_parser('update-video-translations')
     renderLint.set_defaults(func=updateVideoMap)
+
+    gameServer = subparsers.add_parser('game-server')
+    gameServer.add_argument('file', help='The file to read')
+    gameServer.set_defaults(func=run_game_server)
 
     render = subparsers.add_parser('render')
     render.add_argument('-j', '--num-processes', default=2, type=int, help='Number of threads to use for parallel processing')

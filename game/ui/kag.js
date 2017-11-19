@@ -9,7 +9,7 @@ $(document).ready(function() {
 function nextString() {
     if(strings == null || strings.length == 0) {
         currentString = null;
-        newStrings();
+        fetchStrings();
         return;
     }
     currentString = strings[0];
@@ -22,7 +22,23 @@ function init() {
         cid = ("" + Math.random()).slice(2) // long number
         Cookies.set("id", cid);
     }
-    newStrings();
+    fetchStrings();
+    // Swipe event
+    var body = document.getElementsByTagName("body")[0]
+    var hammer    = new Hammer.Manager(body);
+    var swipe     = new Hammer.Swipe();
+
+    hammer.add(swipe);
+
+    hammer.on('swipeleft', function(){
+        console.log("Swipe left");
+        thumbUp();
+    });
+
+    hammer.on('swiperight', function(){
+        console.log("Swipe right");
+        thumbDown();
+    });
 }
 
 function submit(yn) {
@@ -42,7 +58,7 @@ function thumbDown() {
     nextString();
 }
 
-function newStrings() {
+function fetchStrings() {
     $.getJSON("http://localhost:9922/api/strings", function(data) {
         strings = data;
         console.info(strings)
