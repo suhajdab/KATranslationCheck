@@ -1,0 +1,55 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+    #headline {color: #999;}
+    #thumbUpBtn {
+        background-color: #00f300;
+    }
+    #thumbDnBtn {
+        background-color: red;
+    }
+    #thumbDnBtn, #thumbUpBtn {
+        border: none;
+        height: 60px;
+        width: 95%;
+    }
+    #text {
+
+    }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div id="headline" class="twelve columns">
+                <h2>Är den här texten bra svenska?</h2>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:200px;">
+            <h3 id="text"></h3>
+        </div>
+
+    </div>
+
+    <div class="container" style="position: fixed; bottom: 0; background-color: white;">
+        <div class="row">
+            <button id="thumbUpBtn" class="button button-primary twelve columns" onclick="thumbUp()">
+                <i class="material-icons">thumb_up</i>
+            </button>
+            <button id="thumbDnBtn"  class="button button-primary twelve columns" onclick="thumbDown()">
+                <i class="material-icons">thumb_down</i>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script type="text/javascript" src="kag.js"></script>
+</body>
+
+</html>
