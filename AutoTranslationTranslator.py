@@ -512,7 +512,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('string', help='The string to translate')
+    parser.add_argument('-l', '--lang', default="de", help='The language to translate to')
     args = parser.parse_args()
 
-    fa = FullAutoTranslator("de")
+    fa = FullAutoTranslator(args.lang)
     print(fa.translate(args.string))
