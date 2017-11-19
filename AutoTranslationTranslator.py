@@ -271,7 +271,8 @@ class FullAutoTranslator(object):
 
         self.limit = limit
         self.dbgout = open("fullauto-dbg.txt", "w")
-        self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
+        # Blacklisted (actually used in some strings): △
+        self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
     def __del__(self):
         self.dbgout.close()
 
