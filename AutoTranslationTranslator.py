@@ -243,7 +243,7 @@ class NameAutotranslator(object):
             return self._translate_match_one_name(m10, self.transmap[9])
 
 PlaceholderInfo = namedtuple("PlaceholderInfo", [
-    "nPlaceholders", "replaceMap", "nAsterisks", "nNewlines", "nHashs"])
+    "nPlaceholders", "replaceMap", "nAsterisks", "nNewlines", "nHashs", "nUnderscores"])
 
 class FullAutoTranslator(object):
     """
@@ -260,6 +260,7 @@ class FullAutoTranslator(object):
         # <g id="continue">%1$s</g> or <g id="get_help_link">%2$s</g> misrecognized as 
         self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$(\\\$|[^\$])+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
+        self._underscore_re = re.compile(r"\s*_+\s*")
         self._special_chars_re = re.compile(r"\s*[θ𝘹𝘺ƒ𝘢𝘣𝘶𝘯𝘥𝘬𝘍𝑥𝑦𝑚𝑏𝑒𝑟𝑔𝑡≠ⁿˣ⋅]+\s*") # translate will fail for these
         self._hash_re = re.compile(r"\s*#+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
@@ -400,6 +401,7 @@ class FullAutoTranslator(object):
         nAsterisks = self.combo_count(s, "*")
         nNewlines = self.combo_count(s, "\\n")
         nHashs = self.combo_count(s, "#")
+        nUnderscores = self.combo_count(s, "_")
 
         # Subtranslate URL title
         s, sublurlMap, n = self.placeholder_replace(s, n, self._suburl_re,
@@ -414,6 +416,7 @@ class FullAutoTranslator(object):
         s, mobilePlaceholderMap, n = self.placeholder_replace(s, n, self._mobile_placeholder_re)
         s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
         s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
+        s, underscoreMap, n = self.placeholder_replace(s, n, self._underscore_re)
         s, hashMap, n = self.placeholder_replace(s, n, self._hash_re)
         s, newlineMap, n = self.placeholder_replace(s, n, self._newline_re)
         s, inputMap, n = self.placeholder_replace(s, n, self._input_re)
@@ -426,6 +429,7 @@ class FullAutoTranslator(object):
             specialCharsMap.items(),
             sublurlMap.items(),
             textMap.items(),
+            underscoreMap.items(),
             kaPlaceholderMap.items(),
             entityMap.items(),
             mobilePlaceholderMap.items(),
@@ -442,7 +446,7 @@ class FullAutoTranslator(object):
         # Final placeholder replacement
         s = self.final_replace(s, n)
 
-        return s, PlaceholderInfo(n, repmap, nAsterisks, nNewlines, nHashs)
+        return s, PlaceholderInfo(n, repmap, nAsterisks, nNewlines, nHashs, nUnderscores)
 
     def postproc(self, engl, s, info):
         """
@@ -474,10 +478,11 @@ class FullAutoTranslator(object):
             print(red("\\n not reconstructed in '{}' engl '{}'".format(s, engl), bold=True))
             return None
 
-        nHashsNew = self.combo_count(s, "#")
-        if nHashsNew != info.nHashs:
-            print(red("# not reconstructed in '{}' engl '{}'".format(s, engl), bold=True))
+        nUnderscoresNew = self.combo_count(s, "_")
+        if nUnderscoresNew != info.nUnderscores:
+            print(red("_ not reconstructed in '{}' engl '{}'".format(s, engl), bold=True))
             return None
+
         return s
 
     def google_translate(self, txt):
