@@ -260,6 +260,7 @@ class FullAutoTranslator(object):
         # <g id="continue">%1$s</g> or <g id="get_help_link">%2$s</g> misrecognized as 
         self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$(\\\$|[^\$])+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
+        self._special_chars_re = re.compile(r"\s*[θ]+\s*") # translate will fail for these
         self._hash_re = re.compile(r"\s*#+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
@@ -407,6 +408,7 @@ class FullAutoTranslator(object):
             subtrans_groupno=2 if subtranslate else None)
 
         # Whitespace before and after is relevant for \\text{...}.
+        s, specialCharsMap, n = self.placeholder_replace(s, n, self._special_chars_re)
         s, kaPlaceholderMap, n = self.placeholder_replace(s, n, self._kaplaceholder_re)
         s, entityMap, n = self.placeholder_replace(s, n, self._entity_re)
         s, mobilePlaceholderMap, n = self.placeholder_replace(s, n, self._mobile_placeholder_re)
@@ -421,6 +423,7 @@ class FullAutoTranslator(object):
         s, tagMap, n = self.placeholder_replace(s, n, self._tag_re)
 
         repmap = list(itertools.chain(*[
+            specialCharsMap.items(),
             sublurlMap.items(),
             textMap.items(),
             kaPlaceholderMap.items(),
