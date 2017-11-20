@@ -504,7 +504,6 @@ class FullAutoTranslator(object):
         # Use limit on how much to translate at once
         if self.limit <= 0:
             return None # dont translate
-        self.limit -= 1
         # Ignore currently unhandled cases
         if not self.can_be_translated(engl):
             return None
@@ -556,6 +555,8 @@ class FullAutoTranslator(object):
             return None
         if not self.check_regex_equal(self._mobile_placeholder_re, engl, txt2, "KA mobile placeholder"):
             return None
+        # Reduce limit only after successful translation
+        self.limit -= 1
         return txt2
 
 if __name__ == "__main__":
