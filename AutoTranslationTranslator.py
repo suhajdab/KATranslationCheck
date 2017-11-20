@@ -279,6 +279,7 @@ class FullAutoTranslator(object):
         self._end_whitespace_re = re.compile(r"\s*")
 
         self.limit = limit
+        self.count = 0
         self.dbgout = open("fullauto-dbg.txt", "w")
         # Blacklisted (actually used in some strings): △
         self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
@@ -297,9 +298,6 @@ class FullAutoTranslator(object):
     def placeholder(self, n):
         #return self.uchars[n]
         return "{}{}{}".format(self.nonce1, n, self.nonce2)
-
-    def can_be_translated(self, s):
-        return True
 
     def placeholder_replace(self, s, n, regex, subtrans_groupno=None):
         repmap = {}
@@ -504,9 +502,6 @@ class FullAutoTranslator(object):
         # Use limit on how much to translate at once
         if self.limit <= 0:
             return None # dont translate
-        # Ignore currently unhandled cases
-        if not self.can_be_translated(engl):
-            return None
         # Replace formulas etc. by placeholders.
         # Subtranslation will fail back verification so we'll do it later
         engl_proc, info = self.preproc(engl, subtranslate=False)
@@ -557,6 +552,9 @@ class FullAutoTranslator(object):
             return None
         # Reduce limit only after successful translation
         self.limit -= 1
+        self.count += 1
+        if self.count % 100 == 0:
+            print("Beastified {} strings".format(self.count))
         return txt2
 
 if __name__ == "__main__":
