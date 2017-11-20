@@ -282,7 +282,9 @@ class FullAutoTranslator(object):
         self.count = 0
         self.dbgout = open("fullauto-dbg.txt", "w")
         # Blacklisted (actually used in some strings): △
-        self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾"
+        self.uchars = "■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◿◾─━│┃┄┅┆┇┈┉┊┋┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋╌╍╎╏═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬╭╮╯╰╱╲╳╴╵╶╷╸╹╺╻╼╽╾╿"
+        assert(" " not in self.uchars)
+        assert(len(set(list(self.uchars))) == len(self.uchars))
         # Create map between placeholders. This is required for nested patterns.
         self.protoPlaceholderToNumericPlaceholder = {
             c: self.placeholder(i)
