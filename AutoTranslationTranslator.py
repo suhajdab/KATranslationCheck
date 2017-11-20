@@ -260,7 +260,7 @@ class FullAutoTranslator(object):
         # <g id="continue">%1$s</g> or <g id="get_help_link">%2$s</g> misrecognized as 
         self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$(\\\$|[^\$])+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
-        self._special_chars_re = re.compile(r"\s*[θ]+\s*") # translate will fail for these
+        self._special_chars_re = re.compile(r"\s*[θ𝘹𝘺]+\s*") # translate will fail for these
         self._hash_re = re.compile(r"\s*#+\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
