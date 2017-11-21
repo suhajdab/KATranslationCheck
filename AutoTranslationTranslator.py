@@ -263,6 +263,7 @@ class FullAutoTranslator(object):
         self._underscore_re = re.compile(r"\s*_+\s*")
         self._special_chars_re = re.compile(r"\s*[θ𝘹𝘺ƒ𝘢𝘣𝘶𝘯𝘥𝘬𝘍𝑥𝑦𝑚𝑏𝑒𝑟𝑔𝑡≠ⁿˣ⋅]+\s*") # translate will fail for these
         self._hash_re = re.compile(r"\s*#+\s*")
+        self._table_empty_re = re.compile(r"\s*:-:\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
@@ -413,6 +414,7 @@ class FullAutoTranslator(object):
         s, specialCharsMap, n = self.placeholder_replace(s, n, self._special_chars_re)
         s, kaPlaceholderMap, n = self.placeholder_replace(s, n, self._kaplaceholder_re)
         s, entityMap, n = self.placeholder_replace(s, n, self._entity_re)
+        s, tableEmptyMap, n = self.placeholder_replace(s, n, self._table_empty_re)
         s, mobilePlaceholderMap, n = self.placeholder_replace(s, n, self._mobile_placeholder_re)
         s, formulaMap, n = self.placeholder_replace(s, n, self._formula_re)
         s, asteriskMap, n = self.placeholder_replace(s, n, self._asterisk_re)
@@ -430,6 +432,7 @@ class FullAutoTranslator(object):
             sublurlMap.items(),
             textMap.items(),
             underscoreMap.items(),
+            tableEmptyMap.items(),
             kaPlaceholderMap.items(),
             entityMap.items(),
             mobilePlaceholderMap.items(),
