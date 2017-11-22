@@ -265,6 +265,7 @@ class FullAutoTranslator(object):
         self._hash_re = re.compile(r"\s*#+\s*")
         self._table_empty_re = re.compile(r"\s*:-:\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
+        self._index_placeholder_re = re.compile(r"\s*§(image|formula)§\s*")
         self._input_re = re.compile(r"\s*\[\[☃\s+[a-z-]+\s*\d*\]\]\s*")
         self._image_re = re.compile(r"\s*!\[([^\]]*)\]\(\s*(http|https|web\+graphie):\/\/ka-perseus-(images|graphie)\.s3\.amazonaws\.com\/[0-9a-f]+(\.(svg|png|jpg|jpeg))?\)\s*")
         self._tag_re = re.compile(r"\s*</?\s*[a-z-]+\s*([a-z-]+=\"[^\"]+\"\s*)*\s*/?>\s*")
@@ -404,6 +405,7 @@ class FullAutoTranslator(object):
         nHashs = self.combo_count(s, "#")
         nUnderscores = self.combo_count(s, "_")
 
+        s, indexPlaceholderMap, n = self.placeholder_replace(s, n, self._index_placeholder_re)
         # Subtranslate URL title
         s, sublurlMap, n = self.placeholder_replace(s, n, self._suburl_re,
             subtrans_groupno=1 if subtranslate else None)
@@ -429,6 +431,7 @@ class FullAutoTranslator(object):
 
         repmap = list(itertools.chain(*[
             specialCharsMap.items(),
+            indexPlaceholderMap.items(),
             sublurlMap.items(),
             textMap.items(),
             underscoreMap.items(),
