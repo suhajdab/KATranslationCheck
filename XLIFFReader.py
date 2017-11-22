@@ -55,7 +55,7 @@ def export_xliff_file(soup, filename):
     with open(filename, "w") as outfile:
         outfile.write(str(soup))
 
-def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=True, preindex=False):
+def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=True, preindex=False, overwrite=False):
     """
     Remove both untranslated and notes from the given soup.
     For the untranslated elements, in
@@ -93,6 +93,9 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
         is_untranslated = ("state" in target.attrs and target["state"] == "needs-translation")
         is_approved = ("approved" in trans_unit.attrs and trans_unit["approved"] == "yes")
 
+        can_overwrite = not is_untranslated and not is_approved
+        will_overwrite = overwrite and can_overwrite
+
         engl = source.text
         translated = target.text
         # Index tags in the indexer (e.g. to extract text tags)
@@ -101,12 +104,12 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
         indexFN(engl, None if is_untranslated else translated, filename=filename)
 
         # For indexing run, ignore autotranslator altogether
-        if not autotranslate:
+        if not autotranslate and not will_overwrite:
             trans_unit.decompose()
             continue
 
         # Remove entire tag if translated (or suggested)
-        if not is_untranslated:
+        if not is_untranslated and not will_overwrite:
             trans_unit.decompose()
             translated_count += 1
             continue  # Dont try to autotranslate etc
@@ -126,7 +129,7 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
             print(black("Autotranslate fail for string '{}'".format(engl), bold=True))
             traceback.print_exception(*sys.exc_info())
             autotrans = None
-        
+
         if autotrans is None:  # Could not translate
             # Remove from output file to conserve space
             trans_unit.decompose()
@@ -154,9 +157,9 @@ def process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=Tr
 
     return autotranslated_count
 
-def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False, autotranslate=True, preindex=False, fullauto_account=False):
+def readAndProcessXLIFF(lang, filename, fileid, indexer, autotranslator, upload=False, approve=False, autotranslate=True, preindex=False, overwrite=False, fullauto_account=False):
     soup = parse_xliff_file(filename)
-    autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=autotranslate, preindex=preindex)
+    autotranslated_count = process_xliff_soup(filename, soup, autotranslator, indexer, autotranslate=autotranslate, preindex=preindex, overwrite=overwrite)
     # If we are not autotranslating, stop here, no need to export
     if not autotranslate:
         return 0
@@ -244,16 +247,16 @@ def autotranslate_xliffs(args):
         # Two pass: First preindex then
         # See IgnoreFormulaPatternIndex for reason
         # 1st pass
-        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=True, fullauto_account=args.full_auto)
+        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=True, overwrite=args.overwrite, fullauto_account=args.full_auto)
         print("------------------------------")
         print("Preindex finished. Indexing run")
         print("------------------------------\n")
         indexer.clean_preindex()
         print()
-        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=False, fullauto_account=args.full_auto)
+        run(executor, xliffs, lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=False, preindex=False, overwrite=args.overwrite, fullauto_account=args.full_auto)
     else: # translation run. Simple single pas
         autotranslated_count = run(executor, xliffs,
-            lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=True, fullauto_account=args.full_auto)
+            lang=args.language, indexer=indexer, autotranslator=autotranslator, upload=args.upload, approve=args.approve, autotranslate=True, overwrite=args.overwrite, fullauto_account=args.full_auto)
         print("\nAuto-translated {} strings !\n".format(autotranslated_count))
 
     # Export indexed

@@ -28,9 +28,6 @@ def _translate(entry, translator, force=False):
     if not force and not entry["translated"]:
         return entry # leave as is
     transl = translator.translate(entry["english"])
-    # Safeguard against unkown words
-    if transl == entry["english"]:
-        return entry # leave as is
     entry["translated"] = transl
     print("{} ==> {}".format(entry["english"], entry["translated"]))
     return entry
