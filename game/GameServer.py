@@ -107,7 +107,10 @@ def dbAPI():
     for sid, score in db.items():
         string, _, cid = sid.decode("utf-8").partition(":")
         string = int(string) # Crowdin IDs are numeric
-        score = int(score.decode("utf-8"))
+        try:
+            score = int(score.decode("utf-8"))
+        except ValueError:
+            continue
         if score > 0:
             ctrPlus[string] += score
         elif score == 0:
