@@ -3,7 +3,7 @@ from openpyxl import load_workbook
 import json
 import argparse
 import functools
-from AutoTranslateCommon import transmap_filename
+from AutoTranslateCommon import transmap_filename, to_xlsx
 from AutoTranslationTranslator import FullAutoTranslator
 
 def get_transmap(filename):
@@ -16,10 +16,6 @@ def get_transmap(filename):
         utr_count = int(row[1].value)
         engl = row[2]
         transl = row[3]
-        if transl.value is None:
-            continue
-        print(engl.value,"==>",transl.value)
-
         tmap[str(engl.value)] = str(transl.value)
     return [{"english": engl, "translated": transl, "count": count, "untranslated_count": utr_count}
             for engl,transl in tmap.items()]
