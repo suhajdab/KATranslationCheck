@@ -261,7 +261,7 @@ class FullAutoTranslator(object):
         self._formula_re = re.compile(r"\s*(?<!\%[\dA-Za-z])\$(\\\$|[^\$])+\$\s*")
         self._asterisk_re = re.compile(r"\s*\*+\s*")
         self._underscore_re = re.compile(r"\s*_+\s*")
-        self._special_chars_re = re.compile(r"\s*[θ𝘹𝘺ƒ𝘢𝘣𝘶𝘯𝘥𝘬𝘍𝑥𝑦𝑚𝑏𝑒𝑟𝑔𝑡≠ⁿˣ⋅􀀀]+\s*") # translate will fail for these
+        self._special_chars_re = re.compile(r"\s*[θ𝘹𝘺ƒ𝘢𝘣𝘶𝘯𝘥𝘬𝘍𝑥𝑦𝑚𝑏𝑒𝑟𝑔𝑡𝜇≠ⁿˣ⋅􀀀]+\s*") # translate will fail for these
         self._hash_re = re.compile(r"\s*#+\s*")
         self._table_empty_re = re.compile(r"\s*:-:\s*")
         self._newline_re = re.compile(r"\s*(\\n)+\s*")
