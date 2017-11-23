@@ -127,7 +127,7 @@ class IgnoreFormulaPatternIndexer(object):
         # Preindex filter
         # Used to avoid indexing patterns with one instance
         self.preindex_ctr = Counter() # norm engl hash => count
-        self.preindex_min_count = 2 # minimum instances to be considered a pattern
+        self.preindex_min_count = 3 # minimum instances to be considered a pattern
         self.preindex_set = set() # Compiled from preindex_ctr in clean_preindex()
 
         self.index = Counter() # norm engl => count
@@ -143,9 +143,19 @@ class IgnoreFormulaPatternIndexer(object):
         self.texttags = read_texttag_index(lang)
         # Ignore specific whitelisted texts which are not translated
 
+    def _regex_replace(self, s, n, regex, template="§formula{}§"):
+        while True:
+            match = regex.search(s)
+            placeholder = template.format(n)
+            s = regex.sub(placeholder, s, count=1)
+            n += 1
+        return n, s
+
     def _normalize(self, engl):
-        normalized_engl = self._formula_re.sub("§formula§", engl)
-        normalized_engl = self._img_re.sub("§image§", normalized_engl)
+        n = 1
+        n, normalized_engl = self._regex_replace(engl, n, self._formula_re, template="§formula{}§")
+        n, normalized_engl = self._regex_replace(normalized_engl, n, self._formula_re, template="§image{}§")
+        n, normalized_engl = self._img_re.sub("§image§", normalized_engl)
         return normalized_engl
 
     def preindex(self, engl, translated=None, filename=None):
