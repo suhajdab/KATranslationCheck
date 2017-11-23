@@ -293,7 +293,6 @@ class FullAutoTranslator(object):
             c: self.placeholder(i)
             for i, c in enumerate(self.uchars)
         }
-        self.translator = Translator()
 
     def __del__(self):
         self.dbgout.close()
@@ -493,11 +492,12 @@ class FullAutoTranslator(object):
         return s
 
     def google_translate(self, txt):
+        translator = Translator()
         #translate_client = translate.Client()
         #translation = translate_client.translate( txt, target_language=lang)
         #return translation['translatedText']
         # partition: sv-SE => sv
-        result = self.translator.translate(txt, src="en", dest=self.lang.partition("-")[0])
+        result = translator.translate(txt, src="en", dest=self.lang.partition("-")[0])
         return result.text
 
     def check_regex_equal(self, regex, s1, s2, desc):

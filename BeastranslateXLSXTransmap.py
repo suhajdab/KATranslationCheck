@@ -2,7 +2,12 @@
 from openpyxl import load_workbook
 import json
 import argparse
-import functools
+import traceback
+import sys
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
+from ansicolor import black, red, blue
 from AutoTranslateCommon import transmap_filename, to_xlsx
 from AutoTranslationTranslator import FullAutoTranslator
 
@@ -20,18 +25,25 @@ def get_transmap(filename):
     return [{"english": engl, "translated": transl, "count": count, "untranslated_count": utr_count}
             for engl,transl in tmap.items()]
 
-def _translate(entry, translator, force=False):
-    if not force and not entry["translated"]:
+def _translate(entry, translator, force=False, tries_left=5):
+    engl = entry["english"]
+    if not force and entry["translated"] is not None and entry["translated"] == "":
         return entry # leave as is
-    transl = translator.translate(entry["english"])
+    try:
+        transl = translator.translate(engl)
+    except:
+        print(black("Autotranslate fail for string '{}'".format(engl), bold=True))
+        traceback.print_exception(*sys.exc_info())
+        return entry
     entry["translated"] = transl
-    print("{} ==> {}".format(entry["english"], entry["translated"]))
+    #print("{} ==> {}".format(engl, entry["translated"]))
     return entry
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-l','--language', help='The language')
+    parser.add_argument('-j','--parallel', type=int, default=16, help='The language')
     parser.add_argument('iftags', help='The IF tags XLSX file')
     parser.add_argument('texttags', help='The text tags XLSX file')
     args = parser.parse_args()
@@ -41,14 +53,41 @@ if __name__ == "__main__":
     print("Found {} iftags".format(len(iftags)))
     print("Found {} text tags".format(len(texttags)))
 
+    executor = ThreadPoolExecutor(args.parallel)
+
     # Translate them
     fat = FullAutoTranslator(args.language, limit=1000000)
-    _do = functools.partial(_translate, translator=fat)
-    iftags = list(map(_do, iftags))
-    texttags = list(map(_do, texttags))
+    #
+    # Process IF tags
+    #
+    _futures1 = [executor.submit(_translate, entry, translator=fat) for entry in iftags]
+    kwargs = {
+        'total': len(_futures1),
+        'unit': 'it',
+        'unit_scale': True,
+        'leave': True
+    }
+    iftags = []
+    for future in tqdm(concurrent.futures.as_completed(_futures1), **kwargs):
+        iftags.append(future.result())
+    #
+    # Process text tags
+    #
+    _futures2 = [executor.submit(_translate, entry, translator=fat) for entry in texttags]
+    kwargs = {
+        'total': len(_futures2),
+        'unit': 'it',
+        'unit_scale': True,
+        'leave': True
+    }
+    texttags = []
+    for future in tqdm(concurrent.futures.as_completed(_futures2), **kwargs):
+        texttags.append(future.result())
 
+    # Export
     iftagsFile = args.iftags.replace(".xlsx", ".translated.xlsx")
     texttagsFile = args.texttags.replace(".xlsx", ".translated.xlsx")
+
     print("Exporting IF tags to {}".format(iftagsFile))
     print("Exporting text tags to {}".format(texttagsFile))
 
