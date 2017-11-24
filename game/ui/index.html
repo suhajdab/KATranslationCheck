@@ -19,7 +19,7 @@
         width: 95%;
     }
     #text {
-
+        word-wrap: break-word;
     }
     #animContainer {
         padding-top: 25px;
@@ -76,7 +76,7 @@
             </span>
             <span id="skipSpan">
                 <i class="material-icons" onclick="skip()">skip_next</i>
-                <i class="material-icons" onclick="skip()">arrow_downward</i>
+                <!--<i class="material-icons" onclick="skip()">arrow_downward</i>-->
             </span>
         </div>
         <div class="row" id="textRow">
@@ -142,10 +142,11 @@ function init() {
     fetchStrings();
     // Swipe event
     var body = document.getElementsByTagName("body")[0]
-    var hammer    = new Hammer.Manager(body);
-    var swipe     = new Hammer.Swipe();
-
-    hammer.add(swipe);
+    var hammer    = new Hammer.Manager(body, {
+        recognizers: [
+            [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL }]
+        ]
+    });
 
     hammer.on('swiperight', function(){
         if(blocked) {
@@ -163,13 +164,13 @@ function init() {
         thumbDown();
     });
 
-    hammer.on('swipedown', function(){
+    /*hammer.on('swipedown', function(){
         if(blocked) {
             return;
         }
         console.log("Swipe down");
         skip();
-    });
+    });*/
 }
 
 function submit(score) {
