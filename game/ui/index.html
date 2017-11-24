@@ -47,6 +47,9 @@
     #statsContainer {
         text-align:center; font-size: 200%;margin-bottom:15px;color:blue;
     }
+    #skipSpan {
+        color:blue;position:absolute;width:33%; text-align: center;left:33.3%;top:0;
+    }
     </style>
 </head>
 
@@ -71,7 +74,7 @@
                 <i class="material-icons">thumb_up</i>
                 <i class="material-icons">chevron_right</i>
             </span>
-            <span style="color:blue;position:absolute;width:100%; text-align: center;left:0;top:0;">
+            <span id="skipSpan">
                 <i class="material-icons" onclick="skip()">skip_next</i>
                 <i class="material-icons" onclick="skip()">arrow_downward</i>
             </span>
