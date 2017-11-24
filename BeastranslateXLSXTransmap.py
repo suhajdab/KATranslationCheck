@@ -61,28 +61,18 @@ if __name__ == "__main__":
     # Process IF tags
     #
     _futures1 = [executor.submit(_translate, entry, translator=fat) for entry in iftags]
-    kwargs = {
-        'total': len(_futures1),
-        'unit': 'it',
-        'unit_scale': True,
-        'leave': True
-    }
-    iftags = []
-    for future in tqdm(concurrent.futures.as_completed(_futures1), **kwargs):
-        iftags.append(future.result())
-    #
-    # Process text tags
-    #
     _futures2 = [executor.submit(_translate, entry, translator=fat) for entry in texttags]
+    _futures = _futures1 + _futures2
     kwargs = {
-        'total': len(_futures2),
+        'total': len(_futures),
         'unit': 'it',
         'unit_scale': True,
         'leave': True
     }
-    texttags = []
-    for future in tqdm(concurrent.futures.as_completed(_futures2), **kwargs):
-        texttags.append(future.result())
+    for future in tqdm(concurrent.futures.as_completed(_futures), **kwargs):
+        iftags.append(future.result())
+    iftags = [f.result() for f in _futures1]
+    texttags = [f.result() for f in _futures2]
 
     # Export
     iftagsFile = args.iftags.replace(".xlsx", ".translated.xlsx")
