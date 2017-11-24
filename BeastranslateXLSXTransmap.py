@@ -14,16 +14,15 @@ from AutoTranslationTranslator import FullAutoTranslator
 def get_transmap(filename):
     wb = load_workbook(filename=filename)
     sheet = wb[wb.sheetnames[0]]
-    tmap = {}
+    results = []
     for row in sheet.rows:
         if row[0].value == "Count": continue # Header
         count = int(row[0].value)
         utr_count = int(row[1].value)
-        engl = row[2]
-        transl = row[3]
-        tmap[str(engl.value)] = str(transl.value)
-    return [{"english": engl, "translated": transl, "count": count, "untranslated_count": utr_count}
-            for engl,transl in tmap.items()]
+        engl = row[2].value
+        transl = row[3].value
+        results.append({"english": engl, "translated": transl, "count": count, "untranslated_count": utr_count})
+    return results
 
 def _translate(entry, translator, force=False, tries_left=5):
     engl = entry["english"]
