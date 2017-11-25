@@ -29,7 +29,13 @@ def _translate(entry, translator, force=False, tries_left=5):
     if not force and entry["translated"] is not None and entry["translated"] == "":
         return entry # leave as is
     try:
-        transl = translator.translate(engl)
+        transl = translator[tries_left].translate(engl)
+        if transl is None:
+            if tries_left > 0:
+                print("Retrying '{}'".format(engl))
+                return _translate(entry, translator, force, tries_left - 1)
+            else:
+                print(red("Wont retry '{}'".format(engl)))
     except:
         print(black("Autotranslate fail for string '{}'".format(engl), bold=True))
         traceback.print_exception(*sys.exc_info())
@@ -42,7 +48,7 @@ def _translate(entry, translator, force=False, tries_left=5):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-l','--language', help='The language')
-    parser.add_argument('-j','--parallel', type=int, default=16, help='The language')
+    parser.add_argument('-j','--parallel', type=int, default=16, help='The number of threads')
     parser.add_argument('iftags', help='The IF tags XLSX file')
     parser.add_argument('texttags', help='The text tags XLSX file')
     args = parser.parse_args()
@@ -55,7 +61,7 @@ if __name__ == "__main__":
     executor = ThreadPoolExecutor(args.parallel)
 
     # Translate them
-    fat = FullAutoTranslator(args.language, limit=1000000)
+    fat = [FullAutoTranslator(args.language, limit=1000000) for i in range(6)]
     #
     # Process IF tags
     #

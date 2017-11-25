@@ -512,6 +512,8 @@ class FullAutoTranslator(object):
         return True
 
     def translate(self, engl):
+        if engl is None:
+            return None
         # Use limit on how much to translate at once
         if self.limit <= 0:
             return None # dont translate
