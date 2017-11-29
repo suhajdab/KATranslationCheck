@@ -184,6 +184,17 @@ class NameAutotranslator(object):
                 "Zusammenfassend liegt <name1> richtig",
                 "Nur <name1> liegt richtig",
                 "Die Lösung von <name1> ist korrekt"
+            ], "hu": [
+                "Csak <name1>",
+                "Sem <name1> sem <name2>",
+                "<name1> is vagy <name2> is",
+                "<name1> is és <name2> is",
+                "Sem <name1> sem <name2> nem helyes",
+                "<name1> és <name2> is helyes",
+                "Igen, <name1> helyes, de <name2> nem helyes",
+                "Tehát <name1> helyes",
+                "Csak <name1> helyes",
+                "<name1> megoldása helyes"
             ]
         }
         if lang not in transmap:
