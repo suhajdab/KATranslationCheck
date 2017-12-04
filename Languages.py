@@ -10,8 +10,12 @@ def fetchLanguageID(lang):
     """
     Fetch the crowdin language ID
     """
-    response = requests.get("https://crowdin.com/project/khanacademy/{0}/activity".format(lang))
-    return int(re.search(r"GLOBAL_CURRENT_LANGUAGE_ID\s+=\s+(\d+)", response.text).group(1))
+    response = requests.get("https://crowdin.com/project/khanacademy/{0}".format(lang))
+    match = re.search(r"CURRENT_LANGUAGE_ID\s*=\s*\"?(\d+)\"?", response.text)
+    if match is None:
+        #print(response.text)
+        raise Exception("Cant find language ID for {}!".format(lang))
+    return int(match.group(1))
 
 def findAllLanguages():
     """
@@ -22,7 +26,7 @@ def findAllLanguages():
     print(black("Fetching language list...", bold=True))
     response = requests.get("https://crowdin.com/project/khanacademy")
     txt = response.text
-    langs = re.findall(r"https?://[a-z0-9]*\.cloudfront\.net/images/flags/([^\.]+)\.png", txt)
+    langs = re.findall(r"https?://[a-z0-9]*\.cloudfront\.net/[0-9a-z]+/images/flags/([^\.]+)\.png", txt)
     print(black("Fetching language IDs...", bold=True))
     # English is the source language
     if "en-US" in langs:
