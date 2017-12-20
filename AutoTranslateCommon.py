@@ -10,7 +10,7 @@ import hashlib
 def get_text_regex():
     exceptions = ["cm", "m", "g", "kg", "s", "min", "max", "h", "cm"]
     exc_clause = "".join([r"(?! ?" + ex + r"\})" for ex in exceptions])
-    regex = r"(\\(text|mathrm)\s*\{" + exc_clause + r")"
+    regex = r"(\\(text|mathrm|textit|textbf)\s*\{" + exc_clause + r")"
     return re.compile(regex)
 
 def hash_string(s):

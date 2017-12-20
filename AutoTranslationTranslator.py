@@ -288,7 +288,7 @@ class FullAutoTranslator(object):
         #
         # Blacklist regexes
         #
-        self._text_re = re.compile(r"\\(text|mathrm|textit)\s*\{([^\}]+)\}")
+        self._text_re = re.compile(r"\\(text|mathrm|textit|textbf)\s*\{([^\}]+)\}")
         self._start_whitespace_re = re.compile(r"^\s*")
         self._end_whitespace_re = re.compile(r"\s*")
 
