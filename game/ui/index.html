@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css" integrity="sha384-exe4Ak6B0EoJI0ogGxjJ8rn+RN3ftPnEQrGwX59KTCl5ybGzvHGKjhPKk/KC3abb" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
     #headline {color: #999;}
@@ -105,6 +106,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.js" integrity="sha384-OMvkZ24ANLwviZR2lVq8ujbE/bUO8IR1FdBrKLQBI14Gq5Xp/lksIccGkmKL8m+h" crossorigin="anonymous"></script>
     <script type="text/javascript">
 var cid = null;
 var currentString = null;
@@ -124,9 +126,28 @@ function nextString() {
         return;
     }
     currentString = strings[0];
-    $("#text").text(currentString.target);
+		var str = transformString(currentString.target);
+
+    $("#text").html(str);
     strings = strings.slice(1);
     console.log(strings.length + " strings left");
+}
+
+function transformString(str) {
+	// match string frgments between $ for katex
+	str = str.replace(/\$(.*?)\$/g, renderKatex);
+	// replace newline characters
+	str = str.replace(/\\n/g, "<br />");
+	return str;
+}
+
+function renderKatex(item) {
+	// remove bounding $
+	var match = item.replace(/\$/g, '');
+	// remove escape backslash
+	match = match.replace(/\\\\/g, "\\");
+
+  return katex.renderToString(match);
 }
 
 function init() {
